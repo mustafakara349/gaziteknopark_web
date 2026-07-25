@@ -1,0 +1,36 @@
+@GaziTeknoparkApi_HostAddress = http://localhost:5080
+
+### Sliders
+GET {{GaziTeknoparkApi_HostAddress}}/api/sliders
+Accept: application/json
+
+###
+
+### News
+GET {{GaziTeknoparkApi_HostAddress}}/api/news
+Accept: application/json
+
+###
+
+### Companies
+GET {{GaziTeknoparkApi_HostAddress}}/api/companies
+Accept: application/json
+
+###
+
+### Settings
+GET {{GaziTeknoparkApi_HostAddress}}/api/settings
+Accept: application/json
+
+###
+
+### Auth - Login
+POST {{GaziTeknoparkApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "yourpassword"
+}
+
+###
