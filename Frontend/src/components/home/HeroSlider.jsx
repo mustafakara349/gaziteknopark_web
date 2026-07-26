@@ -30,9 +30,11 @@ export default function HeroSlider() {
           />
         ) : (
           <div className="flex h-[420px] w-full items-center justify-center bg-gradient-to-br from-primary via-primary-light to-primary-dark md:h-[520px]">
-            <span className="text-3xl font-bold tracking-tight text-white/90 md:text-5xl">
-              GAZ<span className="relative">i<span className="absolute -top-2 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-accent" /></span>TEKNOPARK
-            </span>
+            <img
+              src="/gazitekno_logo1.png"
+              alt="Gazi Teknopark"
+              className="h-20 w-auto object-contain md:h-28"
+            />
           </div>
         )}
         {(translation.title || translation.description) && (
