@@ -1,36 +1,51 @@
 import { useEffect, useState } from "react";
 import { getStatistics } from "../../api/endpoints";
 import { pickTranslation } from "../../utils/i18n";
-import SectionTitle from "../common/SectionTitle";
-import EmptyState from "../common/EmptyState";
+
+const defaultStats = [
+  { id: 1, value: "150+", label: "Ar-Ge Firması" },
+  { id: 2, value: "1200+", label: "Nitelikli İstihdam" },
+  { id: 3, value: "350+", label: "Tamamlanan Proje" },
+  { id: 4, value: "$50M+", label: "İhracat Hacmi" },
+];
 
 export default function StatsCounter() {
   const [stats, setStats] = useState([]);
 
   useEffect(() => {
-    getStatistics().then(setStats).catch(() => setStats([]));
+    getStatistics()
+      .then((data) => setStats(data?.length ? data : defaultStats))
+      .catch(() => setStats(defaultStats));
   }, []);
 
+  const displayList = stats.length ? stats : defaultStats;
+
   return (
-    <section className="mx-auto mt-16 max-w-7xl px-4">
-      <SectionTitle title="Sayılarla Gazi Teknopark" />
-      {stats.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <div className="grid grid-cols-2 gap-4 rounded-3xl bg-primary p-8 md:grid-cols-4">
-          {stats.map((stat) => {
+    <section className="mt-12 bg-[#082b5c] py-14 text-white">
+      <div className="mx-auto max-w-[1360px] px-4 md:px-6">
+        <h2 className="text-center text-sm font-bold uppercase tracking-widest text-white/90 md:text-base">
+          GAZİ TEKNOPARK SAYILARLA
+        </h2>
+
+        <div className="mt-10 grid grid-cols-2 gap-8 text-center md:grid-cols-4 lg:gap-12">
+          {displayList.map((stat) => {
             const t = pickTranslation(stat);
+            const value = stat.value || "100+";
+            const label = t.label || stat.label || "İstatistik";
+
             return (
-              <div key={stat.id} className="rounded-2xl bg-white/10 py-6 text-center">
-                <p className="text-3xl font-bold text-white md:text-4xl">{stat.value}</p>
-                <p className="mt-1 text-xs font-medium uppercase tracking-wide text-white/70 md:text-sm">
-                  {t.label}
-                </p>
+              <div key={stat.id || label} className="flex flex-col items-center">
+                <span className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
+                  {value}
+                </span>
+                <span className="mt-2 text-xs font-medium text-white/80 md:text-sm">
+                  {label}
+                </span>
               </div>
             );
           })}
         </div>
-      )}
+      </div>
     </section>
   );
 }
