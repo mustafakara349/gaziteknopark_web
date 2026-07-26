@@ -27,14 +27,13 @@ export default function Footer() {
     <footer className="mt-20 bg-primary text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-4">
         <div>
-          <div className="text-xl font-bold">
-            <span className="text-white">GAZ</span>
-            <span className="relative text-white">
-              i
-              <span className="absolute -top-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-accent" />
-            </span>
-            <span className="text-white">TEKNOPARK</span>
-          </div>
+          <Link to="/" className="inline-flex shrink-0 items-center">
+            <img
+              src="/gazitekno_logo1.png"
+              alt="Gazi Teknopark"
+              className="h-10 w-auto object-contain"
+            />
+          </Link>
           <p className="mt-4 text-sm leading-relaxed text-white/70">
             {settingValue("footer_description") || "Gazi Teknopark, bilim ve teknolojiyi ekonomik değere dönüştüren bir Ar-Ge ekosistemidir."}
           </p>

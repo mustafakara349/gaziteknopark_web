@@ -40,13 +40,12 @@ function DropdownNavItem({ label, items }) {
 
 function Logo() {
   return (
-    <Link to="/" className="flex items-baseline text-2xl font-bold tracking-tight shrink-0">
-      <span className="text-primary">GAZ</span>
-      <span className="relative text-primary">
-        i
-        <span className="absolute -top-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-accent" />
-      </span>
-      <span className="text-primary">TEKNOPARK</span>
+    <Link to="/" className="flex shrink-0 items-center">
+      <img
+        src="/gazitekno_logo.png"
+        alt="Gazi Teknopark"
+        className="h-10 w-auto object-contain"
+      />
     </Link>
   );
 }
