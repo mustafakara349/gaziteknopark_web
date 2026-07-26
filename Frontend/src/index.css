@@ -25,3 +25,19 @@ body {
   color: var(--color-ink);
   background-color: #f8fafc;
 }
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 720ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
