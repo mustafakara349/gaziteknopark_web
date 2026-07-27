@@ -1,6 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import Navbar from "./components/layout/Navbar";
-import Footer from "./components/layout/Footer";
+import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import TeamMembersPage from "./pages/TeamMembersPage";
@@ -18,29 +17,25 @@ import ContactPage from "./pages/ContactPage";
 
 function App() {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <main>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/hakkinda/yonetim-ve-ekip" element={<TeamMembersPage />} />
-          <Route path="/hakkinda/mevzuat-ve-belgeler" element={<DocumentsPage />} />
-          <Route path="/hakkinda/hizmetlerimiz" element={<ServicesPage />} />
-          <Route path="/haberler" element={<NewsListPage />} />
-          <Route path="/etkinlikler" element={<ComingSoonPage title="Etkinlikler" />} />
-          <Route path="/medya" element={<MediaPage />} />
-          <Route path="/firmalar" element={<CompaniesPage />} />
-          <Route path="/basari-oykuleri" element={<SuccessStoriesPage />} />
-          <Route path="/girisimler/girisim-ofisi" element={<InitiativeOfficePage />} />
-          <Route path="/girisimler/teknolojiler" element={<TechnologiesPage />} />
-          <Route path="/basvuru/staj" element={<InternshipApplicationPage />} />
-          <Route path="/basvuru/firma" element={<CompanyApplicationPage />} />
-          <Route path="/iletisim" element={<ContactPage />} />
-          <Route path="/giris" element={<ComingSoonPage title="Giriş" />} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/hakkinda/yonetim-ve-ekip" element={<TeamMembersPage />} />
+        <Route path="/hakkinda/mevzuat-ve-belgeler" element={<DocumentsPage />} />
+        <Route path="/hakkinda/hizmetlerimiz" element={<ServicesPage />} />
+        <Route path="/haberler" element={<NewsListPage />} />
+        <Route path="/etkinlikler" element={<ComingSoonPage title="Etkinlikler" />} />
+        <Route path="/medya" element={<MediaPage />} />
+        <Route path="/firmalar" element={<CompaniesPage />} />
+        <Route path="/basari-oykuleri" element={<SuccessStoriesPage />} />
+        <Route path="/girisimler/girisim-ofisi" element={<InitiativeOfficePage />} />
+        <Route path="/girisimler/teknolojiler" element={<TechnologiesPage />} />
+        <Route path="/basvuru/staj" element={<InternshipApplicationPage />} />
+        <Route path="/basvuru/firma" element={<CompanyApplicationPage />} />
+        <Route path="/iletisim" element={<ContactPage />} />
+        <Route path="/giris" element={<ComingSoonPage title="Giriş" />} />
+      </Routes>
+    </Layout>
   );
 }
 

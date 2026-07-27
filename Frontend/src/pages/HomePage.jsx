@@ -10,7 +10,7 @@ import NewsletterGallery from "../components/home/NewsletterGallery";
 
 export default function HomePage() {
   return (
-    <div className="pb-16">
+    <div className="pb-24">
       <HeroSlider />
       <NewsEventsSection />
       <StatsCounter />
