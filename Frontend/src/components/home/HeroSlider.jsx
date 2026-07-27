@@ -11,7 +11,7 @@ const defaultSlides = [
     description:
       "Girişimciler ve teknoloji firmaları için gelişmiş laboratuvar altyapısı, vergi muafiyetleri ve nitelikli iş ağı sunuyoruz.",
     primaryButtonText: "Firma Başvurusu Yap",
-    primaryButtonUrl: "/basvuru/firma",
+    primaryButtonUrl: "https://argeportal.gaziteknopark.com.tr/onbasvuruformu",
     secondaryButtonText: "Hizmetlerimizi İnceleyin",
     secondaryButtonUrl: "/hakkinda/hizmetlerimiz",
     imageUrl:
@@ -151,6 +151,8 @@ export default function HeroSlider() {
                           {primaryText && (
                             <a
                               href={primaryUrl}
+                              target={primaryUrl?.startsWith("http") ? "_blank" : undefined}
+                              rel={primaryUrl?.startsWith("http") ? "noreferrer" : undefined}
                               className="inline-flex items-center justify-center rounded-xl bg-[#0066cc] px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#0052a3] active:scale-95"
                             >
                               {primaryText}

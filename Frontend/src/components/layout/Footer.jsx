@@ -84,12 +84,23 @@ function FooterNavColumn({ title, links }) {
       <ul className="space-y-2.5">
         {links.map((link) => (
           <li key={link.label}>
-            <Link
-              to={link.to}
-              className="text-sm text-white/70 hover:text-white transition-colors duration-150"
-            >
-              {link.label}
-            </Link>
+            {link.isExternal ? (
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-white/70 hover:text-white transition-colors duration-150"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                to={link.to}
+                className="text-sm text-white/70 hover:text-white transition-colors duration-150"
+              >
+                {link.label}
+              </Link>
+            )}
           </li>
         ))}
       </ul>
@@ -115,7 +126,7 @@ export default function Footer() {
     {
       title: "Başvuru",
       links: [
-        { label: "Firma Başvurusu", to: "/basvuru/firma" },
+        { label: "Firma Başvurusu", to: "/basvuru/firma", href: "https://argeportal.gaziteknopark.com.tr/onbasvuruformu", isExternal: true },
         { label: "Staj Başvurusu", to: "/basvuru/staj" },
       ],
     },
