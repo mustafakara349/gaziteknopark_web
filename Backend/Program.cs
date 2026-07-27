@@ -49,6 +49,20 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Veritabanı tabloları eksikse backend çalışırken otomatik olarak oluşturur (Auto Migration)
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Auto-Migrate Error]: {ex.Message}");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
