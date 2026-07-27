@@ -28,14 +28,27 @@ function DropdownNavItem({ label, items, onClose }) {
         <div className="absolute left-0 top-full pt-2.5 z-50 animate-slide-down">
           <div className="w-60 rounded-2xl bg-white/90 backdrop-blur-xl shadow-2xl ring-1 ring-black/5 overflow-hidden p-1.5 border border-white/80">
             {items.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={onClose}
-                className="block px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-[#dbeafe] hover:text-[#0055b8] rounded-xl transition-all duration-150"
-              >
-                {item.label}
-              </Link>
+              item.isExternal ? (
+                <a
+                  key={item.href || item.to}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={onClose}
+                  className="block px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-[#dbeafe] hover:text-[#0055b8] rounded-xl transition-all duration-150"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={onClose}
+                  className="block px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-[#dbeafe] hover:text-[#0055b8] rounded-xl transition-all duration-150"
+                >
+                  {item.label}
+                </Link>
+              )
             ))}
           </div>
         </div>
@@ -254,14 +267,27 @@ function MobileDropdownItem({ label, items, onClose }) {
       {open && (
         <div className="flex flex-col gap-1 pb-2 pt-1">
           {items.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onClose}
-              className="block px-8 py-2.5 text-sm font-medium text-slate-600 hover:text-[#0066cc] transition-colors"
-            >
-              {item.label}
-            </Link>
+            item.isExternal ? (
+              <a
+                key={item.href || item.to}
+                href={item.href}
+                target="_blank"
+                rel="noreferrer"
+                onClick={onClose}
+                className="block px-8 py-2.5 text-sm font-medium text-slate-600 hover:text-[#0066cc] transition-colors"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={onClose}
+                className="block px-8 py-2.5 text-sm font-medium text-slate-600 hover:text-[#0066cc] transition-colors"
+              >
+                {item.label}
+              </Link>
+            )
           ))}
         </div>
       )}

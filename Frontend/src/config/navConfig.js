@@ -27,7 +27,7 @@ export const navConfig = [
     label: "Başvuru",
     items: [
       { label: "Staj Başvurusu", to: "/basvuru/staj" },
-      { label: "Firma Başvurusu", to: "/basvuru/firma" },
+      { label: "Firma Başvurusu", to: "/basvuru/firma", href: "https://argeportal.gaziteknopark.com.tr/onbasvuruformu", isExternal: true },
     ],
   },
 ];
