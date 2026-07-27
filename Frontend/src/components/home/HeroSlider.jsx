@@ -2,95 +2,290 @@ import { useEffect, useState } from "react";
 import { getSliders } from "../../api/endpoints";
 import { pickTranslation } from "../../utils/i18n";
 
-const defaultSlide = {
-  title: "Geleceği Birlikte İnşa Ediyoruz",
-  description:
-    "Gazi Teknopark, inovasyon ve Ar-Ge ekosisteminin kalbinde, girişimciler ve teknoloji firmaları için dünya standartlarında altyapı ve destek sunar.",
-  primaryButtonText: "Hemen Başvur",
-  primaryButtonUrl: "/basvuru/firma",
-  secondaryButtonText: "Daha Fazla Bilgi",
-  secondaryButtonUrl: "/hakkinda/hizmetlerimiz",
-  imageUrl:
-    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
-};
+const defaultSlides = [
+  {
+    id: "default-1",
+    type: "button_hero",
+    badge: "GİRİŞİMCİLİK VE AR-GE",
+    title: "Gazi Teknopark'ta Yeriniz Hazır",
+    description:
+      "Girişimciler ve teknoloji firmaları için gelişmiş laboratuvar altyapısı, vergi muafiyetleri ve nitelikli iş ağı sunuyoruz.",
+    primaryButtonText: "Firma Başvurusu Yap",
+    primaryButtonUrl: "/basvuru/firma",
+    secondaryButtonText: "Hizmetlerimizi İnceleyin",
+    secondaryButtonUrl: "/hakkinda/hizmetlerimiz",
+    imageUrl:
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: "default-2",
+    type: "announcement",
+    badge: "DUYURU & BİGG",
+    title: "TÜBİTAK BİGG 2026 Çağrı Başvuruları Devam Ediyor",
+    description:
+      "Yenilikçi teknoloji fikirlerine 900.000 TL %100 hibe desteği ve birebir mentörlük sağlayan BİGG programına son başvuru tarihi yaklaşmaktadır.",
+    linkText: "Duyuru Detaylarını Okuyun →",
+    linkUrl: "/girisimcilik",
+    imageUrl:
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: "default-3",
+    type: "pure_visual",
+    badge: "KAMPÜS & AR-GE MERKEZİ",
+    title: "Teknolojinin ve İnovasyonun Merkezi",
+    imageUrl:
+      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop",
+  },
+];
 
 export default function HeroSlider() {
-  const [sliders, setSliders] = useState([]);
+  const [sliders, setSliders] = useState(defaultSlides);
   const [active, setActive] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     getSliders()
-      .then((data) => setSliders(data?.length ? data : [defaultSlide]))
-      .catch(() => setSliders([defaultSlide]));
+      .then((data) => {
+        if (data && data.length >= 3) {
+          setSliders(data);
+        } else if (data && data.length > 0) {
+          const combined = [...data, ...defaultSlides.slice(data.length)];
+          setSliders(combined);
+        } else {
+          setSliders(defaultSlides);
+        }
+      })
+      .catch(() => setSliders(defaultSlides));
   }, []);
 
+  // Auto-play interval
   useEffect(() => {
-    if (sliders.length < 2) return;
-    const timer = setInterval(() => setActive((i) => (i + 1) % sliders.length), 6000);
+    if (sliders.length < 2 || isPaused) return;
+    const timer = setInterval(() => {
+      setActive((prev) => (prev + 1) % sliders.length);
+    }, 6000);
     return () => clearInterval(timer);
-  }, [sliders.length]);
+  }, [sliders.length, isPaused]);
 
-  const current = sliders[active] ?? defaultSlide;
-  const translation = pickTranslation(current);
+  const handlePrev = () => {
+    setActive((prev) => (prev === 0 ? sliders.length - 1 : prev - 1));
+  };
 
-  const title = translation.title || defaultSlide.title;
-  const description = translation.description || defaultSlide.description;
-  const bgImage = current.imageFileId
-    ? `/api/files/${current.imageFileId}`
-    : current.imageUrl || defaultSlide.imageUrl;
+  const handleNext = () => {
+    setActive((prev) => (prev + 1) % sliders.length);
+  };
 
   return (
-    <section className="mx-auto max-w-[1360px] px-4 pt-2 md:px-6">
-      <div className="relative min-h-[480px] w-full overflow-hidden rounded-3xl shadow-xl md:min-h-[540px]">
-        {/* Background Image */}
-        <img
-          src={bgImage}
-          alt={title}
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
+    <section className="mx-auto max-w-[1360px] px-4 pt-8 md:px-6 lg:pt-10">
+      <div
+        className="relative min-h-[460px] w-full overflow-hidden rounded-2xl shadow-xl md:min-h-[520px]"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        {/* Horizontal Sliding Track */}
+        <div
+          className="flex h-full w-full transition-transform duration-700 ease-out"
+          style={{ transform: `translateX(-${active * 100}%)` }}
+        >
+          {sliders.map((slide, index) => {
+            const fallback = defaultSlides[index % 3];
+            const slideType = slide.type || fallback.type;
+            const translation = pickTranslation(slide);
 
-        {/* Gradient Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            const title = translation.title || slide.title || fallback.title;
+            const description =
+              translation.description || slide.description || fallback.description;
+            const bgImage = slide.imageFileId
+              ? `/api/files/${slide.imageFileId}`
+              : slide.imageUrl || fallback.imageUrl;
+            const badge = slide.badge || fallback.badge;
 
-        {/* Content Container */}
-        <div className="relative z-10 flex h-full min-h-[480px] flex-col justify-center px-8 py-16 md:min-h-[540px] md:px-14">
-          <div className="max-w-2xl">
-            <h1 className="text-3xl font-extrabold leading-tight text-white md:text-5xl lg:text-[52px]">
-              {title}
-            </h1>
-            <p className="mt-4 text-sm leading-relaxed text-gray-200 md:text-base md:leading-normal">
-              {description}
-            </p>
+            const primaryText =
+              translation.buttonText || slide.primaryButtonText || fallback.primaryButtonText;
+            const primaryUrl =
+              slide.linkUrl || slide.primaryButtonUrl || fallback.primaryButtonUrl;
+            const secondaryText =
+              slide.secondaryButtonText || fallback.secondaryButtonText;
+            const secondaryUrl =
+              slide.secondaryButtonUrl || fallback.secondaryButtonUrl;
+            const linkText = slide.linkText || fallback.linkText;
+            const linkUrl = slide.linkUrl || fallback.linkUrl;
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href={current.linkUrl || defaultSlide.primaryButtonUrl}
-                className="inline-flex items-center justify-center rounded-full bg-[#0066cc] px-7 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#0052a3] hover:shadow-lg active:scale-95"
+            return (
+              <div
+                key={slide.id || index}
+                className="relative min-h-[460px] w-full flex-shrink-0 md:min-h-[520px]"
               >
-                {translation.buttonText || defaultSlide.primaryButtonText}
-              </a>
-              <a
-                href={defaultSlide.secondaryButtonUrl}
-                className="inline-flex items-center justify-center rounded-full border border-white/40 bg-white/15 px-7 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all hover:border-white/70 hover:bg-white/25 active:scale-95"
-              >
-                {defaultSlide.secondaryButtonText}
-              </a>
-            </div>
-          </div>
+                {/* Background Image */}
+                <img
+                  src={bgImage}
+                  alt={title}
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+
+                {/* SLIDE TYPE 1: STANDARD DUAL BUTTON HERO */}
+                {slideType === "button_hero" && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-transparent" />
+                    <div className="relative z-10 flex h-full min-h-[460px] flex-col justify-center px-8 py-12 md:min-h-[520px] md:px-16 lg:px-20">
+                      <div
+                        className={`max-w-2xl transition-all duration-500 delay-100 transform ${
+                          index === active
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-4"
+                        }`}
+                      >
+                        {badge && (
+                          <span className="text-xs font-bold tracking-widest text-blue-300 uppercase">
+                            {badge}
+                          </span>
+                        )}
+                        <h1 className="mt-3 text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
+                          {title}
+                        </h1>
+                        <p className="mt-4 text-sm leading-relaxed text-slate-200 md:text-base md:leading-normal">
+                          {description}
+                        </p>
+                        <div className="mt-8 flex flex-wrap items-center gap-4">
+                          {primaryText && (
+                            <a
+                              href={primaryUrl}
+                              className="inline-flex items-center justify-center rounded-xl bg-[#0066cc] px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#0052a3] active:scale-95"
+                            >
+                              {primaryText}
+                            </a>
+                          )}
+                          {secondaryText && (
+                            <a
+                              href={secondaryUrl}
+                              className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white/60 hover:bg-white/20 active:scale-95"
+                            >
+                              {secondaryText}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* SLIDE TYPE 2: BUTTONLESS ANNOUNCEMENT & TEXT SHOWCASE */}
+                {slideType === "announcement" && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/70 to-slate-950/30" />
+                    <div className="relative z-10 flex h-full min-h-[460px] flex-col justify-center px-8 py-12 md:min-h-[520px] md:px-16 lg:px-20">
+                      <div
+                        className={`max-w-xl transition-all duration-500 delay-100 transform ${
+                          index === active
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-4"
+                        }`}
+                      >
+                        {badge && (
+                          <div className="inline-block rounded-md bg-blue-600/30 px-3 py-1 text-xs font-bold tracking-wider text-blue-300 border border-blue-400/20">
+                            {badge}
+                          </div>
+                        )}
+                        <h2 className="mt-4 text-2xl font-bold leading-tight text-white md:text-4xl">
+                          {title}
+                        </h2>
+                        <p className="mt-3 text-sm leading-relaxed text-slate-300 md:text-base">
+                          {description}
+                        </p>
+                        {linkText && (
+                          <div className="mt-6">
+                            <a
+                              href={linkUrl}
+                              className="inline-flex items-center text-sm font-bold text-blue-400 hover:text-white transition-colors"
+                            >
+                              {linkText}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* SLIDE TYPE 3: PURE VISUAL / BANNER SHOWCASE */}
+                {slideType === "pure_visual" && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    <div className="relative z-10 flex h-full min-h-[460px] flex-col justify-end p-8 md:min-h-[520px] md:p-12">
+                      <div
+                        className={`transition-all duration-500 delay-100 transform ${
+                          index === active
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-4"
+                        }`}
+                      >
+                        {badge && (
+                          <span className="text-xs font-semibold text-slate-300 uppercase tracking-widest">
+                            {badge}
+                          </span>
+                        )}
+                        <h2 className="mt-1 text-xl font-bold text-white md:text-3xl">
+                          {title}
+                        </h2>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Slide Dots Indicator */}
+        {/* Navigation Arrows */}
         {sliders.length > 1 && (
-          <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+          <>
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Önceki Slayt"
+              className="absolute left-4 md:left-6 top-1/2 z-20 flex -translate-y-1/2 items-center justify-center p-2 text-white/70 drop-shadow-md transition-all hover:text-white hover:scale-110 active:scale-95 cursor-pointer"
+            >
+              <svg
+                className="h-5 w-5 md:h-6 md:w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Sonraki Slayt"
+              className="absolute right-4 md:right-6 top-1/2 z-20 flex -translate-y-1/2 items-center justify-center p-2 text-white/70 drop-shadow-md transition-all hover:text-white hover:scale-110 active:scale-95 cursor-pointer"
+            >
+              <svg
+                className="h-5 w-5 md:h-6 md:w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Bottom Slide Dots */}
+        {sliders.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3.5 py-1.5 backdrop-blur-sm">
             {sliders.map((s, i) => (
               <button
                 key={s.id || i}
                 type="button"
                 aria-label={`Slayt ${i + 1}`}
                 onClick={() => setActive(i)}
-                className={`h-2.5 rounded-full transition-all ${
-                  i === active ? "w-7 bg-white" : "w-2.5 bg-white/50 hover:bg-white/75"
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  i === active ? "w-7 bg-white" : "w-2 bg-white/40 hover:bg-white/70"
                 }`}
               />
             ))}
@@ -100,3 +295,7 @@ export default function HeroSlider() {
     </section>
   );
 }
+
+
+
+

@@ -22,7 +22,7 @@ export default function BiggArea() {
   const t = pickTranslation(office ?? {});
 
   return (
-    <section className="mx-auto max-w-[1360px] px-4 py-12 md:px-6">
+    <section className="mx-auto max-w-[1360px] px-4 mt-24 md:px-6">
       <div className="relative overflow-hidden rounded-3xl border border-blue-100/80 bg-gradient-to-r from-[#d6e6f7] via-[#e8f1fa] to-[#d6e6f7] p-8 md:p-12 shadow-xs">
         <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           {/* Text Content */}

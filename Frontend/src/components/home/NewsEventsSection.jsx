@@ -105,7 +105,7 @@ export default function NewsEventsSection() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-[1360px] px-4 py-12 md:px-6">
+    <section className="mx-auto max-w-[1360px] px-4 mt-24 md:px-6">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Duyurular Card */}
         <div className="flex flex-col justify-between rounded-3xl border border-slate-200/80 bg-white p-7 shadow-sm transition-shadow hover:shadow-md">
@@ -209,11 +209,11 @@ export default function NewsEventsSection() {
                       </h3>
                       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                         <span className="inline-flex items-center gap-1">
-                          <ClockIcon className="text-slate-400" />
+                          <ClockIcon className="w-3.5 h-3.5 shrink-0 text-slate-400" />
                           {dateStr}
                         </span>
                         <span className="inline-flex items-center gap-1">
-                          <MapPinIcon className="text-slate-400" />
+                          <MapPinIcon className="w-3.5 h-3.5 shrink-0 text-slate-400" />
                           {location}
                         </span>
                       </div>
