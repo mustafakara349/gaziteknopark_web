@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
 import ComingSoonPage from "./pages/ComingSoonPage";
@@ -15,14 +16,22 @@ import InternshipApplicationPage from "./pages/InternshipApplicationPage";
 import CompanyApplicationPage from "./pages/CompanyApplicationPage";
 import ContactPage from "./pages/ContactPage";
 
+function AdminRedirect() {
+  useEffect(() => {
+    window.location.href = "https://login.gaziteknopark.com.tr/login";
+  }, []);
+  return null;
+}
+
 function App() {
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/hakkinda/yonetim-ve-ekip" element={<TeamMembersPage />} />
-        <Route path="/hakkinda/mevzuat-ve-belgeler" element={<DocumentsPage />} />
-        <Route path="/hakkinda/hizmetlerimiz" element={<ServicesPage />} />
+        <Route path="/kurumsal/hakkimizda" element={<ComingSoonPage title="Hakkımızda" />} />
+        <Route path="/kurumsal/yonetim-ve-ekip" element={<TeamMembersPage />} />
+        <Route path="/kurumsal/mevzuat-ve-belgeler" element={<DocumentsPage />} />
+        <Route path="/kurumsal/hizmetlerimiz" element={<ServicesPage />} />
         <Route path="/haberler" element={<NewsListPage />} />
         <Route path="/etkinlikler" element={<ComingSoonPage title="Etkinlikler" />} />
         <Route path="/medya" element={<MediaPage />} />
@@ -34,6 +43,7 @@ function App() {
         <Route path="/basvuru/firma" element={<CompanyApplicationPage />} />
         <Route path="/iletisim" element={<ContactPage />} />
         <Route path="/giris" element={<ComingSoonPage title="Giriş" />} />
+        <Route path="/admin" element={<AdminRedirect />} />
       </Routes>
     </Layout>
   );

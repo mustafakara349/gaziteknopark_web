@@ -15,7 +15,7 @@ export default function HomePage() {
       <NewsEventsSection />
       <StatsCounter />
       <BiggArea />
-      <SuccessStories limit={10} layout="single" />
+      <SuccessStories limit={10} layout="slider" />
       <CompaniesSection />
       <CompanyCategoryChart />
       <TechnologiesSection />
