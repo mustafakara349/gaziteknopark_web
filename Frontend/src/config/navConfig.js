@@ -1,12 +1,14 @@
 export const navConfig = [
   {
-    label: "Hakkında",
+    label: "Kurumsal",
     items: [
-      { label: "Yönetim ve Ekip", to: "/hakkinda/yonetim-ve-ekip" },
-      { label: "Mevzuat ve Belgeler", to: "/hakkinda/mevzuat-ve-belgeler" },
-      { label: "Hizmetlerimiz/İmkanlarımız", to: "/hakkinda/hizmetlerimiz" },
+      { label: "Hakkımızda", to: "/kurumsal/hakkimizda" },
+      { label: "Yönetim ve Ekip", to: "/kurumsal/yonetim-ve-ekip" },
+      { label: "Mevzuat ve Belgeler", to: "/kurumsal/mevzuat-ve-belgeler" },
+      { label: "Hizmetlerimiz/İmkanlarımız", to: "/kurumsal/hizmetlerimiz" },
       { label: "Haberler ve Duyurular", to: "/haberler" },
       { label: "Medya", to: "/medya" },
+      { label: "Etkinlikler", to: "/etkinlikler" },
     ],
   },
   {
@@ -20,14 +22,15 @@ export const navConfig = [
     label: "Girişimler",
     items: [
       { label: "Girişim Ofisi", to: "/girisimler/girisim-ofisi" },
-      { label: "Öne Çıkan Teknolojiler", to: "/girisimler/teknolojiler" },
+      { label: "Teknolojiler", to: "/girisimler/teknolojiler" },
     ],
   },
   {
-    label: "Başvuru",
+    label: "Başvurular",
     items: [
       { label: "Staj Başvurusu", to: "/basvuru/staj" },
       { label: "Firma Başvurusu", to: "/basvuru/firma", href: "https://argeportal.gaziteknopark.com.tr/onbasvuruformu", isExternal: true },
+      { label: "BİGG Başvuru", to: "/basvuru/bigg", href: "https://www.gazibigg.com/", isExternal: true },
     ],
   },
 ];

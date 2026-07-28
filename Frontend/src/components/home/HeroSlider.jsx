@@ -77,9 +77,9 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="mx-auto max-w-[1360px] px-4 pt-8 md:px-6 lg:pt-10">
+    <section className="relative w-full h-[100vh] h-[100dvh] min-h-[600px] overflow-hidden -mt-[68px]">
       <div
-        className="relative min-h-[460px] w-full overflow-hidden rounded-2xl shadow-xl md:min-h-[520px]"
+        className="relative h-full w-full overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -115,7 +115,7 @@ export default function HeroSlider() {
             return (
               <div
                 key={slide.id || index}
-                className="relative min-h-[460px] w-full flex-shrink-0 md:min-h-[520px]"
+                className="relative h-full w-full flex-shrink-0"
               >
                 {/* Background Image */}
                 <img
@@ -128,13 +128,12 @@ export default function HeroSlider() {
                 {slideType === "button_hero" && (
                   <>
                     <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-transparent" />
-                    <div className="relative z-10 flex h-full min-h-[460px] flex-col justify-center px-8 py-12 md:min-h-[520px] md:px-16 lg:px-20">
+                    <div className="relative z-10 flex h-full w-full flex-col justify-center px-8 pt-[120px] pb-12 md:px-16 lg:px-24">
                       <div
-                        className={`max-w-2xl transition-all duration-500 delay-100 transform ${
-                          index === active
+                        className={`max-w-2xl transition-all duration-500 delay-100 transform ${index === active
                             ? "opacity-100 translate-y-0"
                             : "opacity-0 translate-y-4"
-                        }`}
+                          }`}
                       >
                         {badge && (
                           <span className="text-xs font-bold tracking-widest text-blue-300 uppercase">
@@ -176,13 +175,12 @@ export default function HeroSlider() {
                 {slideType === "announcement" && (
                   <>
                     <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/70 to-slate-950/30" />
-                    <div className="relative z-10 flex h-full min-h-[460px] flex-col justify-center px-8 py-12 md:min-h-[520px] md:px-16 lg:px-20">
+                    <div className="relative z-10 flex h-full w-full flex-col justify-center px-8 pt-[120px] pb-12 md:px-16 lg:px-24">
                       <div
-                        className={`max-w-xl transition-all duration-500 delay-100 transform ${
-                          index === active
+                        className={`max-w-xl transition-all duration-500 delay-100 transform ${index === active
                             ? "opacity-100 translate-y-0"
                             : "opacity-0 translate-y-4"
-                        }`}
+                          }`}
                       >
                         {badge && (
                           <div className="inline-block rounded-md bg-blue-600/30 px-3 py-1 text-xs font-bold tracking-wider text-blue-300 border border-blue-400/20">
@@ -214,13 +212,12 @@ export default function HeroSlider() {
                 {slideType === "pure_visual" && (
                   <>
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-                    <div className="relative z-10 flex h-full min-h-[460px] flex-col justify-end p-8 md:min-h-[520px] md:p-12">
+                    <div className="relative z-10 flex h-full w-full flex-col justify-end px-8 pb-20 pt-[120px] md:px-16 lg:px-24">
                       <div
-                        className={`transition-all duration-500 delay-100 transform ${
-                          index === active
+                        className={`transition-all duration-500 delay-100 transform ${index === active
                             ? "opacity-100 translate-y-0"
                             : "opacity-0 translate-y-4"
-                        }`}
+                          }`}
                       >
                         {badge && (
                           <span className="text-xs font-semibold text-slate-300 uppercase tracking-widest">
@@ -286,9 +283,8 @@ export default function HeroSlider() {
                 type="button"
                 aria-label={`Slayt ${i + 1}`}
                 onClick={() => setActive(i)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === active ? "w-7 bg-white" : "w-2 bg-white/40 hover:bg-white/70"
-                }`}
+                className={`h-2 rounded-full transition-all duration-300 ${i === active ? "w-7 bg-white" : "w-2 bg-white/40 hover:bg-white/70"
+                  }`}
               />
             ))}
           </div>
@@ -297,7 +293,3 @@ export default function HeroSlider() {
     </section>
   );
 }
-
-
-
-

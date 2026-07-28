@@ -114,20 +114,23 @@ export default function Footer() {
 
   const navColumns = [
     {
-      title: "Hakkında",
+      title: "Kurumsal",
       links: [
-        { label: "Yönetim ve Ekip", to: "/hakkinda/yonetim-ve-ekip" },
-        { label: "Mevzuat ve Belgeler", to: "/hakkinda/mevzuat-ve-belgeler" },
-        { label: "Hizmetlerimiz / İmkânlarımız", to: "/hakkinda/hizmetlerimiz" },
+        { label: "Hakkımızda", to: "/kurumsal/hakkimizda" },
+        { label: "Yönetim ve Ekip", to: "/kurumsal/yonetim-ve-ekip" },
+        { label: "Mevzuat ve Belgeler", to: "/kurumsal/mevzuat-ve-belgeler" },
+        { label: "Hizmetlerimiz / İmkânlarımız", to: "/kurumsal/hizmetlerimiz" },
         { label: "Haberler ve Duyurular", to: "/haberler" },
         { label: "Medya", to: "/medya" },
+        { label: "Etkinlikler", to: "/etkinlikler" },
       ],
     },
     {
-      title: "Başvuru",
+      title: "Başvurular",
       links: [
         { label: "Firma Başvurusu", to: "/basvuru/firma", href: "https://argeportal.gaziteknopark.com.tr/onbasvuruformu", isExternal: true },
         { label: "Staj Başvurusu", to: "/basvuru/staj" },
+        { label: "BİGG Başvuru", to: "/basvuru/bigg", href: "https://www.gazibigg.com/", isExternal: true },
       ],
     },
   ];
@@ -222,6 +225,7 @@ export default function Footer() {
             <Link to="/kvkk" className="hover:text-white/70 transition-colors">KVKK</Link>
             <Link to="/gizlilik" className="hover:text-white/70 transition-colors">Gizlilik</Link>
             <Link to="/kullanim-kosullari" className="hover:text-white/70 transition-colors">Kullanım Koşulları</Link>
+            <Link to="/sss" className="hover:text-white/70 transition-colors">SSS</Link>
           </div>
         </div>
       </div>
