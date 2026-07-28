@@ -10,6 +10,7 @@ export const getStatistics = () => get("/statistics");
 export const getInitiativeOffice = () => get("/initiative-office");
 export const getSettings = () => get("/settings");
 export const getSuccessStories = () => get("/success-stories");
+export const getLinkedInPosts = (params) => get("/linkedin-posts", params);
 export const getCompanies = (params) => get("/companies", params);
 export const getCompanyCategories = () => get("/company-categories");
 export const getFeaturedTechnologies = () => get("/featured-technologies");

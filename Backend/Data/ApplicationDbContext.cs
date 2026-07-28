@@ -102,6 +102,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<SearchLog> SearchLogs => Set<SearchLog>();
+    public DbSet<LinkedInPost> LinkedInPosts => Set<LinkedInPost>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
