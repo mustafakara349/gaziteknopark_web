@@ -56,6 +56,43 @@ public class PagesController : ControllerBase
         return Ok(Map(page));
     }
 
+    /// <summary>
+    /// Public endpoint for rendering a single static page (e.g. "Hakkımızda") by slug and language.
+    /// Returns only published content mapped to a flat, frontend-friendly DTO.
+    /// </summary>
+    [HttpGet("content/{slug}")]
+    public async Task<ActionResult<PageContentDto>> GetContentBySlug(string slug, [FromQuery] uint? languageId)
+    {
+        // languageId verilmemişse önce varsayılan (is_default) dile, o da tanımlı değilse
+        // birincil dile (language_id = 1) düş.
+        var resolvedLanguageId = languageId
+            ?? await _db.Languages.Where(l => l.IsActive && l.IsDefault).Select(l => (uint?)l.Id).FirstOrDefaultAsync()
+            ?? 1u;
+
+        var translation = await _db.PageTranslations
+            .Include(t => t.Page)
+            .FirstOrDefaultAsync(t =>
+                t.Slug == slug &&
+                t.LanguageId == resolvedLanguageId &&
+                t.Page.DeletedAt == null);
+
+        if (translation is null) return NotFound();
+
+        // Durum karşılaştırması, veritabanındaki harf durumundan (örn. "published" / "Published")
+        // tamamen bağımsız olsun diye açıkça case-insensitive string karşılaştırması olarak yapılır.
+        var isPublished = string.Equals(translation.Page.Status.ToString(), nameof(ContentStatus.Published), StringComparison.OrdinalIgnoreCase);
+        if (!isPublished) return NotFound();
+
+        return Ok(new PageContentDto
+        {
+            Slug = translation.Slug,
+            Title = translation.Title,
+            Content = translation.Content,
+            MetaTitle = translation.MetaTitle,
+            MetaDescription = translation.MetaDescription
+        });
+    }
+
     [Authorize(Roles = "Admin,Editor")]
     [HttpPost]
     public async Task<ActionResult<PageDto>> Create(PageUpsertDto dto)

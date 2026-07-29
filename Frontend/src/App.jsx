@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { useEffect } from "react";
 import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
+import AboutUs from "./pages/AboutUs";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import TeamMembersPage from "./pages/TeamMembersPage";
 import DocumentsPage from "./pages/DocumentsPage";
@@ -28,7 +29,7 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/kurumsal/hakkimizda" element={<ComingSoonPage title="Hakkımızda" />} />
+        <Route path="/kurumsal/hakkimizda" element={<AboutUs />} />
         <Route path="/kurumsal/yonetim-ve-ekip" element={<TeamMembersPage />} />
         <Route path="/kurumsal/mevzuat-ve-belgeler" element={<DocumentsPage />} />
         <Route path="/kurumsal/hizmetlerimiz" element={<ServicesPage />} />

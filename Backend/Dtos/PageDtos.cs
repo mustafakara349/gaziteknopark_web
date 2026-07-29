@@ -39,6 +39,19 @@ public class PageTranslationUpsertDto
     public string? SearchKeywords { get; set; }
 }
 
+/// <summary>
+/// Flat, read-only shape for public page rendering (e.g. "Hakkımızda").
+/// Exposes only what the frontend needs - no ids, audit fields or status.
+/// </summary>
+public class PageContentDto
+{
+    public string Slug { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? Content { get; set; }
+    public string? MetaTitle { get; set; }
+    public string? MetaDescription { get; set; }
+}
+
 public class PageDto
 {
     public uint Id { get; set; }

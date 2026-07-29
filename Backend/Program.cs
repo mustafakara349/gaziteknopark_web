@@ -14,6 +14,13 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection ayarı boş. Backend/appsettings.Development.json dosyasını oluşturup " +
+        "gerçek MySQL bağlantı bilgilerini girin (bu dosya .gitignore'da, ekipten alınmalı veya yerel olarak oluşturulmalı).");
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 30)))
            .UseSnakeCaseNamingConvention());
@@ -28,7 +35,14 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
-var jwtKey = builder.Configuration["Jwt:Key"]!;
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key ayarı boş. Backend/appsettings.Development.json dosyasını oluşturup gerçek bir JWT anahtarı girin " +
+        "(bu dosya .gitignore'da, ekipten alınmalı veya yerel olarak oluşturulmalı).");
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
