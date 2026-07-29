@@ -29,12 +29,12 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/kurumsal/hakkimizda" element={<AboutUs />} />
+main
         <Route path="/kurumsal/yonetim-ve-ekip" element={<TeamMembersPage />} />
         <Route path="/kurumsal/mevzuat-ve-belgeler" element={<DocumentsPage />} />
         <Route path="/kurumsal/hizmetlerimiz" element={<ServicesPage />} />
         <Route path="/haberler" element={<NewsListPage />} />
-        <Route path="/etkinlikler" element={<ComingSoonPage title="Etkinlikler" />} />
+        <Route path="/etkinlikler" element={<ComingSoonPage />} />
         <Route path="/medya" element={<MediaPage />} />
         <Route path="/firmalar" element={<CompaniesPage />} />
         <Route path="/basari-oykuleri" element={<SuccessStoriesPage />} />
@@ -43,7 +43,7 @@ function App() {
         <Route path="/basvuru/staj" element={<InternshipApplicationPage />} />
         <Route path="/basvuru/firma" element={<CompanyApplicationPage />} />
         <Route path="/iletisim" element={<ContactPage />} />
-        <Route path="/giris" element={<ComingSoonPage title="Giriş" />} />
+        <Route path="/giris" element={<ComingSoonPage />} />
         <Route path="/admin" element={<AdminRedirect />} />
       </Routes>
     </Layout>

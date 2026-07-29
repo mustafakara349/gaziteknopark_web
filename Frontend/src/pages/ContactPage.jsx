@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getContactInfo, getSocialLinks, submitContactMessage } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import FormField, { inputClass } from "../components/common/FormField";
 import { socialIcon } from "../components/common/icons";
@@ -39,7 +38,6 @@ export default function ContactPage() {
 
   return (
     <div>
-      <PageHeader title="İletişim" subtitle="Sorularınız için bize ulaşın." />
       <PageSection className="grid gap-8 md:grid-cols-5">
         <div className="md:col-span-3">
           {status === "success" ? (

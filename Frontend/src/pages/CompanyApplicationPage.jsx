@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 
 const EXTERNAL_FORM_URL = "https://argeportal.gaziteknopark.com.tr/onbasvuruformu";
@@ -12,10 +11,6 @@ export default function CompanyApplicationPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Firma Başvurusu"
-        subtitle="Gazi Teknopark Ar-Ge Portalı Ön Başvuru Formu"
-      />
       <PageSection className="max-w-2xl">
         <div className="rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-sm md:p-12">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-hover-blue text-primary">

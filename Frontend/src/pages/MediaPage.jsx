@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMediaAlbums } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 
@@ -14,7 +13,6 @@ export default function MediaPage() {
 
   return (
     <div>
-      <PageHeader title="Medya" subtitle="Etkinliklerimizden fotoğraf ve video albümleri." />
       <PageSection>
         {albums.length === 0 ? (
           <EmptyState />
