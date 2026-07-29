@@ -101,3 +101,4 @@ Backend/PublishScripts/
 Backend/appsettings.Development.json
 Backend/appsettings.Production.json
 Backend/appsettings.Staging.json
+Backend/wwwroot/uploads/*

@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729133020_AddInternshipApplicationFields")]
+    partial class AddInternshipApplicationFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1475,15 +1478,20 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("varchar(150)")
                         .HasColumnName("email");
 
-                    b.Property<DateTime?>("ExplicitConsentAt")
+                    b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime(6)")
-                        .HasColumnName("explicit_consent_at");
+                        .HasColumnName("end_date");
 
-                    b.Property<string>("FirstName")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)")
-                        .HasColumnName("first_name");
+                        .HasColumnName("full_name");
+
+                    b.Property<string>("IdentityNo")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("identity_no");
 
                     b.Property<int?>("InternshipTime")
                         .HasColumnType("int")
@@ -1493,16 +1501,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int")
                         .HasColumnName("internship_type");
 
-                    b.Property<DateTime?>("KvkkConsentAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("kvkk_consent_at");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
-                        .HasColumnName("last_name");
-
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)")
@@ -1511,6 +1509,10 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Property<uint?>("PhotoFileId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("photo_file_id");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("start_date");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1523,7 +1525,7 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnName("university");
 
                     b.Property<DateTime?>("UniversityStartDate")
-                        .HasColumnType("date")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("university_start_date");
 
                     b.Property<DateTime?>("UpdatedAt")

@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729142117_RemoveUnusedInternshipFields")]
+    partial class RemoveUnusedInternshipFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1475,10 +1478,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("varchar(150)")
                         .HasColumnName("email");
 
-                    b.Property<DateTime?>("ExplicitConsentAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("explicit_consent_at");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -1492,10 +1491,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Property<int?>("InternshipType")
                         .HasColumnType("int")
                         .HasColumnName("internship_type");
-
-                    b.Property<DateTime?>("KvkkConsentAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("kvkk_consent_at");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -1523,7 +1518,7 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnName("university");
 
                     b.Property<DateTime?>("UniversityStartDate")
-                        .HasColumnType("date")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("university_start_date");
 
                     b.Property<DateTime?>("UpdatedAt")

@@ -12,9 +12,9 @@ public class InternshipApplication
     [Column(TypeName = "char(36)")]
     public Guid? Uuid { get; set; }
     [MaxLength(150)]
-    public string FullName { get; set; } = string.Empty;
-    [MaxLength(20)]
-    public string? IdentityNo { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    [MaxLength(150)]
+    public string LastName { get; set; } = string.Empty;
     [MaxLength(150)]
     public string Email { get; set; } = string.Empty;
     [MaxLength(30)]
@@ -25,10 +25,15 @@ public class InternshipApplication
     public string? Department { get; set; }
     [MaxLength(20)]
     public string? ClassYear { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    [Column(TypeName = "date")]
+    public DateTime? UniversityStartDate { get; set; }
     public uint? CvFileId { get; set; }
+    public uint? PhotoFileId { get; set; }
     public string? CoverLetter { get; set; }
+    public InternshipTime? InternshipTime { get; set; }
+    public InternshipType? InternshipType { get; set; }
+    public DateTime? KvkkConsentAt { get; set; }
+    public DateTime? ExplicitConsentAt { get; set; }
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Beklemede;
     public uint? ApprovedBy { get; set; }
     public DateTime? AppliedAt { get; set; }
@@ -39,4 +44,7 @@ public class InternshipApplication
 
     [ForeignKey(nameof(CvFileId))]
     public FileAsset? CvFile { get; set; }
+    
+    [ForeignKey(nameof(PhotoFileId))]
+    public FileAsset? PhotoFile { get; set; }
 }
