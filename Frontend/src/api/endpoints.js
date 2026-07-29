@@ -20,6 +20,7 @@ export const getSocialLinks = () => get("/social-links");
 export const getFaq = () => get("/faq");
 export const getContactInfo = () => get("/contact/info");
 export const getPages = () => get("/pages");
+export const getPageContent = (slug, params) => get(`/pages/content/${slug}`, params);
 export const getTeamMembers = () => get("/team-members");
 export const getServices = () => get("/services");
 export const getDocuments = (params) => get("/documents", params);
