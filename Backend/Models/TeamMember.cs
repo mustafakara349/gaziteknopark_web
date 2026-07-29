@@ -15,8 +15,12 @@ public class TeamMember
     public string FullName { get; set; } = string.Empty;
     public uint? PhotoFileId { get; set; }
     [MaxLength(255)]
+    public string? Email { get; set; }
+    [MaxLength(255)]
     public string? LinkedinUrl { get; set; }
     public uint OrderNo { get; set; }
+    public uint? ParentId { get; set; }
+    public bool IsUnit { get; set; }
     public ContentStatus Status { get; set; } = ContentStatus.Published;
     public uint? CreatedBy { get; set; }
     public uint? UpdatedBy { get; set; }
@@ -27,6 +31,9 @@ public class TeamMember
 
     [ForeignKey(nameof(PhotoFileId))]
     public FileAsset? PhotoFile { get; set; }
+    [ForeignKey(nameof(ParentId))]
+    public TeamMember? Parent { get; set; }
+    public ICollection<TeamMember> Children { get; set; } = new List<TeamMember>();
 
     public ICollection<TeamMemberTranslation> Translations { get; set; } = new List<TeamMemberTranslation>();
 }

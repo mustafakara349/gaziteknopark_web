@@ -125,6 +125,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<PageTranslation>().HasIndex(t => new { t.PageId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<PageTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
         modelBuilder.Entity<TeamMemberTranslation>().HasIndex(t => new { t.TeamMemberId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<TeamMember>()
+            .HasOne(m => m.Parent)
+            .WithMany(m => m.Children)
+            .HasForeignKey(m => m.ParentId)
+            .OnDelete(DeleteBehavior.SetNull);
         modelBuilder.Entity<DocumentCategoryTranslation>().HasIndex(t => new { t.DocumentCategoryId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<DocumentTranslation>().HasIndex(t => new { t.DocumentId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<ServiceTranslation>().HasIndex(t => new { t.ServiceId, t.LanguageId }).IsUnique();

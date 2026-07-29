@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { submitInternshipApplication } from "../api/endpoints";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import FormField, { inputClass } from "../components/common/FormField";
 import ConsentModal from "../components/common/ConsentModal";
@@ -276,11 +275,6 @@ export default function InternshipApplicationPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Staj Başvurusu"
-        subtitle="Gazi Teknopark'ta staj deneyimi kazanmak için aşağıdaki formu eksiksiz doldurunuz."
-      />
-
       <PageSection className="max-w-4xl">
         {status === "success" ? (
           /* ── Success State ── */

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getServices } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 
@@ -14,7 +13,6 @@ export default function ServicesPage() {
 
   return (
     <div>
-      <PageHeader title="Hizmetlerimiz / İmkanlarımız" subtitle="Girişimcilerimize ve firmalarımıza sunduğumuz destek ve imkanlar." />
       <PageSection>
         {services.length === 0 ? (
           <EmptyState />

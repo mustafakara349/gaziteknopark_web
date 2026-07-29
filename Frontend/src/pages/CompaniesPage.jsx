@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { companiesData } from "../data/companies";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 import CompanyCard from "../components/companies/CompanyCard";
@@ -61,11 +60,6 @@ export default function CompaniesPage() {
 
   return (
     <div className="relative min-h-screen pb-12">
-      {/* Sayfa Başlığı */}
-      <PageHeader
-        title="Firmalarımız"
-        subtitle="Gazi Teknopark bünyesinde ileri teknoloji ve Ar-Ge alanlarında faaliyet gösteren tüm firmalarımız."
-      />
       {/* 2- Sayılarla Gazi Teknopark Alanı */}
       <CompanyStatistics onScrollToFilter={handleScrollToFilter} />
 

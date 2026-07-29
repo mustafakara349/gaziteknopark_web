@@ -54,14 +54,21 @@ public class TeamMembersController : ControllerBase
         {
             return BadRequest("Geçersiz durum değeri.");
         }
+        if (dto.ParentId.HasValue && !await _db.TeamMembers.AnyAsync(m => m.Id == dto.ParentId && m.DeletedAt == null))
+        {
+            return BadRequest("Geçersiz üst yönetici (parentId).");
+        }
 
         var member = new TeamMember
         {
             Uuid = Guid.NewGuid(),
             FullName = dto.FullName,
             PhotoFileId = dto.PhotoFileId,
+            Email = dto.Email,
             LinkedinUrl = dto.LinkedinUrl,
             OrderNo = dto.OrderNo,
+            ParentId = dto.ParentId,
+            IsUnit = dto.IsUnit,
             Status = status,
             CreatedAt = DateTime.UtcNow
         };
@@ -83,14 +90,25 @@ public class TeamMembersController : ControllerBase
         {
             return BadRequest("Geçersiz durum değeri.");
         }
+        if (dto.ParentId == id)
+        {
+            return BadRequest("Bir kişi kendi kendisinin üst yöneticisi olamaz.");
+        }
+        if (dto.ParentId.HasValue && await WouldCreateCycle(id, dto.ParentId.Value))
+        {
+            return BadRequest("Bu üst yönetici ataması bir döngüye (cycle) yol açar.");
+        }
 
         var member = await _db.TeamMembers.Include(m => m.Translations).FirstOrDefaultAsync(m => m.Id == id && m.DeletedAt == null);
         if (member is null) return NotFound();
 
         member.FullName = dto.FullName;
         member.PhotoFileId = dto.PhotoFileId;
+        member.Email = dto.Email;
         member.LinkedinUrl = dto.LinkedinUrl;
         member.OrderNo = dto.OrderNo;
+        member.ParentId = dto.ParentId;
+        member.IsUnit = dto.IsUnit;
         member.Status = status;
         member.UpdatedAt = DateTime.UtcNow;
 
@@ -116,14 +134,28 @@ public class TeamMembersController : ControllerBase
         return NoContent();
     }
 
+    private async Task<bool> WouldCreateCycle(uint memberId, uint candidateParentId)
+    {
+        var currentId = (uint?)candidateParentId;
+        while (currentId.HasValue)
+        {
+            if (currentId.Value == memberId) return true;
+            currentId = await _db.TeamMembers.Where(m => m.Id == currentId.Value).Select(m => m.ParentId).FirstOrDefaultAsync();
+        }
+        return false;
+    }
+
     private static TeamMemberDto Map(TeamMember m) => new()
     {
         Id = m.Id,
         Uuid = m.Uuid,
         FullName = m.FullName,
         PhotoFileId = m.PhotoFileId,
+        Email = m.Email,
         LinkedinUrl = m.LinkedinUrl,
         OrderNo = m.OrderNo,
+        ParentId = m.ParentId,
+        IsUnit = m.IsUnit,
         Status = m.Status.ToString(),
         Translations = m.Translations.Select(t => new TeamMemberTranslationDto
         {
