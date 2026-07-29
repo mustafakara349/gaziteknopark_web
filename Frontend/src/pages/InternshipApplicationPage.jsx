@@ -123,6 +123,34 @@ const initialForm = {
 
 const selectClass = `${inputClass} appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg%20xmlns%3d%22http%3a%2f%2fwww.w3.org%2f2000%2fsvg%22%20width%3d%2212%22%20height%3d%2212%22%20viewBox%3d%220%200%2012%2012%22%3e%3cpath%20fill%3d%22%236b7280%22%20d%3d%22M2%204l4%204%204-4%22%2f%3e%3c%2fsvg%3e')] bg-[length:12px] bg-[right_16px_center] bg-no-repeat pr-10`;
 
+function formatPhoneNumber(val) {
+  let digits = val.replace(/\D/g, "");
+  if (!digits) return "";
+
+  if (!digits.startsWith("05")) {
+    if (digits.startsWith("5")) {
+      digits = "0" + digits;
+    } else {
+      digits = "05" + digits;
+    }
+  }
+
+  digits = digits.slice(0, 11);
+
+  let formatted = digits.slice(0, 4);
+  if (digits.length > 4) {
+    formatted += " " + digits.slice(4, 7);
+  }
+  if (digits.length > 7) {
+    formatted += " " + digits.slice(7, 9);
+  }
+  if (digits.length > 9) {
+    formatted += " " + digits.slice(9, 11);
+  }
+
+  return formatted;
+}
+
 function validateFile(file, acceptExts, maxMB) {
   if (!file) return "Bu alan zorunludur.";
   const ext = "." + file.name.split(".").pop().toLowerCase();
@@ -162,6 +190,18 @@ export default function InternshipApplicationPage() {
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
   };
 
+  const updatePhone = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setForm((f) => ({ ...f, phone: formatted }));
+    if (errors.phone) setErrors((prev) => ({ ...prev, phone: null }));
+  };
+
+  const handlePhoneFocus = () => {
+    if (!form.phone) {
+      setForm((f) => ({ ...f, phone: "05" }));
+    }
+  };
+
   const updateFile = (key) => (e) => {
     const file = e.target.files?.[0] || null;
     setForm((f) => ({ ...f, [key]: file }));
@@ -177,10 +217,19 @@ export default function InternshipApplicationPage() {
     if (!form.email.trim()) errs.email = "E-posta alanı zorunludur.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Geçerli bir e-posta adresi giriniz.";
     if (!form.phone.trim()) errs.phone = "Telefon alanı zorunludur.";
+    else if (!/^(\+?90|0)?5\d{9}$/.test(form.phone.replace(/\D/g, ""))) errs.phone = "Geçerli bir telefon numarası giriniz.";
     if (!form.university.trim()) errs.university = "Üniversite alanı zorunludur.";
     if (!form.department.trim()) errs.department = "Bölüm alanı zorunludur.";
     if (!form.classYear) errs.classYear = "Sınıf seçimi zorunludur.";
-    if (!form.universityStartDate) errs.universityStartDate = "Başlangıç tarihi zorunludur.";
+    if (!form.universityStartDate) {
+      errs.universityStartDate = "Başlangıç tarihi zorunludur.";
+    } else {
+      const startYear = new Date(form.universityStartDate).getFullYear();
+      const currentYear = new Date().getFullYear();
+      if (startYear < 1970 || startYear > currentYear) {
+        errs.universityStartDate = `Geçerli bir başlangıç tarihi giriniz.`;
+      }
+    }
     if (!form.internshipTime) errs.internshipTime = "Staj zamanı seçimi zorunludur.";
     if (!form.internshipType) errs.internshipType = "Staj tipi seçimi zorunludur.";
     if (!form.aboutMe.trim()) errs.aboutMe = "Kendini tanıtma metni zorunludur.";
@@ -232,14 +281,18 @@ export default function InternshipApplicationPage() {
       payload.append("aboutMe", form.aboutMe);
       payload.append("photo", form.photo);
       payload.append("cv", form.cv);
+      payload.append("kvkkConsent", consentAydinlatma);
+      payload.append("explicitConsent", consentAcikRiza);
       payload.append("captchaToken", captchaToken);
 
       await submitInternshipApplication(payload);
       setStatus("success");
       setForm(initialForm);
-    } catch {
+    } catch (err) {
+      console.error("Staj başvurusu gönderim hatası:", err);
       setStatus("error");
-      setApiError("Başvurunuz gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+      const msg = err?.response?.data?.title || err?.response?.data || "Başvurunuz gönderilirken bir hata oluştu. Lütfen tekrar deneyin.";
+      setApiError(typeof msg === "string" ? msg : "Başvurunuz gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
       captchaRef.current?.reset();
       setCaptchaToken(null);
     }
@@ -291,9 +344,11 @@ export default function InternshipApplicationPage() {
             <button
               onClick={() => {
                 setStatus("idle");
+                setForm(initialForm);
                 setConsentAydinlatma(false);
                 setConsentAcikRiza(false);
                 setCaptchaToken(null);
+                captchaRef.current?.reset();
                 setErrors({});
               }}
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
@@ -358,8 +413,10 @@ export default function InternshipApplicationPage() {
                     <input
                       type="tel"
                       value={form.phone}
-                      onChange={updateText("phone")}
+                      onChange={updatePhone}
+                      onFocus={handlePhoneFocus}
                       placeholder="05XX XXX XX XX"
+                      maxLength={15}
                       className={`${inputClass} ${errors.phone ? "border-accent" : ""}`}
                     />
                   </FormField>

@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729134904_UpdateInternshipApplicationNames")]
+    partial class UpdateInternshipApplicationNames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1475,15 +1478,20 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("varchar(150)")
                         .HasColumnName("email");
 
-                    b.Property<DateTime?>("ExplicitConsentAt")
+                    b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime(6)")
-                        .HasColumnName("explicit_consent_at");
+                        .HasColumnName("end_date");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)")
                         .HasColumnName("first_name");
+
+                    b.Property<string>("IdentityNo")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("identity_no");
 
                     b.Property<int?>("InternshipTime")
                         .HasColumnType("int")
@@ -1492,10 +1500,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Property<int?>("InternshipType")
                         .HasColumnType("int")
                         .HasColumnName("internship_type");
-
-                    b.Property<DateTime?>("KvkkConsentAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("kvkk_consent_at");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -1512,6 +1516,10 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("photo_file_id");
 
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("start_date");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("longtext")
@@ -1523,7 +1531,7 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnName("university");
 
                     b.Property<DateTime?>("UniversityStartDate")
-                        .HasColumnType("date")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("university_start_date");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -3503,20 +3511,11 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("deleted_by");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("email");
-
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)")
                         .HasColumnName("full_name");
-
-                    b.Property<bool>("IsUnit")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_unit");
 
                     b.Property<string>("LinkedinUrl")
                         .HasMaxLength(255)
@@ -3526,10 +3525,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Property<uint>("OrderNo")
                         .HasColumnType("int unsigned")
                         .HasColumnName("order_no");
-
-                    b.Property<uint?>("ParentId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("parent_id");
 
                     b.Property<uint?>("PhotoFileId")
                         .HasColumnType("int unsigned")
@@ -3554,9 +3549,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_team_members");
-
-                    b.HasIndex("ParentId")
-                        .HasDatabaseName("ix_team_members_parent_id");
 
                     b.HasIndex("PhotoFileId")
                         .HasDatabaseName("ix_team_members_photo_file_id");
@@ -4581,18 +4573,10 @@ namespace GaziTeknoparkApi.Data.Migrations
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.TeamMember", b =>
                 {
-                    b.HasOne("GaziTeknoparkApi.Models.TeamMember", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_team_members_team_members_parent_id");
-
                     b.HasOne("GaziTeknoparkApi.Models.FileAsset", "PhotoFile")
                         .WithMany()
                         .HasForeignKey("PhotoFileId")
                         .HasConstraintName("fk_team_members_files_photo_file_id");
-
-                    b.Navigation("Parent");
 
                     b.Navigation("PhotoFile");
                 });
@@ -4792,8 +4776,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.TeamMember", b =>
                 {
-                    b.Navigation("Children");
-
                     b.Navigation("Translations");
                 });
 
