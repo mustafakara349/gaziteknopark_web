@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getInitiativeOffice, getSettings } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 
@@ -27,7 +26,6 @@ export default function InitiativeOfficePage() {
 
   return (
     <div>
-      <PageHeader title="Girişim Ofisi" subtitle="Fikir aşamasından ticarileşmeye kadar girişimcilerimizin yanındayız." />
       <PageSection>
         {loaded && !office ? (
           <EmptyState />

@@ -106,6 +106,44 @@ export function LinkedinIcon({ style, className = "h-4 w-4", ...props }) {
   );
 }
 
+export function MailIcon({ style, className = "h-4 w-4", ...props }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ width: 16, height: 16, ...style }}
+      className={className}
+      {...props}
+    >
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6 9-6" />
+    </svg>
+  );
+}
+
+export function UserIcon({ style, className = "h-10 w-10", ...props }) {
+  return (
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      style={{ width: 40, height: 40, ...style }}
+      className={className}
+      {...props}
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7v1H4v-1z" />
+    </svg>
+  );
+}
+
 export function socialIcon(name) {
   const key = name?.toLowerCase() ?? "";
   if (key.includes("facebook")) return FacebookIcon;

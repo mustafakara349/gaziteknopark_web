@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDocumentCategories, getDocuments } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 
@@ -24,7 +23,6 @@ export default function DocumentsPage() {
 
   return (
     <div>
-      <PageHeader title="Mevzuat ve Belgeler" subtitle="Teknoparkımıza ait yönetmelik, form ve resmi belgelere buradan ulaşabilirsiniz." />
       <PageSection>
         {categories.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-2">

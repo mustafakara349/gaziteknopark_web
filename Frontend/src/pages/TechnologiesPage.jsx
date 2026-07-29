@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFeaturedTechnologies } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 
@@ -14,7 +13,6 @@ export default function TechnologiesPage() {
 
   return (
     <div>
-      <PageHeader title="Öne Çıkan Teknolojiler" subtitle="Firmalarımızın geliştirdiği öne çıkan teknolojiler ve yenilikler." />
       <PageSection>
         {items.length === 0 ? (
           <EmptyState />

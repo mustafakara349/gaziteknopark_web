@@ -1,5 +1,6 @@
 import Header from "./Header";
 import Footer from "./Footer";
+import PageIntro from "../common/PageIntro";
 
 export default function Layout({ children }) {
   return (
@@ -8,7 +9,10 @@ export default function Layout({ children }) {
       <Header />
 
       {/* Sayfa İçeriği */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        <PageIntro />
+        {children}
+      </main>
 
       {/* Footer */}
       <Footer />

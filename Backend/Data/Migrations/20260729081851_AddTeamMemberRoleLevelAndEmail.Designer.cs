@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729081851_AddTeamMemberRoleLevelAndEmail")]
+    partial class AddTeamMemberRoleLevelAndEmail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3494,10 +3497,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("varchar(150)")
                         .HasColumnName("full_name");
 
-                    b.Property<bool>("IsUnit")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_unit");
-
                     b.Property<string>("LinkedinUrl")
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)")
@@ -3507,13 +3506,14 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("order_no");
 
-                    b.Property<uint?>("ParentId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("parent_id");
-
                     b.Property<uint?>("PhotoFileId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("photo_file_id");
+
+                    b.Property<string>("RoleLevel")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("role_level");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -3534,9 +3534,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_team_members");
-
-                    b.HasIndex("ParentId")
-                        .HasDatabaseName("ix_team_members_parent_id");
 
                     b.HasIndex("PhotoFileId")
                         .HasDatabaseName("ix_team_members_photo_file_id");
@@ -4554,18 +4551,10 @@ namespace GaziTeknoparkApi.Data.Migrations
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.TeamMember", b =>
                 {
-                    b.HasOne("GaziTeknoparkApi.Models.TeamMember", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_team_members_team_members_parent_id");
-
                     b.HasOne("GaziTeknoparkApi.Models.FileAsset", "PhotoFile")
                         .WithMany()
                         .HasForeignKey("PhotoFileId")
                         .HasConstraintName("fk_team_members_files_photo_file_id");
-
-                    b.Navigation("Parent");
 
                     b.Navigation("PhotoFile");
                 });
@@ -4765,8 +4754,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.TeamMember", b =>
                 {
-                    b.Navigation("Children");
-
                     b.Navigation("Translations");
                 });
 

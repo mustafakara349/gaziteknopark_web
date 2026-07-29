@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSuccessStories } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
-import PageHeader from "../components/common/PageHeader";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 
@@ -14,7 +13,6 @@ export default function SuccessStoriesPage() {
 
   return (
     <div>
-      <PageHeader title="Başarı Öyküleri" subtitle="Teknoparkımızdan çıkan ilham verici başarı hikayeleri." />
       <PageSection>
         {stories.length === 0 ? (
           <EmptyState />

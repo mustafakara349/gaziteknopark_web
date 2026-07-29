@@ -25,8 +25,11 @@ public class TeamMemberDto
     public Guid? Uuid { get; set; }
     public string FullName { get; set; } = string.Empty;
     public uint? PhotoFileId { get; set; }
+    public string? Email { get; set; }
     public string? LinkedinUrl { get; set; }
     public uint OrderNo { get; set; }
+    public uint? ParentId { get; set; }
+    public bool IsUnit { get; set; }
     public string Status { get; set; } = string.Empty;
     public List<TeamMemberTranslationDto> Translations { get; set; } = new();
 }
@@ -37,8 +40,12 @@ public class TeamMemberUpsertDto
     public string FullName { get; set; } = string.Empty;
     public uint? PhotoFileId { get; set; }
     [MaxLength(255)]
+    public string? Email { get; set; }
+    [MaxLength(255)]
     public string? LinkedinUrl { get; set; }
     public uint OrderNo { get; set; }
+    public uint? ParentId { get; set; }
+    public bool IsUnit { get; set; }
     [Required]
     public string Status { get; set; } = "published";
     [MinLength(1)]
