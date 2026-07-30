@@ -4,7 +4,6 @@ import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 import CompanyCard from "../components/companies/CompanyCard";
 import CompanyFilter from "../components/companies/CompanyFilter";
-import CompanyStatistics from "../components/companies/CompanyStatistics";
 
 export default function CompaniesPage() {
   const [search, setSearch] = useState("");
@@ -51,33 +50,21 @@ export default function CompaniesPage() {
     return matchesSearch && matchesSector && matchesActivity && matchesTech;
   });
 
-  const handleScrollToFilter = () => {
-    const filterEl = document.getElementById("filter-section");
-    if (filterEl) {
-      filterEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   return (
     <div className="relative min-h-screen pb-12">
-      {/* 2- Sayılarla Gazi Teknopark Alanı */}
-      <CompanyStatistics onScrollToFilter={handleScrollToFilter} />
-
       {/* 1- Arama ve Filtreleme Alanı */}
-      <div id="filter-section" className="scroll-mt-6">
-        <PageSection className="!py-6">
-          <CompanyFilter
-            search={search}
-            setSearch={setSearch}
-            selectedSector={selectedSector}
-            setSelectedSector={setSelectedSector}
-            selectedActivity={selectedActivity}
-            setSelectedActivity={setSelectedActivity}
-            selectedTech={selectedTech}
-            setSelectedTech={setSelectedTech}
-          />
-        </PageSection>
-      </div>
+      <PageSection className="!py-6">
+        <CompanyFilter
+          search={search}
+          setSearch={setSearch}
+          selectedSector={selectedSector}
+          setSelectedSector={setSelectedSector}
+          selectedActivity={selectedActivity}
+          setSelectedActivity={setSelectedActivity}
+          selectedTech={selectedTech}
+          setSelectedTech={setSelectedTech}
+        />
+      </PageSection>
 
 
       {/* 3- Firma Kartları Alanı */}

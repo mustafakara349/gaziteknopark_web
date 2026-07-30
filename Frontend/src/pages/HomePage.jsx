@@ -4,7 +4,6 @@ import StatsCounter from "../components/home/StatsCounter";
 import BiggArea from "../components/home/BiggArea";
 import SuccessStories from "../components/home/SuccessStories";
 import CompaniesSection from "../components/home/CompaniesSection";
-import CompanyCategoryChart from "../components/home/CompanyCategoryChart";
 import TechnologiesSection from "../components/home/TechnologiesSection";
 import NewsletterGallery from "../components/home/NewsletterGallery";
 
@@ -17,7 +16,6 @@ export default function HomePage() {
       <BiggArea />
       <SuccessStories limit={10} layout="slider" />
       <CompaniesSection />
-      <CompanyCategoryChart />
       <TechnologiesSection />
       <NewsletterGallery />
     </div>
