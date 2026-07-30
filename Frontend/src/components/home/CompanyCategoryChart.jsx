@@ -110,8 +110,9 @@ export default function CompanyCategoryChart() {
   };
 
   return (
-    <section ref={sectionRef} className="mx-auto mt-24 max-w-7xl px-4">
-      <SectionTitle title="Firma Kategorileri" />
+    <section ref={sectionRef} className="mt-24 w-full px-4">
+      <div className="mx-auto max-w-6xl">
+      <SectionTitle title="Firma Kategorileri" center />
 
       <div className="mt-8 rounded-3xl border border-gray-100 bg-white p-6 md:p-10 shadow-sm overflow-hidden transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)]">
         <div className="flex flex-col lg:flex-row items-start justify-between gap-10 w-full">
@@ -283,6 +284,7 @@ export default function CompanyCategoryChart() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </section>
   );

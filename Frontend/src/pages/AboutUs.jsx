@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getPageContent } from "../api/endpoints";
 import PageSection from "../components/common/PageSection";
+import SectionTitle from "../components/common/SectionTitle";
 import AboutContent from "../components/about/AboutContent";
+import CompanyStatistics from "../components/companies/CompanyStatistics";
+import CompanyCategoryChart from "../components/home/CompanyCategoryChart";
 
 const PAGE_SLUG = "hakkimizda";
 
 export default function AboutUs() {
   const [status, setStatus] = useState("loading"); // "loading" | "success" | "not-found" | "error"
   const [page, setPage] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -64,8 +69,17 @@ export default function AboutUs() {
   }
 
   return (
-    <PageSection className="pt-8 md:pt-14">
-      <AboutContent content={page.content} />
-    </PageSection>
+    <>
+      <PageSection className="pt-8 md:pt-14">
+        <AboutContent content={page.content} />
+      </PageSection>
+
+      <CompanyCategoryChart />
+
+      <PageSection className="pb-0">
+        <SectionTitle title="İstatistiksel Veriler" center />
+      </PageSection>
+      <CompanyStatistics onScrollToFilter={() => navigate("/firmalar")} />
+    </>
   );
 }
