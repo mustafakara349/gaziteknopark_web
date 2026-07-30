@@ -72,7 +72,7 @@ export default function CompaniesPage() {
         {filteredCompanies.length === 0 ? (
           <EmptyState message="Arama ve filtreleme kriterlerinize uygun firma bulunamadı." />
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {filteredCompanies.map((company) => (
               <CompanyCard
                 key={company.id}
