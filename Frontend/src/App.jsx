@@ -29,7 +29,7 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-main
+        <Route path="/kurumsal/hakkimizda" element={<AboutUs />} />
         <Route path="/kurumsal/yonetim-ve-ekip" element={<TeamMembersPage />} />
         <Route path="/kurumsal/mevzuat-ve-belgeler" element={<DocumentsPage />} />
         <Route path="/kurumsal/hizmetlerimiz" element={<ServicesPage />} />
