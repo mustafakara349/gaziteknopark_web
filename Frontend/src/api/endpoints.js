@@ -4,6 +4,7 @@ const get = (url, params) => apiClient.get(url, { params }).then((res) => res.da
 
 export const getSliders = () => get("/sliders");
 export const getNews = (params) => get("/news", params);
+export const getNewsById = (id, params) => get(`/news/${id}`, params);
 export const getNewsCategories = () => get("/news-categories");
 export const getEvents = () => get("/events");
 export const getStatistics = () => get("/statistics");

@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260730131246_RefactorNewsStructure")]
+    partial class RefactorNewsStructure
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2124,20 +2127,9 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("deleted_by");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("name");
-
                     b.Property<uint>("OrderNo")
                         .HasColumnType("int unsigned")
                         .HasColumnName("order_no");
-
-                    b.Property<string>("Slug")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("slug");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")

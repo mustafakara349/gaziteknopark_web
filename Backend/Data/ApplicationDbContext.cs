@@ -44,8 +44,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<NewsCategory> NewsCategories => Set<NewsCategory>();
     public DbSet<NewsCategoryTranslation> NewsCategoryTranslations => Set<NewsCategoryTranslation>();
-    public DbSet<NewsAnnouncement> NewsAnnouncements => Set<NewsAnnouncement>();
-    public DbSet<NewsAnnouncementTranslation> NewsAnnouncementTranslations => Set<NewsAnnouncementTranslation>();
+    public DbSet<News> News => Set<News>();
+    public DbSet<NewsTranslation> NewsTranslations => Set<NewsTranslation>();
 
     public DbSet<FeaturedTechnology> FeaturedTechnologies => Set<FeaturedTechnology>();
     public DbSet<FeaturedTechnologyTranslation> FeaturedTechnologyTranslations => Set<FeaturedTechnologyTranslation>();
@@ -134,8 +134,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<DocumentTranslation>().HasIndex(t => new { t.DocumentId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<ServiceTranslation>().HasIndex(t => new { t.ServiceId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<NewsCategoryTranslation>().HasIndex(t => new { t.NewsCategoryId, t.LanguageId }).IsUnique();
-        modelBuilder.Entity<NewsAnnouncementTranslation>().HasIndex(t => new { t.NewsId, t.LanguageId }).IsUnique();
-        modelBuilder.Entity<NewsAnnouncementTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<NewsTranslation>().HasIndex(t => new { t.NewsId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<NewsTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<News>().HasIndex(n => n.Slug).IsUnique();
         modelBuilder.Entity<FeaturedTechnologyTranslation>().HasIndex(t => new { t.FeaturedTechnologyId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<FeaturedTechnologyTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
         modelBuilder.Entity<MediaAlbumTranslation>().HasIndex(t => new { t.MediaAlbumId, t.LanguageId }).IsUnique();
