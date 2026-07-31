@@ -46,6 +46,128 @@ public class EventsController : ControllerBase
         return Ok(Map(ev));
     }
 
+    // Etkinlikler sayfası kart grid'i için: seçili dile göre tekil çeviri, sayfalama, arama ve sıralama destekli liste.
+    [HttpGet("list")]
+    public async Task<ActionResult<PagedResultDto<EventListDto>>> GetList(
+        [FromQuery] uint? languageId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 9,
+        [FromQuery] string? search = null,
+        [FromQuery] string sort = "date_asc")
+    {
+        var resolvedLanguageId = await ResolveLanguageIdAsync(languageId);
+        if (resolvedLanguageId is null)
+        {
+            return Ok(new PagedResultDto<EventListDto> { Page = page, PageSize = pageSize });
+        }
+
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize is < 1 or > 100 ? 9 : pageSize;
+
+        var query = _db.Events
+            .Where(e => e.DeletedAt == null && e.Status == ContentStatus.Published)
+            .Where(e => e.Translations.Any(t => t.LanguageId == resolvedLanguageId));
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(e => e.Translations.Any(t =>
+                t.LanguageId == resolvedLanguageId &&
+                (t.Title.Contains(search) ||
+                 (t.Description != null && t.Description.Contains(search)) ||
+                 (t.Location != null && t.Location.Contains(search)))));
+        }
+
+        query = sort == "date_desc"
+            ? query.OrderByDescending(e => e.StartDate).ThenByDescending(e => e.Id)
+            : query.OrderBy(e => e.StartDate).ThenBy(e => e.Id);
+
+        var totalItems = await query.CountAsync();
+
+        var pageEvents = await query
+            .Include(e => e.Translations)
+            .Include(e => e.CoverImageFile)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = pageEvents.Select(e =>
+        {
+            var t = e.Translations.First(tr => tr.LanguageId == resolvedLanguageId);
+            return new EventListDto
+            {
+                Id = e.Id,
+                Title = t.Title,
+                Slug = t.Slug,
+                Summary = TextHelper.ToPlainSummary(t.Description),
+                Location = t.Location,
+                CoverImageUrl = FileUrlHelper.ToAbsoluteUrl(Request, e.CoverImageFile),
+                StartDate = e.StartDate,
+                StartTime = e.StartDate?.ToString("HH:mm")
+            };
+        }).ToList();
+
+        return Ok(new PagedResultDto<EventListDto>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems,
+            TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
+        });
+    }
+
+    // Etkinlik detay sayfası için slug + dile göre tam içerik ve SEO alanları.
+    [HttpGet("slug/{slug}")]
+    public async Task<ActionResult<EventDetailDto>> GetBySlug(string slug, [FromQuery] uint? languageId)
+    {
+        var resolvedLanguageId = await ResolveLanguageIdAsync(languageId);
+        if (resolvedLanguageId is null) return NotFound();
+
+        var ev = await _db.Events
+            .Include(e => e.Translations)
+            .Include(e => e.CoverImageFile)
+            .Where(e => e.DeletedAt == null && e.Status == ContentStatus.Published)
+            .FirstOrDefaultAsync(e => e.Translations.Any(t => t.LanguageId == resolvedLanguageId && t.Slug == slug));
+
+        if (ev is null) return NotFound();
+
+        var translation = ev.Translations.First(t => t.LanguageId == resolvedLanguageId);
+        var ogImageFile = translation.OgImageFileId.HasValue
+            ? await _db.Files.FirstOrDefaultAsync(f => f.Id == translation.OgImageFileId)
+            : null;
+
+        return Ok(new EventDetailDto
+        {
+            Id = ev.Id,
+            Title = translation.Title,
+            Slug = translation.Slug,
+            Location = translation.Location,
+            Description = translation.Description,
+            CoverImageUrl = FileUrlHelper.ToAbsoluteUrl(Request, ev.CoverImageFile),
+            StartDate = ev.StartDate,
+            EndDate = ev.EndDate,
+            MetaTitle = translation.MetaTitle,
+            MetaDescription = translation.MetaDescription,
+            MetaKeywords = translation.MetaKeywords,
+            CanonicalUrl = translation.CanonicalUrl,
+            OgImageUrl = FileUrlHelper.ToAbsoluteUrl(Request, ogImageFile),
+            SearchKeywords = translation.SearchKeywords
+        });
+    }
+
+    // languageId query parametresi verilmezse veritabanındaki varsayılan (IsDefault) aktif dile düşer.
+    private async Task<uint?> ResolveLanguageIdAsync(uint? languageId)
+    {
+        if (languageId.HasValue) return languageId;
+
+        var defaultLanguage = await _db.Languages
+            .Where(l => l.IsActive)
+            .OrderByDescending(l => l.IsDefault)
+            .FirstOrDefaultAsync();
+
+        return defaultLanguage?.Id;
+    }
+
     [Authorize(Roles = "Admin,Editor")]
     [HttpPost]
     public async Task<ActionResult<EventDto>> Create(EventUpsertDto dto)
