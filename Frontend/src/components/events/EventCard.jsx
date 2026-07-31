@@ -1,20 +1,5 @@
 import { Link } from "react-router-dom";
-
-function ClockIcon({ className = "h-3.5 w-3.5" }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  );
-}
-
-function BigCalendarIcon({ className = "h-16 w-16" }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-  );
-}
+import { Clock, MapPin, ChevronRight, CalendarDays } from "lucide-react";
 
 function formatDateLabel(startDate) {
   if (!startDate) return null;
@@ -28,58 +13,62 @@ export default function EventCard({ event }) {
   const dateTimeLabel = [dateLabel, event.startTime].filter(Boolean).join(", ");
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      {/* Banner alanı - 1080x1080 kapak görselleriyle birebir uyumlu kare (1:1) alan; başlık/açıklama/tarih burada tekrar edilmez, tek kaynak alttaki beyaz gövdedir */}
+    <Link
+      to={`/etkinlikler/${event.slug}`}
+      className="group/card flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)]"
+    >
+      {/* Banner alanı - 1080x1080 kapak görselleriyle birebir uyumlu kare (1:1) alan korunuyor */}
       <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-gradient-to-br from-primary to-primary-light">
         {event.coverImageUrl ? (
           <img
             src={event.coverImageUrl}
             alt={event.title}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-110"
             onError={(e) => {
               e.currentTarget.style.display = "none";
             }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-white/15">
-            <BigCalendarIcon className="h-28 w-28" />
+            <CalendarDays className="h-28 w-28" strokeWidth={1.2} />
+          </div>
+        )}
+      </div>
+
+      {/* Kart gövdesi - haberler sayfasındaki kart tipografisi ve düzeniyle aynı */}
+      <div className="flex flex-1 flex-col p-8">
+        <div className="mb-3 flex items-center gap-1.5 text-[0.85rem] font-medium text-[#0066cc]">
+          <Clock className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+          <span className="truncate">{dateTimeLabel}</span>
+        </div>
+
+        <h3 className="mb-2 line-clamp-2 text-[1.3rem] font-bold leading-snug text-[#0B2558] transition-colors group-hover/card:text-[#0066cc]">
+          {event.title}
+        </h3>
+
+        {event.location && (
+          <div className="mb-4 flex items-center gap-1.5 text-sm text-gray-400">
+            <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+            <span className="truncate">{event.location}</span>
           </div>
         )}
 
-        {event.category && (
-          <span className="lowercase absolute left-4 top-4 inline-block w-fit rounded-full bg-black/40 px-2.5 py-1 text-[10px] font-bold tracking-wide text-white backdrop-blur-sm">
-            {event.category}
-          </span>
-        )}
-
-        <div className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-lg bg-black/30 text-[10px] font-extrabold tracking-tight text-white backdrop-blur-sm">
-          GTP
-        </div>
-      </div>
-
-      {/* Beyaz kart gövdesi - kartın tüm metin içeriği tek noktada burada */}
-      <div className="flex flex-1 flex-col p-5">
-        <h4 className="truncate text-sm font-bold text-ink">{event.title}</h4>
-
-        <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs text-gray-500 leading-relaxed">
+        <p className="mb-8 line-clamp-2 text-[0.9rem] leading-relaxed text-gray-500">
           {event.summary || ""}
         </p>
 
-        {dateTimeLabel && (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400">
-            <ClockIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{dateTimeLabel}</span>
-          </div>
-        )}
-
-        <Link
-          to={`/etkinlikler/${event.slug}`}
-          className="mt-auto inline-flex w-full items-center justify-center rounded-full border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
-        >
-          Detayına Git
-        </Link>
+        <div className="mt-auto">
+          <span className="group/btn inline-flex items-center text-[0.85rem] font-bold text-[#0B2558]">
+            Detayına Git
+            <ChevronRight
+              size={16}
+              strokeWidth={2.5}
+              className="ml-1 text-[#0066cc] transition-transform group-hover/card:translate-x-1"
+            />
+          </span>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }

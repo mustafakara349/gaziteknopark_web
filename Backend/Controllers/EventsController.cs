@@ -46,13 +46,15 @@ public class EventsController : ControllerBase
         return Ok(Map(ev));
     }
 
-    // Etkinlikler sayfası kart grid'i için: seçili dile göre tekil çeviri, sayfalama, arama ve sıralama destekli liste.
+    // Etkinlikler sayfası kart grid'i için: seçili dile göre tekil çeviri, sayfalama, arama,
+    // zaman durumu (yaklaşan/geçmiş) ve sıralama destekli liste.
     [HttpGet("list")]
     public async Task<ActionResult<PagedResultDto<EventListDto>>> GetList(
         [FromQuery] uint? languageId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 9,
         [FromQuery] string? search = null,
+        [FromQuery] string when = "upcoming",
         [FromQuery] string sort = "date_asc")
     {
         var resolvedLanguageId = await ResolveLanguageIdAsync(languageId);
@@ -75,6 +77,17 @@ public class EventsController : ControllerBase
                 (t.Title.Contains(search) ||
                  (t.Description != null && t.Description.Contains(search)) ||
                  (t.Location != null && t.Location.Contains(search)))));
+        }
+
+        if (when == "upcoming")
+        {
+            var now = DateTime.UtcNow;
+            query = query.Where(e => e.StartDate != null && e.StartDate >= now);
+        }
+        else if (when == "past")
+        {
+            var now = DateTime.UtcNow;
+            query = query.Where(e => e.StartDate != null && e.StartDate < now);
         }
 
         query = sort == "date_desc"
