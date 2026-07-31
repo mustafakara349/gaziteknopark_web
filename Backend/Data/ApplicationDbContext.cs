@@ -60,6 +60,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<InitiativeOffice> InitiativeOffices => Set<InitiativeOffice>();
     public DbSet<InitiativeOfficeTranslation> InitiativeOfficeTranslations => Set<InitiativeOfficeTranslation>();
+    public DbSet<InitiativeOfficeIncubator> InitiativeOfficeIncubators => Set<InitiativeOfficeIncubator>();
+    public DbSet<InitiativeOfficeIncubatorTranslation> InitiativeOfficeIncubatorTranslations => Set<InitiativeOfficeIncubatorTranslation>();
 
     public DbSet<Event> Events => Set<Event>();
     public DbSet<EventTranslation> EventTranslations => Set<EventTranslation>();
@@ -99,6 +101,12 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<PopupAnnouncement> PopupAnnouncements => Set<PopupAnnouncement>();
     public DbSet<PopupAnnouncementTranslation> PopupAnnouncementTranslations => Set<PopupAnnouncementTranslation>();
+
+    public DbSet<AnnouncementCategory> AnnouncementCategories => Set<AnnouncementCategory>();
+    public DbSet<AnnouncementCategoryTranslation> AnnouncementCategoryTranslations => Set<AnnouncementCategoryTranslation>();
+    public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<AnnouncementTranslation> AnnouncementTranslations => Set<AnnouncementTranslation>();
+    public DbSet<AnnouncementAttachment> AnnouncementAttachments => Set<AnnouncementAttachment>();
 
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<MenuItemTranslation> MenuItemTranslations => Set<MenuItemTranslation>();
@@ -162,5 +170,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<BannerTranslation>().HasIndex(t => new { t.BannerId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<PopupAnnouncementTranslation>().HasIndex(t => new { t.PopupAnnouncementId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<MenuItemTranslation>().HasIndex(t => new { t.MenuItemId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<AnnouncementCategoryTranslation>().HasIndex(t => new { t.AnnouncementCategoryId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<AnnouncementTranslation>().HasIndex(t => new { t.AnnouncementId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<AnnouncementTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<Announcement>().HasIndex(a => a.Slug).IsUnique();
+        modelBuilder.Entity<AnnouncementAttachment>().HasIndex(a => new { a.AnnouncementId, a.FileId }).IsUnique();
     }
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, Filter, Calendar, ArrowUpDown, RotateCcw, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, Calendar, ArrowUpDown, RotateCcw, X, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { getNews, getNewsCategories } from "../api/endpoints";
 
 export default function NewsListPage() {
@@ -23,7 +23,7 @@ export default function NewsListPage() {
   const [sort, setSort] = useState(initialSort);
 
   // Pagination States
-  const ITEMS_PER_PAGE = 15; // 3 columns x 5 rows
+  const ITEMS_PER_PAGE = 9;
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   const [loading, setLoading] = useState(true);
@@ -104,12 +104,12 @@ export default function NewsListPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16">
         <div>
 
-          {/* Dedicated Filter & Search & Sort Bar */}
-          <div className="bg-white rounded-[1.5rem] p-4 mb-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-wrap lg:flex-nowrap items-center gap-3">
+          {/* Integrated Search, Category, Date & Sort Filter Bar */}
+          <div className="bg-white rounded-2xl md:rounded-full p-3 mb-10 shadow-lg border border-gray-100 flex flex-col lg:flex-row items-center gap-3">
 
             {/* 1. Search Bar */}
-            <div className="relative flex-1 min-w-[220px] w-full">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="relative flex-1 w-full pl-3">
+              <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Haber başlığı, içerik veya yazar ara..."
@@ -118,7 +118,7 @@ export default function NewsListPage() {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-11 pr-10 py-3 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-transparent focus:border-[#0066cc] rounded-xl text-sm text-[#0B2558] placeholder-gray-400 focus:outline-none transition-all"
+                className="w-full pl-9 pr-8 py-3 bg-transparent border-none text-sm text-[#0B2558] placeholder-gray-400 focus:outline-none focus:ring-0 font-medium"
               />
               {search && (
                 <button
@@ -133,16 +133,20 @@ export default function NewsListPage() {
               )}
             </div>
 
+            <div className="h-8 w-px bg-gray-200 hidden lg:block" />
+
             {/* 2. Category Filter */}
-            <div className="relative w-full sm:w-auto flex-1 min-w-[180px]">
-              <Filter size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <div className="relative w-full lg:w-48 shrink-0">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <Filter size={16} />
+              </div>
               <select
                 value={selectedCategoryId}
                 onChange={(e) => {
                   setSelectedCategoryId(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-11 pr-8 py-3 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-transparent focus:border-[#0066cc] rounded-xl text-sm text-[#0B2558] font-medium appearance-none focus:outline-none cursor-pointer transition-all"
+                className="w-full pl-10 pr-9 py-3 bg-gray-50/80 hover:bg-gray-100/80 border border-gray-200 rounded-full text-sm font-medium text-[#0B2558] focus:outline-none focus:ring-2 focus:ring-[#0066cc]/20 focus:border-[#0066cc] appearance-none cursor-pointer transition-colors"
               >
                 <option value="">Tüm Kategoriler</option>
                 {categories.map((cat) => (
@@ -151,11 +155,16 @@ export default function NewsListPage() {
                   </option>
                 ))}
               </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
 
+            <div className="h-8 w-px bg-gray-200 hidden lg:block" />
+
             {/* 3. Specific Date Picker */}
-            <div className="relative w-full sm:w-auto flex-1 min-w-[160px]">
-              <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <div className="relative w-full lg:w-44 shrink-0">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <Calendar size={16} />
+              </div>
               <input
                 type="date"
                 value={selectedDate}
@@ -163,32 +172,37 @@ export default function NewsListPage() {
                   setSelectedDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-11 pr-3 py-3 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-transparent focus:border-[#0066cc] rounded-xl text-xs text-[#0B2558] font-medium focus:outline-none cursor-pointer transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50/80 hover:bg-gray-100/80 border border-gray-200 rounded-full text-sm font-medium text-[#0B2558] focus:outline-none focus:ring-2 focus:ring-[#0066cc]/20 focus:border-[#0066cc] cursor-pointer transition-colors"
                 title="Tarihe Göre Filtrele"
               />
             </div>
 
+            <div className="h-8 w-px bg-gray-200 hidden lg:block" />
+
             {/* 4. Sort Dropdown */}
-            <div className="relative w-full sm:w-auto flex-1 min-w-[180px]">
-              <ArrowUpDown size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <div className="relative w-full lg:w-52 shrink-0">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <ArrowUpDown size={16} />
+              </div>
               <select
                 value={sort}
                 onChange={(e) => {
                   setSort(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-11 pr-8 py-3 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-transparent focus:border-[#0066cc] rounded-xl text-sm text-[#0B2558] font-medium appearance-none focus:outline-none cursor-pointer transition-all"
+                className="w-full pl-10 pr-9 py-3 bg-gray-50/80 hover:bg-gray-100/80 border border-gray-200 rounded-full text-sm font-medium text-[#0B2558] focus:outline-none focus:ring-2 focus:ring-[#0066cc]/20 focus:border-[#0066cc] appearance-none cursor-pointer transition-colors"
               >
                 <option value="newest">En Yeniden En Eskiye</option>
                 <option value="oldest">En Eskiden En Yeniye</option>
               </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
 
             {/* 5. Clear Filters Button */}
             {hasActiveFilters && (
               <button
                 onClick={handleResetFilters}
-                className="w-full sm:w-auto px-4 py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-600 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors shrink-0"
+                className="w-full lg:w-auto px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full text-sm font-medium transition-colors flex items-center justify-center gap-1.5 shrink-0"
                 title="Filtreleri Temizle"
               >
                 <RotateCcw size={14} />
@@ -299,27 +313,53 @@ export default function NewsListPage() {
                       window.scrollTo({ top: 200, behavior: 'smooth' });
                     }}
                     disabled={currentPage === 1}
-                    className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 transition-all bg-white"
                     title="Önceki Sayfa"
                   >
-                    <ChevronLeft size={18} />
+                    <ChevronLeft size={16} />
                   </button>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => {
-                        setCurrentPage(pageNum);
-                        window.scrollTo({ top: 200, behavior: 'smooth' });
-                      }}
-                      className={`w-10 h-10 rounded-xl font-semibold text-sm transition-all ${currentPage === pageNum
-                        ? "bg-[#0066cc] text-white shadow-sm"
-                        : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-                        }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
+                  {(() => {
+                    const pages = [];
+                    if (totalPages <= 5) {
+                      for (let i = 1; i <= totalPages; i++) pages.push(i);
+                    } else {
+                      pages.push(1);
+                      if (currentPage > 3) pages.push("...");
+                      const start = Math.max(2, currentPage - 1);
+                      const end = Math.min(totalPages - 1, currentPage + 1);
+                      for (let i = start; i <= end; i++) {
+                        if (!pages.includes(i)) pages.push(i);
+                      }
+                      if (currentPage < totalPages - 2) pages.push("...");
+                      if (!pages.includes(totalPages)) pages.push(totalPages);
+                    }
+
+                    return pages.map((pageNum, idx) => {
+                      if (pageNum === "...") {
+                        return (
+                          <span key={`ellipsis-${idx}`} className="w-10 h-10 flex items-center justify-center text-gray-400 font-bold select-none">
+                            ...
+                          </span>
+                        );
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => {
+                            setCurrentPage(pageNum);
+                            window.scrollTo({ top: 200, behavior: 'smooth' });
+                          }}
+                          className={`w-10 h-10 rounded-full font-semibold text-sm transition-all ${currentPage === pageNum
+                            ? "bg-[#1E3A8A] text-white border-[#1E3A8A]"
+                            : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-300"
+                            }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    });
+                  })()}
 
                   <button
                     onClick={() => {
@@ -327,10 +367,10 @@ export default function NewsListPage() {
                       window.scrollTo({ top: 200, behavior: 'smooth' });
                     }}
                     disabled={currentPage === totalPages}
-                    className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 transition-all bg-white"
                     title="Sonraki Sayfa"
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               )}

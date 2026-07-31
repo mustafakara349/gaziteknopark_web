@@ -23,7 +23,12 @@ public class InitiativeOffice
     [ForeignKey(nameof(ImageFileId))]
     public FileAsset? ImageFile { get; set; }
 
+    [MaxLength(255)]
+    public string Title { get; set; } = string.Empty;
+    public string? Content { get; set; }
+
     public ICollection<InitiativeOfficeTranslation> Translations { get; set; } = new List<InitiativeOfficeTranslation>();
+    public ICollection<InitiativeOfficeIncubator> Incubators { get; set; } = new List<InitiativeOfficeIncubator>();
 }
 
 [Table("initiative_office_translations")]

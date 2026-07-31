@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731151725_AddCoreFieldsToInitiativeOffice")]
+    partial class AddCoreFieldsToInitiativeOffice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,81 +24,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.ActivityArea", b =>
-                {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    b.Property<uint?>("CreatedBy")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<uint?>("DeletedBy")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("deleted_by");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    b.Property<uint?>("UpdatedBy")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("Id")
-                        .HasName("pk_activity_areas");
-
-                    b.ToTable("activity_areas", (string)null);
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.ActivityAreaTranslation", b =>
-                {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
-
-                    b.Property<uint>("ActivityAreaId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("activity_area_id");
-
-                    b.Property<uint>("LanguageId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("language_id");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_activity_area_translations");
-
-                    b.HasIndex("LanguageId")
-                        .HasDatabaseName("ix_activity_area_translations_language_id");
-
-                    b.HasIndex("ActivityAreaId", "LanguageId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_activity_area_translations_activity_area_id_language_id");
-
-                    b.ToTable("activity_area_translations", (string)null);
-                });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.ActivityLog", b =>
                 {
@@ -698,25 +626,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasDatabaseName("ix_companies_logo_file_id");
 
                     b.ToTable("companies", (string)null);
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.CompanyActivityAreaPivot", b =>
-                {
-                    b.Property<uint>("CompanyId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("company_id");
-
-                    b.Property<uint>("ActivityAreaId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("activity_area_id");
-
-                    b.HasKey("CompanyId", "ActivityAreaId")
-                        .HasName("pk_company_activity_area_pivot");
-
-                    b.HasIndex("ActivityAreaId")
-                        .HasDatabaseName("ix_company_activity_area_pivot_activity_area_id");
-
-                    b.ToTable("company_activity_area_pivot", (string)null);
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.CompanyCategory", b =>
@@ -4352,27 +4261,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("GaziTeknoparkApi.Models.ActivityAreaTranslation", b =>
-                {
-                    b.HasOne("GaziTeknoparkApi.Models.ActivityArea", "ActivityArea")
-                        .WithMany("Translations")
-                        .HasForeignKey("ActivityAreaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_activity_area_translations_activity_areas_activity_area_id");
-
-                    b.HasOne("GaziTeknoparkApi.Models.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_activity_area_translations_languages_language_id");
-
-                    b.Navigation("ActivityArea");
-
-                    b.Navigation("Language");
-                });
-
             modelBuilder.Entity("GaziTeknoparkApi.Models.ActivityLog", b =>
                 {
                     b.HasOne("GaziTeknoparkApi.Models.User", "User")
@@ -4509,27 +4397,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasConstraintName("fk_companies_files_logo_file_id");
 
                     b.Navigation("LogoFile");
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.CompanyActivityAreaPivot", b =>
-                {
-                    b.HasOne("GaziTeknoparkApi.Models.ActivityArea", "ActivityArea")
-                        .WithMany("CompanyPivots")
-                        .HasForeignKey("ActivityAreaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_activity_area_pivot_activity_areas_activity_area_id");
-
-                    b.HasOne("GaziTeknoparkApi.Models.Company", "Company")
-                        .WithMany("ActivityAreaPivots")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_activity_area_pivot_companies_company_id");
-
-                    b.Navigation("ActivityArea");
-
-                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.CompanyCategoryPivot", b =>
@@ -5441,11 +5308,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("GaziTeknoparkApi.Models.ActivityArea", b =>
-                {
-                    b.Navigation("CompanyPivots");
-                });
-
             modelBuilder.Entity("GaziTeknoparkApi.Models.Announcement", b =>
                 {
                     b.Navigation("Attachments");
@@ -5456,7 +5318,6 @@ namespace GaziTeknoparkApi.Data.Migrations
             modelBuilder.Entity("GaziTeknoparkApi.Models.AnnouncementCategory", b =>
                 {
                     b.Navigation("Announcements");
-                });
 
                     b.Navigation("Translations");
                 });
@@ -5468,8 +5329,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.Company", b =>
                 {
-                    b.Navigation("ActivityAreaPivots");
-
                     b.Navigation("CategoryPivots");
 
                     b.Navigation("Translations");

@@ -29,6 +29,9 @@ export const getTeamMembers = () => get("/team-members");
 export const getServices = () => get("/services");
 export const getDocuments = (params) => get("/documents", params);
 export const getDocumentCategories = () => get("/document-categories");
+export const getAnnouncements = (params) => get("/announcements", params);
+export const getAnnouncementBySlug = (slug) => get(`/announcements/${slug}`);
+export const getAnnouncementCategories = () => get("/announcement-categories");
 
 export const submitContactMessage = (payload) => apiClient.post("/contact/messages", payload).then((res) => res.data);
 export const submitInternshipApplication = (payload) => apiClient.post("/internship-applications", payload).then((res) => res.data);
