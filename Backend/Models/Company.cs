@@ -38,6 +38,38 @@ public class CompanyCategoryTranslation
     public Language Language { get; set; } = null!;
 }
 
+[Table("activity_areas")]
+public class ActivityArea
+{
+    [Key]
+    public uint Id { get; set; }
+    public uint? CreatedBy { get; set; }
+    public uint? UpdatedBy { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public uint? DeletedBy { get; set; }
+    public DateTime? DeletedAt { get; set; }
+
+    public ICollection<ActivityAreaTranslation> Translations { get; set; } = new List<ActivityAreaTranslation>();
+    public ICollection<CompanyActivityAreaPivot> CompanyPivots { get; set; } = new List<CompanyActivityAreaPivot>();
+}
+
+[Table("activity_area_translations")]
+public class ActivityAreaTranslation
+{
+    [Key]
+    public uint Id { get; set; }
+    public uint ActivityAreaId { get; set; }
+    public uint LanguageId { get; set; }
+    [MaxLength(150)]
+    public string Name { get; set; } = string.Empty;
+
+    [ForeignKey(nameof(ActivityAreaId))]
+    public ActivityArea ActivityArea { get; set; } = null!;
+    [ForeignKey(nameof(LanguageId))]
+    public Language Language { get; set; } = null!;
+}
+
 [Table("companies")]
 public class Company
 {
@@ -73,6 +105,7 @@ public class Company
 
     public ICollection<CompanyTranslation> Translations { get; set; } = new List<CompanyTranslation>();
     public ICollection<CompanyCategoryPivot> CategoryPivots { get; set; } = new List<CompanyCategoryPivot>();
+    public ICollection<CompanyActivityAreaPivot> ActivityAreaPivots { get; set; } = new List<CompanyActivityAreaPivot>();
     public ICollection<User> Users { get; set; } = new List<User>();
 }
 
@@ -101,4 +134,16 @@ public class CompanyCategoryPivot
     public Company Company { get; set; } = null!;
     [ForeignKey(nameof(CategoryId))]
     public CompanyCategory Category { get; set; } = null!;
+}
+
+[Table("company_activity_area_pivot")]
+public class CompanyActivityAreaPivot
+{
+    public uint CompanyId { get; set; }
+    public uint ActivityAreaId { get; set; }
+
+    [ForeignKey(nameof(CompanyId))]
+    public Company Company { get; set; } = null!;
+    [ForeignKey(nameof(ActivityAreaId))]
+    public ActivityArea ActivityArea { get; set; } = null!;
 }

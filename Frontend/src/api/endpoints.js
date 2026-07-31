@@ -16,6 +16,7 @@ export const getSuccessStories = () => get("/success-stories");
 export const getLinkedInPosts = (params) => get("/linkedin-posts", params);
 export const getCompanies = (params) => get("/companies", params);
 export const getCompanyCategories = () => get("/company-categories");
+export const getActivityAreas = () => get("/activity-areas");
 export const getFeaturedTechnologies = () => get("/featured-technologies");
 export const getMediaAlbums = () => get("/media-albums");
 export const getMedia = (params) => get("/media", params);
