@@ -70,9 +70,6 @@ public class EventListDto
     public uint Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
-    // Event şemasında henüz ayrı bir kategori sütunu/ilişkisi yok; bu alan ileride
-    // bir kategori kaynağı eklendiğinde doldurulmak üzere null olarak taşınır.
-    public string? Category { get; set; }
     public string? Summary { get; set; }
     public string? Location { get; set; }
     public string? CoverImageUrl { get; set; }
@@ -86,7 +83,6 @@ public class EventDetailDto
     public uint Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
-    public string? Category { get; set; }
     public string? Location { get; set; }
     public string? Description { get; set; }
     public string? CoverImageUrl { get; set; }
