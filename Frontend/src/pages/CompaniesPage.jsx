@@ -1,16 +1,64 @@
-import { useState, useEffect } from "react";
-import { companiesData } from "../data/companies";
+import { useState, useEffect, useRef } from "react";
+import { getCompanies, getCompanyCategories, getActivityAreas } from "../api/endpoints";
+import { pickTranslation } from "../utils/i18n";
 import PageSection from "../components/common/PageSection";
 import EmptyState from "../components/common/EmptyState";
 import CompanyCard from "../components/companies/CompanyCard";
 import CompanyFilter from "../components/companies/CompanyFilter";
+import Pagination from "../components/common/Pagination";
+
+const ITEMS_PER_PAGE = 20;
+
+function toCompanyView(company, categories, activityAreas) {
+  const t = pickTranslation(company);
+  const categoryNames = company.categoryIds
+    .map((id) => categories.find((c) => c.id === id))
+    .filter(Boolean)
+    .map((c) => pickTranslation(c).name);
+  const activityAreaNames = company.activityAreaIds
+    .map((id) => activityAreas.find((a) => a.id === id))
+    .filter(Boolean)
+    .map((a) => pickTranslation(a).name);
+
+  return {
+    id: company.id,
+    logo: null,
+    companyName: company.name,
+    description: t.description,
+    sector: categoryNames[0],
+    categoryNames,
+    activityAreaNames,
+    tags: activityAreaNames,
+    website: company.website
+  };
+}
 
 export default function CompaniesPage() {
+  const [companies, setCompanies] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [activityAreas, setActivityAreas] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedSector, setSelectedSector] = useState("");
   const [selectedActivity, setSelectedActivity] = useState("");
-  const [selectedTech, setSelectedTech] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const gridRef = useRef(null);
+
+  useEffect(() => {
+    getCompanies().then(setCompanies).catch(() => setCompanies([]));
+    getCompanyCategories().then(setCategories).catch(() => setCategories([]));
+    getActivityAreas().then(setActivityAreas).catch(() => setActivityAreas([]));
+  }, []);
+
+  // Filtre değişince ilk sayfaya dön
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedSector, selectedActivity]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   // ESC tuşu ile modalı kapatma desteği
   useEffect(() => {
@@ -36,19 +84,26 @@ export default function CompaniesPage() {
   }, [selectedCompany]);
 
   // Filtreleme mantığı
-  const filteredCompanies = companiesData.filter((company) => {
-    const matchesSearch =
-      !search ||
-      company.companyName.toLowerCase().includes(search.toLowerCase()) ||
-      company.description.toLowerCase().includes(search.toLowerCase());
+  const filteredCompanies = companies
+    .filter((company) => {
+      const t = pickTranslation(company);
+      const matchesSearch =
+        !search ||
+        company.name.toLowerCase().includes(search.toLowerCase()) ||
+        (t.description ?? "").toLowerCase().includes(search.toLowerCase());
 
-    const matchesSector = !selectedSector || company.sector === selectedSector;
-    const matchesActivity =
-      !selectedActivity || company.activityArea === selectedActivity;
-    const matchesTech = !selectedTech || company.tags.includes(selectedTech);
+      const matchesSector = !selectedSector || company.categoryIds.includes(Number(selectedSector));
+      const matchesActivity = !selectedActivity || company.activityAreaIds.includes(Number(selectedActivity));
 
-    return matchesSearch && matchesSector && matchesActivity && matchesTech;
-  });
+      return matchesSearch && matchesSector && matchesActivity;
+    })
+    .map((company) => toCompanyView(company, categories, activityAreas));
+
+  const totalPages = Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE);
+  const paginatedCompanies = filteredCompanies.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="relative min-h-screen pb-12">
@@ -61,30 +116,33 @@ export default function CompaniesPage() {
           setSelectedSector={setSelectedSector}
           selectedActivity={selectedActivity}
           setSelectedActivity={setSelectedActivity}
-          selectedTech={selectedTech}
-          setSelectedTech={setSelectedTech}
+          categories={categories}
+          activityAreas={activityAreas}
         />
       </PageSection>
 
-
-      {/* 3- Firma Kartları Alanı */}
+      {/* 2- Firma Kartları Alanı */}
       <PageSection className="!py-4">
+        <div ref={gridRef} />
         {filteredCompanies.length === 0 ? (
           <EmptyState message="Arama ve filtreleme kriterlerinize uygun firma bulunamadı." />
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredCompanies.map((company) => (
-              <CompanyCard
-                key={company.id}
-                company={company}
-                onViewDetails={setSelectedCompany}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {paginatedCompanies.map((company) => (
+                <CompanyCard
+                  key={company.id}
+                  company={company}
+                  onViewDetails={setSelectedCompany}
+                />
+              ))}
+            </div>
+            <Pagination page={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+          </>
         )}
       </PageSection>
 
-      {/* 4- Firma Detay Modalı (Interactive Detail Modal) */}
+      {/* 3- Firma Detay Modalı */}
       {selectedCompany && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs transition-opacity duration-300"
@@ -135,43 +193,51 @@ export default function CompaniesPage() {
                   <h2 className="text-xl font-bold text-ink sm:text-2xl">
                     {selectedCompany.companyName}
                   </h2>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-primary/10 px-3 py-0.5 text-xs font-semibold text-primary">
-                      {selectedCompany.sector}
-                    </span>
-                    <span className="rounded-full bg-gray-100 px-3 py-0.5 text-xs font-medium text-gray-500">
-                      {selectedCompany.activityArea}
-                    </span>
-                  </div>
+                  {selectedCompany.categoryNames.length > 0 && (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {selectedCompany.categoryNames.map((name) => (
+                        <span
+                          key={name}
+                          className="rounded-full bg-primary/10 px-3 py-0.5 text-xs font-semibold text-primary"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Detaylı Açıklama */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                  Firma Hakkında
-                </h4>
-                <p className="text-sm leading-relaxed text-gray-600">
-                  {selectedCompany.description}
-                </p>
-              </div>
-
-              {/* Geliştirilen Teknolojiler */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                  Teknoloji ve Uzmanlık Alanları
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCompany.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-lg bg-surface border border-gray-100 px-3 py-1 text-xs font-semibold text-primary-light"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+              {selectedCompany.description && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                    Firma Hakkında
+                  </h4>
+                  <p className="text-sm leading-relaxed text-gray-600">
+                    {selectedCompany.description}
+                  </p>
                 </div>
-              </div>
+              )}
+
+              {/* Faaliyet Alanları */}
+              {selectedCompany.activityAreaNames.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                    Faaliyet Alanları
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCompany.activityAreaNames.map((name) => (
+                      <span
+                        key={name}
+                        className="rounded-lg bg-surface border border-gray-100 px-3 py-1 text-xs font-semibold text-primary-light"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Butonlar */}
               <div className="mt-4 flex flex-col sm:flex-row gap-3 pt-5 border-t border-gray-100">

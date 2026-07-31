@@ -22,6 +22,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<CompanyTranslation> CompanyTranslations => Set<CompanyTranslation>();
     public DbSet<CompanyCategoryPivot> CompanyCategoryPivots => Set<CompanyCategoryPivot>();
+    public DbSet<ActivityArea> ActivityAreas => Set<ActivityArea>();
+    public DbSet<ActivityAreaTranslation> ActivityAreaTranslations => Set<ActivityAreaTranslation>();
+    public DbSet<CompanyActivityAreaPivot> CompanyActivityAreaPivots => Set<CompanyActivityAreaPivot>();
 
     public DbSet<User> Users => Set<User>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
@@ -127,8 +130,10 @@ public class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<RolePermission>().HasKey(rp => new { rp.RoleId, rp.PermissionId });
         modelBuilder.Entity<CompanyCategoryPivot>().HasKey(cp => new { cp.CompanyId, cp.CategoryId });
+        modelBuilder.Entity<CompanyActivityAreaPivot>().HasKey(ap => new { ap.CompanyId, ap.ActivityAreaId });
 
         modelBuilder.Entity<CompanyCategoryTranslation>().HasIndex(t => new { t.CompanyCategoryId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<ActivityAreaTranslation>().HasIndex(t => new { t.ActivityAreaId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<CompanyTranslation>().HasIndex(t => new { t.CompanyId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<PageTranslation>().HasIndex(t => new { t.PageId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<PageTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();

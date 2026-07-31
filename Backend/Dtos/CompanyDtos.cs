@@ -32,6 +32,33 @@ public class CompanyCategoryUpsertDto
     public List<CompanyCategoryTranslationUpsertDto> Translations { get; set; } = new();
 }
 
+public class ActivityAreaTranslationDto
+{
+    public uint LanguageId { get; set; }
+    public string? LanguageCode { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+public class ActivityAreaTranslationUpsertDto
+{
+    [Required]
+    public uint LanguageId { get; set; }
+    [Required, MaxLength(150)]
+    public string Name { get; set; } = string.Empty;
+}
+
+public class ActivityAreaDto
+{
+    public uint Id { get; set; }
+    public List<ActivityAreaTranslationDto> Translations { get; set; } = new();
+}
+
+public class ActivityAreaUpsertDto
+{
+    [MinLength(1)]
+    public List<ActivityAreaTranslationUpsertDto> Translations { get; set; } = new();
+}
+
 public class CompanyTranslationDto
 {
     public uint LanguageId { get; set; }
@@ -61,6 +88,7 @@ public class CompanyDto
     public string? OfficeNo { get; set; }
     public string Status { get; set; } = string.Empty;
     public List<uint> CategoryIds { get; set; } = new();
+    public List<uint> ActivityAreaIds { get; set; } = new();
     public List<CompanyTranslationDto> Translations { get; set; } = new();
 }
 
@@ -84,5 +112,6 @@ public class CompanyUpsertDto
     [Required]
     public string Status { get; set; } = "aktif";
     public List<uint> CategoryIds { get; set; } = new();
+    public List<uint> ActivityAreaIds { get; set; } = new();
     public List<CompanyTranslationUpsertDto> Translations { get; set; } = new();
 }

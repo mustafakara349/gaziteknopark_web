@@ -11,6 +11,8 @@ import NewsListPage from "./pages/NewsListPage";
 import NewsDetailPage from "./pages/NewsDetailPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
+import EventsPage from "./pages/EventsPage";
+import EventDetailPage from "./pages/EventDetailPage";
 import MediaPage from "./pages/MediaPage";
 import CompaniesPage from "./pages/CompaniesPage";
 import SuccessStoriesPage from "./pages/SuccessStoriesPage";
@@ -41,7 +43,8 @@ function App() {
         <Route path="/duyurular" element={<AnnouncementsPage />} />
         <Route path="/duyurular/:slug" element={<AnnouncementDetailPage />} />
         <Route path="/kurumsal/duyurular" element={<AnnouncementsPage />} />
-        <Route path="/etkinlikler" element={<ComingSoonPage />} />
+        <Route path="/etkinlikler" element={<EventsPage />} />
+        <Route path="/etkinlikler/:slug" element={<EventDetailPage />} />
         <Route path="/medya" element={<MediaPage />} />
         <Route path="/firmalar" element={<CompaniesPage />} />
         <Route path="/basari-oykuleri" element={<SuccessStoriesPage />} />
