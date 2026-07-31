@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Calendar, User, Share2, X } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, User, Share2, X, Tag } from 'lucide-react';
 import { getNewsById } from '../api/endpoints';
 
 export default function NewsDetailPage() {
@@ -93,19 +93,23 @@ export default function NewsDetailPage() {
         </div>
 
         <div className="mb-10">
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="bg-[#E6F0FA] text-[#0066cc] px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-              {categoryName}
+          <div className="flex flex-wrap items-center gap-5 text-gray-500 text-sm font-medium mb-6">
+            <span className="flex items-center text-[#0066cc] font-semibold">
+              <Tag size={15} className="mr-1.5 opacity-80" /> {categoryName}
             </span>
-            <div className="flex items-center text-gray-500 text-sm font-medium gap-4 ml-2">
-              <span className="flex items-center"><Calendar size={15} className="mr-1.5 opacity-70" /> {formatDate(newsItem.publishedAt)}</span>
-              {newsItem.readTime > 0 && (
-                <span className="flex items-center"><Clock size={15} className="mr-1.5 opacity-70" /> {newsItem.readTime} dk okuma</span>
-              )}
-              {newsItem.authorName && (
-                <span className="flex items-center"><User size={15} className="mr-1.5 opacity-70" /> {newsItem.authorName}</span>
-              )}
-            </div>
+            <span className="flex items-center">
+              <Calendar size={15} className="mr-1.5 opacity-70" /> {formatDate(newsItem.publishedAt)}
+            </span>
+            {newsItem.readTime > 0 && (
+              <span className="flex items-center">
+                <Clock size={15} className="mr-1.5 opacity-70" /> {newsItem.readTime} dk okuma
+              </span>
+            )}
+            {newsItem.authorName && (
+              <span className="flex items-center">
+                <User size={15} className="mr-1.5 opacity-70" /> {newsItem.authorName}
+              </span>
+            )}
           </div>
 
           <h1 className="text-[2.2rem] md:text-[2.8rem] leading-[1.15] font-extrabold text-[#0B2558] mb-8 tracking-tight">

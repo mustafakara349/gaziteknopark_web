@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731120821_AddAnnouncementsSystem")]
+    partial class AddAnnouncementsSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1668,10 +1671,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
 
-                    b.Property<string>("Content")
-                        .HasColumnType("longtext")
-                        .HasColumnName("content");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
@@ -1697,12 +1696,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("status");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("title");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
@@ -1722,110 +1715,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasDatabaseName("ix_initiative_office_image_file_id");
 
                     b.ToTable("initiative_office", (string)null);
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOfficeIncubator", b =>
-                {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("longtext")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Features")
-                        .HasColumnType("longtext")
-                        .HasColumnName("features");
-
-                    b.Property<string>("Icon")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasColumnName("icon");
-
-                    b.Property<uint>("InitiativeOfficeId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("initiative_office_id");
-
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("int")
-                        .HasColumnName("order_index");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext")
-                        .HasColumnName("status");
-
-                    b.Property<string>("Subtitle")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("subtitle");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("title");
-
-                    b.HasKey("Id")
-                        .HasName("pk_initiative_office_incubators");
-
-                    b.HasIndex("InitiativeOfficeId")
-                        .HasDatabaseName("ix_initiative_office_incubators_initiative_office_id");
-
-                    b.ToTable("initiative_office_incubators", (string)null);
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOfficeIncubatorTranslation", b =>
-                {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("longtext")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Features")
-                        .HasColumnType("longtext")
-                        .HasColumnName("features");
-
-                    b.Property<uint>("IncubatorId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("incubator_id");
-
-                    b.Property<uint>("LanguageId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("language_id");
-
-                    b.Property<string>("Subtitle")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("subtitle");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("title");
-
-                    b.HasKey("Id")
-                        .HasName("pk_initiative_office_incubator_translations");
-
-                    b.HasIndex("IncubatorId")
-                        .HasDatabaseName("ix_initiative_office_incubator_translations_incubator_id");
-
-                    b.HasIndex("LanguageId")
-                        .HasDatabaseName("ix_initiative_office_incubator_translations_language_id");
-
-                    b.ToTable("initiative_office_incubator_translations", (string)null);
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOfficeTranslation", b =>
@@ -4667,39 +4556,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Navigation("ImageFile");
                 });
 
-            modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOfficeIncubator", b =>
-                {
-                    b.HasOne("GaziTeknoparkApi.Models.InitiativeOffice", "InitiativeOffice")
-                        .WithMany("Incubators")
-                        .HasForeignKey("InitiativeOfficeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_initiative_office_incubators_initiative_office_initiative_of");
-
-                    b.Navigation("InitiativeOffice");
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOfficeIncubatorTranslation", b =>
-                {
-                    b.HasOne("GaziTeknoparkApi.Models.InitiativeOfficeIncubator", "Incubator")
-                        .WithMany("Translations")
-                        .HasForeignKey("IncubatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_initiative_office_incubator_translations_initiative_office_i");
-
-                    b.HasOne("GaziTeknoparkApi.Models.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_initiative_office_incubator_translations_languages_language_");
-
-                    b.Navigation("Incubator");
-
-                    b.Navigation("Language");
-                });
-
             modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOfficeTranslation", b =>
                 {
                     b.HasOne("GaziTeknoparkApi.Models.InitiativeOffice", "InitiativeOffice")
@@ -5373,13 +5229,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOffice", b =>
-                {
-                    b.Navigation("Incubators");
-
-                    b.Navigation("Translations");
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.InitiativeOfficeIncubator", b =>
                 {
                     b.Navigation("Translations");
                 });

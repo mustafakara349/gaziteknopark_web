@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731151038_AddInitiativeOfficeIncubators")]
+    partial class AddInitiativeOfficeIncubators
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1668,10 +1671,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
 
-                    b.Property<string>("Content")
-                        .HasColumnType("longtext")
-                        .HasColumnName("content");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
@@ -1696,12 +1695,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("status");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")
@@ -1733,14 +1726,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasColumnType("longtext")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Features")
-                        .HasColumnType("longtext")
-                        .HasColumnName("features");
-
                     b.Property<string>("Icon")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1759,17 +1744,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("status");
-
-                    b.Property<string>("Subtitle")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("subtitle");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("title");
 
                     b.HasKey("Id")
                         .HasName("pk_initiative_office_incubators");

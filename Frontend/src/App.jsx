@@ -10,6 +10,7 @@ import ServicesPage from "./pages/ServicesPage";
 import NewsListPage from "./pages/NewsListPage";
 import NewsDetailPage from "./pages/NewsDetailPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
+import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
 import MediaPage from "./pages/MediaPage";
 import CompaniesPage from "./pages/CompaniesPage";
 import SuccessStoriesPage from "./pages/SuccessStoriesPage";
@@ -38,6 +39,7 @@ function App() {
         <Route path="/haberler" element={<NewsListPage />} />
         <Route path="/haberler/:id" element={<NewsDetailPage />} />
         <Route path="/duyurular" element={<AnnouncementsPage />} />
+        <Route path="/duyurular/:slug" element={<AnnouncementDetailPage />} />
         <Route path="/kurumsal/duyurular" element={<AnnouncementsPage />} />
         <Route path="/etkinlikler" element={<ComingSoonPage />} />
         <Route path="/medya" element={<MediaPage />} />
