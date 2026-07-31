@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731113116_AddActivityArea")]
+    partial class AddActivityArea
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2061,7 +2064,7 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.ToTable("menu_item_translations", (string)null);
                 });
 
-            modelBuilder.Entity("GaziTeknoparkApi.Models.News", b =>
+            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsAnnouncement", b =>
                 {
                     b.Property<uint>("Id")
                         .ValueGeneratedOnAdd()
@@ -2070,18 +2073,9 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
 
-                    b.Property<string>("AuthorName")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("author_name");
-
                     b.Property<uint?>("CategoryId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("category_id");
-
-                    b.Property<string>("Content")
-                        .HasColumnType("longtext")
-                        .HasColumnName("content");
 
                     b.Property<uint?>("CoverImageFileId")
                         .HasColumnType("int unsigned")
@@ -2103,25 +2097,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("deleted_by");
 
-                    b.Property<bool>("IsFeatured")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_featured");
-
-                    b.Property<string>("MetaDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("meta_description");
-
-                    b.Property<string>("MetaKeywords")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("meta_keywords");
-
-                    b.Property<string>("MetaTitle")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("meta_title");
-
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("published_at");
@@ -2130,31 +2105,10 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("published_by");
 
-                    b.Property<int?>("ReadTime")
-                        .HasColumnType("int")
-                        .HasColumnName("read_time");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("slug");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("status");
-
-                    b.Property<string>("Summary")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)")
-                        .HasColumnName("summary");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")
@@ -2168,122 +2122,23 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("uuid");
 
-                    b.Property<string>("VideoUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("video_url");
-
                     b.Property<uint>("Views")
                         .HasColumnType("int unsigned")
                         .HasColumnName("views");
 
                     b.HasKey("Id")
-                        .HasName("pk_news");
+                        .HasName("pk_news_announcements");
 
                     b.HasIndex("CategoryId")
-                        .HasDatabaseName("ix_news_category_id");
+                        .HasDatabaseName("ix_news_announcements_category_id");
 
                     b.HasIndex("CoverImageFileId")
-                        .HasDatabaseName("ix_news_cover_image_file_id");
+                        .HasDatabaseName("ix_news_announcements_cover_image_file_id");
 
-                    b.HasIndex("Slug")
-                        .IsUnique()
-                        .HasDatabaseName("ix_news_slug");
-
-                    b.ToTable("news", (string)null);
+                    b.ToTable("news_announcements", (string)null);
                 });
 
-            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsCategory", b =>
-                {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    b.Property<uint?>("CreatedBy")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<uint?>("DeletedBy")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("deleted_by");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("name");
-
-                    b.Property<uint>("OrderNo")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("order_no");
-
-                    b.Property<string>("Slug")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("slug");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    b.Property<uint?>("UpdatedBy")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("Id")
-                        .HasName("pk_news_categories");
-
-                    b.ToTable("news_categories", (string)null);
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsCategoryTranslation", b =>
-                {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
-
-                    b.Property<uint>("LanguageId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("language_id");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("name");
-
-                    b.Property<uint>("NewsCategoryId")
-                        .HasColumnType("int unsigned")
-                        .HasColumnName("news_category_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_news_category_translations");
-
-                    b.HasIndex("LanguageId")
-                        .HasDatabaseName("ix_news_category_translations_language_id");
-
-                    b.HasIndex("NewsCategoryId", "LanguageId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_news_category_translations_news_category_id_language_id");
-
-                    b.ToTable("news_category_translations", (string)null);
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsTranslation", b =>
+            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsAnnouncementTranslation", b =>
                 {
                     b.Property<uint>("Id")
                         .ValueGeneratedOnAdd()
@@ -2340,8 +2195,8 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnName("slug");
 
                     b.Property<string>("Summary")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
                         .HasColumnName("summary");
 
                     b.Property<string>("Title")
@@ -2351,23 +2206,102 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnName("title");
 
                     b.HasKey("Id")
-                        .HasName("pk_news_translations");
+                        .HasName("pk_news_announcement_translations");
 
                     b.HasIndex("LanguageId")
-                        .HasDatabaseName("ix_news_translations_language_id");
+                        .HasDatabaseName("ix_news_announcement_translations_language_id");
 
                     b.HasIndex("OgImageFileId")
-                        .HasDatabaseName("ix_news_translations_og_image_file_id");
+                        .HasDatabaseName("ix_news_announcement_translations_og_image_file_id");
 
                     b.HasIndex("NewsId", "LanguageId")
                         .IsUnique()
-                        .HasDatabaseName("ix_news_translations_news_id_language_id");
+                        .HasDatabaseName("ix_news_announcement_translations_news_id_language_id");
 
                     b.HasIndex("Slug", "LanguageId")
                         .IsUnique()
-                        .HasDatabaseName("ix_news_translations_slug_language_id");
+                        .HasDatabaseName("ix_news_announcement_translations_slug_language_id");
 
-                    b.ToTable("news_translations", (string)null);
+                    b.ToTable("news_announcement_translations", (string)null);
+                });
+
+            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsCategory", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<uint?>("CreatedBy")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<uint?>("DeletedBy")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<uint>("OrderNo")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("order_no");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<uint?>("UpdatedBy")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_news_categories");
+
+                    b.ToTable("news_categories", (string)null);
+                });
+
+            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsCategoryTranslation", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
+
+                    b.Property<uint>("LanguageId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("language_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("name");
+
+                    b.Property<uint>("NewsCategoryId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("news_category_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_news_category_translations");
+
+                    b.HasIndex("LanguageId")
+                        .HasDatabaseName("ix_news_category_translations_language_id");
+
+                    b.HasIndex("NewsCategoryId", "LanguageId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_news_category_translations_news_category_id_language_id");
+
+                    b.ToTable("news_category_translations", (string)null);
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.Page", b =>
@@ -4399,21 +4333,49 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Navigation("MenuItem");
                 });
 
-            modelBuilder.Entity("GaziTeknoparkApi.Models.News", b =>
+            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsAnnouncement", b =>
                 {
                     b.HasOne("GaziTeknoparkApi.Models.NewsCategory", "Category")
-                        .WithMany("NewsItems")
+                        .WithMany("NewsAnnouncements")
                         .HasForeignKey("CategoryId")
-                        .HasConstraintName("fk_news_news_categories_category_id");
+                        .HasConstraintName("fk_news_announcements_news_categories_category_id");
 
                     b.HasOne("GaziTeknoparkApi.Models.FileAsset", "CoverImageFile")
                         .WithMany()
                         .HasForeignKey("CoverImageFileId")
-                        .HasConstraintName("fk_news_files_cover_image_file_id");
+                        .HasConstraintName("fk_news_announcements_files_cover_image_file_id");
 
                     b.Navigation("Category");
 
                     b.Navigation("CoverImageFile");
+                });
+
+            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsAnnouncementTranslation", b =>
+                {
+                    b.HasOne("GaziTeknoparkApi.Models.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_news_announcement_translations_languages_language_id");
+
+                    b.HasOne("GaziTeknoparkApi.Models.NewsAnnouncement", "News")
+                        .WithMany("Translations")
+                        .HasForeignKey("NewsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_news_announcement_translations_news_announcements_news_id");
+
+                    b.HasOne("GaziTeknoparkApi.Models.FileAsset", "OgImageFile")
+                        .WithMany()
+                        .HasForeignKey("OgImageFileId")
+                        .HasConstraintName("fk_news_announcement_translations_files_og_image_file_id");
+
+                    b.Navigation("Language");
+
+                    b.Navigation("News");
+
+                    b.Navigation("OgImageFile");
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.NewsCategoryTranslation", b =>
@@ -4435,34 +4397,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Navigation("Language");
 
                     b.Navigation("NewsCategory");
-                });
-
-            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsTranslation", b =>
-                {
-                    b.HasOne("GaziTeknoparkApi.Models.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_news_translations_languages_language_id");
-
-                    b.HasOne("GaziTeknoparkApi.Models.News", "News")
-                        .WithMany("Translations")
-                        .HasForeignKey("NewsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_news_translations_news_news_id");
-
-                    b.HasOne("GaziTeknoparkApi.Models.FileAsset", "OgImageFile")
-                        .WithMany()
-                        .HasForeignKey("OgImageFileId")
-                        .HasConstraintName("fk_news_translations_files_og_image_file_id");
-
-                    b.Navigation("Language");
-
-                    b.Navigation("News");
-
-                    b.Navigation("OgImageFile");
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.Page", b =>
@@ -4933,14 +4867,14 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Navigation("Translations");
                 });
 
-            modelBuilder.Entity("GaziTeknoparkApi.Models.News", b =>
+            modelBuilder.Entity("GaziTeknoparkApi.Models.NewsAnnouncement", b =>
                 {
                     b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("GaziTeknoparkApi.Models.NewsCategory", b =>
                 {
-                    b.Navigation("NewsItems");
+                    b.Navigation("NewsAnnouncements");
 
                     b.Navigation("Translations");
                 });

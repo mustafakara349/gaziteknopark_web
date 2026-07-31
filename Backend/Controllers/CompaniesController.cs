@@ -90,6 +90,84 @@ public class CompanyCategoriesController : ControllerBase
 }
 
 [ApiController]
+[Route("api/activity-areas")]
+public class ActivityAreasController : ControllerBase
+{
+    private readonly ApplicationDbContext _db;
+
+    public ActivityAreasController(ApplicationDbContext db)
+    {
+        _db = db;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<ActivityAreaDto>>> GetAll()
+    {
+        var areas = await _db.ActivityAreas.Where(a => a.DeletedAt == null)
+            .Include(a => a.Translations).ThenInclude(t => t.Language).ToListAsync();
+        return Ok(areas.Select(Map).ToList());
+    }
+
+    [Authorize(Roles = "Admin,Editor")]
+    [HttpPost]
+    public async Task<ActionResult<ActivityAreaDto>> Create(ActivityAreaUpsertDto dto)
+    {
+        var area = new ActivityArea { CreatedAt = DateTime.UtcNow };
+        foreach (var t in dto.Translations)
+        {
+            area.Translations.Add(new ActivityAreaTranslation { LanguageId = t.LanguageId, Name = t.Name });
+        }
+
+        _db.ActivityAreas.Add(area);
+        await _db.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetAll), new { id = area.Id }, Map(area));
+    }
+
+    [Authorize(Roles = "Admin,Editor")]
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ActivityAreaDto>> Update(uint id, ActivityAreaUpsertDto dto)
+    {
+        var area = await _db.ActivityAreas.Include(a => a.Translations)
+            .FirstOrDefaultAsync(a => a.Id == id && a.DeletedAt == null);
+        if (area is null) return NotFound();
+
+        area.UpdatedAt = DateTime.UtcNow;
+
+        _db.ActivityAreaTranslations.RemoveRange(area.Translations);
+        area.Translations.Clear();
+        foreach (var t in dto.Translations)
+        {
+            area.Translations.Add(new ActivityAreaTranslation { LanguageId = t.LanguageId, Name = t.Name });
+        }
+
+        await _db.SaveChangesAsync();
+        return Ok(Map(area));
+    }
+
+    [Authorize(Roles = "Admin,Editor")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(uint id)
+    {
+        var area = await _db.ActivityAreas.FirstOrDefaultAsync(a => a.Id == id && a.DeletedAt == null);
+        if (area is null) return NotFound();
+        area.DeletedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    private static ActivityAreaDto Map(ActivityArea a) => new()
+    {
+        Id = a.Id,
+        Translations = a.Translations.Select(t => new ActivityAreaTranslationDto
+        {
+            LanguageId = t.LanguageId,
+            LanguageCode = t.Language?.Code,
+            Name = t.Name
+        }).ToList()
+    };
+}
+
+[ApiController]
 [Route("api/companies")]
 public class CompaniesController : ControllerBase
 {
@@ -103,7 +181,7 @@ public class CompaniesController : ControllerBase
     private bool IsPrivileged => User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Editor"));
 
     [HttpGet]
-    public async Task<ActionResult<List<CompanyDto>>> GetAll([FromQuery] uint? categoryId)
+    public async Task<ActionResult<List<CompanyDto>>> GetAll([FromQuery] uint? categoryId, [FromQuery] uint? activityAreaId)
     {
         var query = _db.Companies.Where(c => c.DeletedAt == null);
         if (!IsPrivileged)
@@ -114,10 +192,15 @@ public class CompaniesController : ControllerBase
         {
             query = query.Where(c => c.CategoryPivots.Any(p => p.CategoryId == categoryId));
         }
+        if (activityAreaId.HasValue)
+        {
+            query = query.Where(c => c.ActivityAreaPivots.Any(p => p.ActivityAreaId == activityAreaId));
+        }
 
         var companies = await query
             .Include(c => c.Translations).ThenInclude(t => t.Language)
             .Include(c => c.CategoryPivots)
+            .Include(c => c.ActivityAreaPivots)
             .OrderBy(c => c.Name)
             .ToListAsync();
 
@@ -130,6 +213,7 @@ public class CompaniesController : ControllerBase
         var company = await _db.Companies
             .Include(c => c.Translations).ThenInclude(t => t.Language)
             .Include(c => c.CategoryPivots)
+            .Include(c => c.ActivityAreaPivots)
             .FirstOrDefaultAsync(c => c.Id == id && c.DeletedAt == null);
 
         if (company is null) return NotFound();
@@ -171,6 +255,10 @@ public class CompaniesController : ControllerBase
         {
             company.CategoryPivots.Add(new CompanyCategoryPivot { CategoryId = categoryId });
         }
+        foreach (var activityAreaId in dto.ActivityAreaIds.Distinct())
+        {
+            company.ActivityAreaPivots.Add(new CompanyActivityAreaPivot { ActivityAreaId = activityAreaId });
+        }
 
         _db.Companies.Add(company);
         await _db.SaveChangesAsync();
@@ -189,6 +277,7 @@ public class CompaniesController : ControllerBase
         var company = await _db.Companies
             .Include(c => c.Translations)
             .Include(c => c.CategoryPivots)
+            .Include(c => c.ActivityAreaPivots)
             .FirstOrDefaultAsync(c => c.Id == id && c.DeletedAt == null);
         if (company is null) return NotFound();
 
@@ -216,6 +305,13 @@ public class CompaniesController : ControllerBase
         foreach (var categoryId in dto.CategoryIds.Distinct())
         {
             company.CategoryPivots.Add(new CompanyCategoryPivot { CategoryId = categoryId });
+        }
+
+        _db.CompanyActivityAreaPivots.RemoveRange(company.ActivityAreaPivots);
+        company.ActivityAreaPivots.Clear();
+        foreach (var activityAreaId in dto.ActivityAreaIds.Distinct())
+        {
+            company.ActivityAreaPivots.Add(new CompanyActivityAreaPivot { ActivityAreaId = activityAreaId });
         }
 
         await _db.SaveChangesAsync();
@@ -248,6 +344,7 @@ public class CompaniesController : ControllerBase
         OfficeNo = c.OfficeNo,
         Status = c.Status.ToString(),
         CategoryIds = c.CategoryPivots.Select(p => p.CategoryId).ToList(),
+        ActivityAreaIds = c.ActivityAreaPivots.Select(p => p.ActivityAreaId).ToList(),
         Translations = c.Translations.Select(t => new CompanyTranslationDto
         {
             LanguageId = t.LanguageId,
