@@ -130,6 +130,7 @@ public class NewsController : ControllerBase
         [FromQuery] int? pageSize)
     {
         var query = _db.News
+            .AsNoTracking()
             .Include(n => n.Category)
             .Include(n => n.Translations).ThenInclude(t => t.Language)
             .Where(n => n.DeletedAt == null);
@@ -149,7 +150,13 @@ public class NewsController : ControllerBase
                 EF.Functions.Like(n.Title.ToLower(), $"%{term}%") ||
                 (n.Summary != null && EF.Functions.Like(n.Summary.ToLower(), $"%{term}%")) ||
                 (n.Content != null && EF.Functions.Like(n.Content.ToLower(), $"%{term}%")) ||
-                (n.AuthorName != null && EF.Functions.Like(n.AuthorName.ToLower(), $"%{term}%"))
+                (n.AuthorName != null && EF.Functions.Like(n.AuthorName.ToLower(), $"%{term}%")) ||
+                n.Translations.Any(t =>
+                    EF.Functions.Like(t.Title.ToLower(), $"%{term}%") ||
+                    (t.Summary != null && EF.Functions.Like(t.Summary.ToLower(), $"%{term}%")) ||
+                    (t.Content != null && EF.Functions.Like(t.Content.ToLower(), $"%{term}%")) ||
+                    (t.SearchKeywords != null && EF.Functions.Like(t.SearchKeywords.ToLower(), $"%{term}%"))
+                )
             );
         }
         if (date.HasValue)
@@ -176,12 +183,17 @@ public class NewsController : ControllerBase
         }
 
         var totalCount = await query.CountAsync();
-        Response.Headers["X-Total-Count"] = totalCount.ToString();
 
-        if (page.HasValue && page.Value > 0 && pageSize.HasValue && pageSize.Value > 0)
-        {
-            query = query.Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value);
-        }
+        var validPage = page.HasValue && page.Value > 0 ? page.Value : 1;
+        var validPageSize = pageSize.HasValue && pageSize.Value > 0 ? Math.Min(pageSize.Value, 100) : 10;
+        var totalPages = (int)Math.Ceiling((double)totalCount / validPageSize);
+
+        Response.Headers["X-Total-Count"] = totalCount.ToString();
+        Response.Headers["X-Total-Pages"] = totalPages.ToString();
+        Response.Headers["X-Current-Page"] = validPage.ToString();
+        Response.Headers["X-Page-Size"] = validPageSize.ToString();
+
+        query = query.Skip((validPage - 1) * validPageSize).Take(validPageSize);
 
         var newsList = await query.ToListAsync();
 

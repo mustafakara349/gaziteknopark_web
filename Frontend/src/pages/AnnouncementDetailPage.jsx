@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Share2, Mail, Paperclip, Download, Tag } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { getAnnouncementBySlug } from '../api/endpoints';
 
 export default function AnnouncementDetailPage() {
@@ -159,7 +160,10 @@ export default function AnnouncementDetailPage() {
           {hasContent && (
             <div
               className="prose prose-lg max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc] prose-li:marker:text-[#0066cc] leading-relaxed mb-10"
-              dangerouslySetInnerHTML={{ __html: announcement.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(announcement.content, {
+                USE_PROFILES: { html: true },
+                ADD_ATTR: ['target', 'rel'],
+              }) }}
             />
           )}
 

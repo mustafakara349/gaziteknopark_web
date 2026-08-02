@@ -3,7 +3,17 @@ import apiClient from "./client";
 const get = (url, params) => apiClient.get(url, { params }).then((res) => res.data);
 
 export const getSliders = () => get("/sliders");
-export const getNews = (params) => get("/news", params);
+export const getNews = (params) =>
+  apiClient.get("/news", { params }).then((res) => {
+    const totalCount = parseInt(res.headers['x-total-count'] || res.headers['X-Total-Count'] || '0', 10);
+    const pageSize = params?.pageSize || 9;
+    const totalPages = parseInt(res.headers['x-total-pages'] || res.headers['X-Total-Pages'] || '0', 10) || Math.ceil(totalCount / pageSize);
+    return {
+      data: res.data,
+      totalCount,
+      totalPages,
+    };
+  });
 export const getNewsById = (id, params) => get(`/news/${id}`, params);
 export const getNewsCategories = () => get("/news-categories");
 export const getEvents = () => get("/events");

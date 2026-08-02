@@ -29,6 +29,7 @@ public class InternshipApplication
     public DateTime? UniversityStartDate { get; set; }
     public uint? CvFileId { get; set; }
     public uint? PhotoFileId { get; set; }
+    [MaxLength(2000)]
     public string? CoverLetter { get; set; }
     public InternshipTime? InternshipTime { get; set; }
     public InternshipType? InternshipType { get; set; }

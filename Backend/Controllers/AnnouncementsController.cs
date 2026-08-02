@@ -126,10 +126,12 @@ public class AnnouncementsController : ControllerBase
         [FromQuery] DateTime? date,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
+        [FromQuery] bool? isPinned,
         [FromQuery] int? page,
         [FromQuery] int? pageSize)
     {
         var query = _db.Announcements
+            .AsNoTracking()
             .Include(a => a.Category)
             .Include(a => a.Translations).ThenInclude(t => t.Language)
             .Where(a => a.DeletedAt == null);
@@ -137,6 +139,10 @@ public class AnnouncementsController : ControllerBase
         if (!IsPrivileged)
         {
             query = query.Where(a => a.Status == ContentStatus.Published);
+        }
+        if (isPinned.HasValue)
+        {
+            query = query.Where(a => a.IsPinned == isPinned.Value);
         }
         if (categoryId.HasValue && categoryId.Value > 0)
         {

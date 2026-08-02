@@ -25,6 +25,7 @@ export default function NewsListPage() {
   // Pagination States
   const ITEMS_PER_PAGE = 9;
   const [currentPage, setCurrentPage] = useState(initialPage);
+  const [totalPages, setTotalPages] = useState(0);
 
   const [loading, setLoading] = useState(true);
 
@@ -57,7 +58,10 @@ export default function NewsListPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(true);
-      const params = {};
+      const params = {
+        page: currentPage,
+        pageSize: ITEMS_PER_PAGE,
+      };
       if (selectedCategoryId) params.categoryId = selectedCategoryId;
       if (search.trim()) params.search = search.trim();
       if (selectedDate) params.date = selectedDate;
@@ -65,15 +69,15 @@ export default function NewsListPage() {
 
       getNews(params)
         .then((res) => {
-          const list = Array.isArray(res) ? res : (res?.data || []);
-          setNewsData(list);
+          setNewsData(res?.data || []);
+          setTotalPages(res?.totalPages || 0);
         })
         .catch((err) => console.error("Haberler çekilirken hata oluştu:", err))
         .finally(() => setLoading(false));
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [search, selectedCategoryId, selectedDate, sort]);
+  }, [search, selectedCategoryId, selectedDate, sort, currentPage]);
 
   const hasActiveFilters = search.trim() !== "" || selectedCategoryId !== "" || selectedDate !== "" || sort !== "newest";
 
@@ -91,12 +95,6 @@ export default function NewsListPage() {
     return new Date(dateString).toLocaleDateString('tr-TR', options);
   };
 
-  // Pagination calculation
-  const totalPages = Math.ceil(newsData.length / ITEMS_PER_PAGE);
-  const paginatedNews = newsData.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="w-full bg-[#fcfcfd] min-h-screen">
@@ -259,7 +257,7 @@ export default function NewsListPage() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {paginatedNews.map((item) => {
+                {newsData.map((item) => {
                   const title = item.title || item.translations?.[0]?.title || "Başlıksız Haber";
                   const summary = item.summary || item.translations?.[0]?.summary || "";
 
