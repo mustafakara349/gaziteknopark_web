@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Clock, Calendar, User, Share2, X, Tag } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { getNewsById } from '../api/endpoints';
 
 export default function NewsDetailPage() {
@@ -131,7 +132,7 @@ export default function NewsDetailPage() {
         <div className="mb-12">
           <div
             className="prose prose-lg max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc]"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
           />
         </div>
 

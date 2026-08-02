@@ -121,6 +121,8 @@ public class ApplicationDbContext : DbContext
         configurationBuilder.Properties<CompanyStatus>().HaveConversion<LowerCaseEnumConverter<CompanyStatus>>();
         configurationBuilder.Properties<MediaType>().HaveConversion<LowerCaseEnumConverter<MediaType>>();
         configurationBuilder.Properties<ApplicationStatus>().HaveConversion<LowerCaseEnumConverter<ApplicationStatus>>();
+        configurationBuilder.Properties<InternshipTime>().HaveConversion<LowerCaseEnumConverter<InternshipTime>>();
+        configurationBuilder.Properties<InternshipType>().HaveConversion<LowerCaseEnumConverter<InternshipType>>();
         configurationBuilder.Properties<SettingType>().HaveConversion<LowerCaseEnumConverter<SettingType>>();
         configurationBuilder.Properties<MenuLocation>().HaveConversion<LowerCaseEnumConverter<MenuLocation>>();
         configurationBuilder.Properties<UserType>().HaveConversion<UserTypeConverter>();

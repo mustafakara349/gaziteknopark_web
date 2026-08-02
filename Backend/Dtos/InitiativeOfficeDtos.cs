@@ -73,6 +73,7 @@ public class InitiativeOfficeIncubatorTranslationUpsertDto
 
 public class InitiativeOfficeIncubatorUpsertDto
 {
+    public uint? Id { get; set; }
     [MaxLength(50)]
     public string Icon { get; set; } = string.Empty;
     public int OrderIndex { get; set; }

@@ -25,7 +25,7 @@ public class InitiativeOfficeController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<InitiativeOfficeDto>>> GetAll()
     {
-        var query = _db.InitiativeOffices.Where(i => i.DeletedAt == null);
+        var query = _db.InitiativeOffices.AsNoTracking().Where(i => i.DeletedAt == null);
         if (!IsPrivileged)
         {
             query = query.Where(i => i.Status == ContentStatus.Published);
@@ -43,6 +43,7 @@ public class InitiativeOfficeController : ControllerBase
     public async Task<ActionResult<InitiativeOfficeDto>> GetById(uint id)
     {
         var item = await _db.InitiativeOffices
+            .AsNoTracking()
             .Include(i => i.ImageFile)
             .Include(i => i.Translations).ThenInclude(t => t.Language)
             .Include(i => i.Incubators.Where(x => IsPrivileged || x.Status == ContentStatus.Published).OrderBy(x => x.OrderIndex)).ThenInclude(x => x.Translations).ThenInclude(t => t.Language)
@@ -140,51 +141,116 @@ public class InitiativeOfficeController : ControllerBase
         item.Content = dto.Content;
         item.UpdatedAt = DateTime.UtcNow;
 
-        _db.InitiativeOfficeTranslations.RemoveRange(item.Translations);
-        item.Translations.Clear();
+        // --- Çeviri Upsert (LanguageId ile eşleştir) ---
+        var incomingTransLangIds = dto.Translations.Select(t => t.LanguageId).ToHashSet();
+        var removedTranslations = item.Translations.Where(t => !incomingTransLangIds.Contains(t.LanguageId)).ToList();
+        _db.InitiativeOfficeTranslations.RemoveRange(removedTranslations);
+
         foreach (var t in dto.Translations)
         {
-            item.Translations.Add(new InitiativeOfficeTranslation
+            var existing = item.Translations.FirstOrDefault(x => x.LanguageId == t.LanguageId);
+            if (existing is not null)
             {
-                LanguageId = t.LanguageId,
-                Title = t.Title,
-                Content = t.Content,
-                MetaTitle = t.MetaTitle,
-                MetaDescription = t.MetaDescription,
-                MetaKeywords = t.MetaKeywords,
-                CanonicalUrl = t.CanonicalUrl,
-                OgImageFileId = t.OgImageFileId,
-                SearchKeywords = t.SearchKeywords
-            });
-        }
-        
-        _db.InitiativeOfficeIncubators.RemoveRange(item.Incubators);
-        item.Incubators.Clear();
-        foreach (var inc in dto.Incubators)
-        {
-            if (!EnumParsing.TryParse<ContentStatus>(inc.Status, out var incStatus)) incStatus = ContentStatus.Published;
-            var incubator = new InitiativeOfficeIncubator
+                existing.Title = t.Title;
+                existing.Content = t.Content;
+                existing.MetaTitle = t.MetaTitle;
+                existing.MetaDescription = t.MetaDescription;
+                existing.MetaKeywords = t.MetaKeywords;
+                existing.CanonicalUrl = t.CanonicalUrl;
+                existing.OgImageFileId = t.OgImageFileId;
+                existing.SearchKeywords = t.SearchKeywords;
+            }
+            else
             {
-                Icon = inc.Icon,
-                OrderIndex = inc.OrderIndex,
-                Status = incStatus,
-                Title = inc.Title,
-                Subtitle = inc.Subtitle,
-                Description = inc.Description,
-                Features = inc.Features
-            };
-            foreach (var t in inc.Translations)
-            {
-                incubator.Translations.Add(new InitiativeOfficeIncubatorTranslation
+                item.Translations.Add(new InitiativeOfficeTranslation
                 {
                     LanguageId = t.LanguageId,
                     Title = t.Title,
-                    Subtitle = t.Subtitle,
-                    Description = t.Description,
-                    Features = t.Features
+                    Content = t.Content,
+                    MetaTitle = t.MetaTitle,
+                    MetaDescription = t.MetaDescription,
+                    MetaKeywords = t.MetaKeywords,
+                    CanonicalUrl = t.CanonicalUrl,
+                    OgImageFileId = t.OgImageFileId,
+                    SearchKeywords = t.SearchKeywords
                 });
             }
-            item.Incubators.Add(incubator);
+        }
+
+        // --- Kuluçka Upsert (Id ile eşleştir) ---
+        var incomingIncIds = dto.Incubators.Where(i => i.Id.HasValue).Select(i => i.Id!.Value).ToHashSet();
+        var removedIncubators = item.Incubators.Where(i => !incomingIncIds.Contains(i.Id)).ToList();
+        _db.InitiativeOfficeIncubators.RemoveRange(removedIncubators);
+
+        foreach (var inc in dto.Incubators)
+        {
+            if (!EnumParsing.TryParse<ContentStatus>(inc.Status, out var incStatus)) incStatus = ContentStatus.Published;
+
+            InitiativeOfficeIncubator incubator;
+            if (inc.Id.HasValue && item.Incubators.FirstOrDefault(x => x.Id == inc.Id.Value) is { } existingInc)
+            {
+                incubator = existingInc;
+                incubator.Icon = inc.Icon;
+                incubator.OrderIndex = inc.OrderIndex;
+                incubator.Status = incStatus;
+                incubator.Title = inc.Title;
+                incubator.Subtitle = inc.Subtitle;
+                incubator.Description = inc.Description;
+                incubator.Features = inc.Features;
+
+                // Kuluçka çevirileri upsert (LanguageId ile eşleştir)
+                var incTransLangIds = inc.Translations.Select(t => t.LanguageId).ToHashSet();
+                var removedIncTrans = incubator.Translations.Where(t => !incTransLangIds.Contains(t.LanguageId)).ToList();
+                _db.InitiativeOfficeIncubatorTranslations.RemoveRange(removedIncTrans);
+
+                foreach (var t in inc.Translations)
+                {
+                    var existingT = incubator.Translations.FirstOrDefault(x => x.LanguageId == t.LanguageId);
+                    if (existingT is not null)
+                    {
+                        existingT.Title = t.Title;
+                        existingT.Subtitle = t.Subtitle;
+                        existingT.Description = t.Description;
+                        existingT.Features = t.Features;
+                    }
+                    else
+                    {
+                        incubator.Translations.Add(new InitiativeOfficeIncubatorTranslation
+                        {
+                            LanguageId = t.LanguageId,
+                            Title = t.Title,
+                            Subtitle = t.Subtitle,
+                            Description = t.Description,
+                            Features = t.Features
+                        });
+                    }
+                }
+            }
+            else
+            {
+                incubator = new InitiativeOfficeIncubator
+                {
+                    Icon = inc.Icon,
+                    OrderIndex = inc.OrderIndex,
+                    Status = incStatus,
+                    Title = inc.Title,
+                    Subtitle = inc.Subtitle,
+                    Description = inc.Description,
+                    Features = inc.Features
+                };
+                foreach (var t in inc.Translations)
+                {
+                    incubator.Translations.Add(new InitiativeOfficeIncubatorTranslation
+                    {
+                        LanguageId = t.LanguageId,
+                        Title = t.Title,
+                        Subtitle = t.Subtitle,
+                        Description = t.Description,
+                        Features = t.Features
+                    });
+                }
+                item.Incubators.Add(incubator);
+            }
         }
 
         await _db.SaveChangesAsync();

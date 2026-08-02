@@ -96,7 +96,7 @@ export default function NewsEventsSection() {
 
   useEffect(() => {
     getNews()
-      .then((data) => setAnnouncements(data?.length ? data : defaultAnnouncements))
+      .then((res) => setAnnouncements(res?.data?.length ? res.data : defaultAnnouncements))
       .catch(() => setAnnouncements(defaultAnnouncements));
 
     getEvents()

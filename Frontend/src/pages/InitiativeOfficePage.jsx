@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Rocket, GraduationCap, CheckCircle2, X } from "lucide-react";
 import { getInitiativeOffice } from "../api/endpoints";
 import { pickTranslation } from "../utils/i18n";
 import PageSection from "../components/common/PageSection";
+import DOMPurify from "dompurify";
 
 export default function InitiativeOfficePage() {
   const [office, setOffice] = useState(null);
@@ -13,6 +14,17 @@ export default function InitiativeOfficePage() {
       .then((list) => setOffice(list[0] ?? null))
       .catch(() => setOffice(null));
   }, []);
+
+  // ESC tuşu ile lightbox modalını kapat (a11y)
+  const closeLightbox = useCallback(() => setLightboxImg(null), []);
+  useEffect(() => {
+    if (!lightboxImg) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") closeLightbox();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxImg, closeLightbox]);
 
   const t = pickTranslation(office ?? {});
   const imgSrc = office?.imageUrl || "/images/girisim-ofisi-entrance.png";
@@ -42,7 +54,7 @@ export default function InitiativeOfficePage() {
               {(office?.content || t.content) && (
                 <div 
                   className="whitespace-pre-line leading-relaxed text-slate-700" 
-                  dangerouslySetInnerHTML={{ __html: office?.content || t.content }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(office?.content || t.content) }}
                 />
               )}
             </div>

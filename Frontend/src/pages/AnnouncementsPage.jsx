@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, ChevronLeft, ChevronRight, ArrowRight, Calendar, Filter, RotateCcw, ChevronDown } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ArrowRight, Calendar, Filter, RotateCcw, ChevronDown, Pin } from "lucide-react";
 import apiClient from "../api/client";
 import { getAnnouncementCategories } from "../api/endpoints";
 
@@ -225,8 +225,16 @@ export default function AnnouncementsPage() {
 
                     {/* Content */}
                     <div className="flex-1">
-                      <div className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full uppercase tracking-wide mb-3">
-                        {categoryName}
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <div className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full uppercase tracking-wide">
+                          {categoryName}
+                        </div>
+                        {item.isPinned && (
+                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-[#0066cc] text-xs font-bold rounded-full border border-blue-100 uppercase tracking-wide">
+                            <Pin size={11} className="fill-[#0066cc]" />
+                            Öne Çıkan
+                          </div>
+                        )}
                       </div>
                       <h3 className="text-lg md:text-xl font-bold text-[#0B2558] mb-2 group-hover:text-[#0066cc] transition-colors leading-snug">
                         {item.title}
