@@ -3,9 +3,22 @@ import apiClient from "./client";
 const get = (url, params) => apiClient.get(url, { params }).then((res) => res.data);
 
 export const getSliders = () => get("/sliders");
-export const getNews = (params) => get("/news", params);
+export const getNews = (params) =>
+  apiClient.get("/news", { params }).then((res) => {
+    const totalCount = parseInt(res.headers['x-total-count'] || res.headers['X-Total-Count'] || '0', 10);
+    const pageSize = params?.pageSize || 9;
+    const totalPages = parseInt(res.headers['x-total-pages'] || res.headers['X-Total-Pages'] || '0', 10) || Math.ceil(totalCount / pageSize);
+    return {
+      data: res.data,
+      totalCount,
+      totalPages,
+    };
+  });
+export const getNewsById = (id, params) => get(`/news/${id}`, params);
 export const getNewsCategories = () => get("/news-categories");
 export const getEvents = () => get("/events");
+export const getEventsList = (params) => get("/events/list", params);
+export const getEventBySlug = (slug, params) => get(`/events/slug/${slug}`, params);
 export const getStatistics = () => get("/statistics");
 export const getInitiativeOffice = () => get("/initiative-office");
 export const getSettings = () => get("/settings");
@@ -13,6 +26,7 @@ export const getSuccessStories = () => get("/success-stories");
 export const getLinkedInPosts = (params) => get("/linkedin-posts", params);
 export const getCompanies = (params) => get("/companies", params);
 export const getCompanyCategories = () => get("/company-categories");
+export const getActivityAreas = () => get("/activity-areas");
 export const getFeaturedTechnologies = () => get("/featured-technologies");
 export const getMediaAlbums = () => get("/media-albums");
 export const getMedia = (params) => get("/media", params);
@@ -25,7 +39,14 @@ export const getTeamMembers = () => get("/team-members");
 export const getServices = () => get("/services");
 export const getDocuments = (params) => get("/documents", params);
 export const getDocumentCategories = () => get("/document-categories");
+
+// 3D International Offices Endpoint
 export const getInternationalOffices = () => get("/international-offices");
+
+// Announcements Endpoints
+export const getAnnouncements = (params) => get("/announcements", params);
+export const getAnnouncementBySlug = (slug) => get(`/announcements/${slug}`);
+export const getAnnouncementCategories = () => get("/announcement-categories");
 
 export const submitContactMessage = (payload) => apiClient.post("/contact/messages", payload).then((res) => res.data);
 export const submitInternshipApplication = (payload) => apiClient.post("/internship-applications", payload).then((res) => res.data);

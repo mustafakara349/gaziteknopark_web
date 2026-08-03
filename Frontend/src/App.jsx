@@ -8,6 +8,11 @@ import TeamMembersPage from "./pages/TeamMembersPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import ServicesPage from "./pages/ServicesPage";
 import NewsListPage from "./pages/NewsListPage";
+import NewsDetailPage from "./pages/NewsDetailPage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
+import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
+import EventsPage from "./pages/EventsPage";
+import EventDetailPage from "./pages/EventDetailPage";
 import MediaPage from "./pages/MediaPage";
 import CompaniesPage from "./pages/CompaniesPage";
 import SuccessStoriesPage from "./pages/SuccessStoriesPage";
@@ -34,7 +39,12 @@ function App() {
         <Route path="/kurumsal/mevzuat-ve-belgeler" element={<DocumentsPage />} />
         <Route path="/kurumsal/hizmetlerimiz" element={<ServicesPage />} />
         <Route path="/haberler" element={<NewsListPage />} />
-        <Route path="/etkinlikler" element={<ComingSoonPage />} />
+        <Route path="/haberler/:id" element={<NewsDetailPage />} />
+        <Route path="/duyurular" element={<AnnouncementsPage />} />
+        <Route path="/duyurular/:slug" element={<AnnouncementDetailPage />} />
+        <Route path="/kurumsal/duyurular" element={<AnnouncementsPage />} />
+        <Route path="/etkinlikler" element={<EventsPage />} />
+        <Route path="/etkinlikler/:slug" element={<EventDetailPage />} />
         <Route path="/medya" element={<MediaPage />} />
         <Route path="/firmalar" element={<CompaniesPage />} />
         <Route path="/basari-oykuleri" element={<SuccessStoriesPage />} />

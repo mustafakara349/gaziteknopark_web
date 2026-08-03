@@ -45,6 +45,12 @@ public class InternshipApplicationFormDto
     public string CaptchaToken { get; set; } = string.Empty;
 }
 
+public class UpdateApplicationStatusDto
+{
+    [Required(ErrorMessage = "Durum alanı zorunludur.")]
+    public string Status { get; set; } = string.Empty;
+}
+
 public class InternshipApplicationDto
 {
     public uint Id { get; set; }
@@ -63,4 +69,7 @@ public class InternshipApplicationDto
     public DateTime? ExplicitConsentAt { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime? AppliedAt { get; set; }
+    public string? CvFileUrl { get; set; }
+    public string? PhotoFileUrl { get; set; }
 }
+

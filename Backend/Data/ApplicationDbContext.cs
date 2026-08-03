@@ -22,6 +22,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<CompanyTranslation> CompanyTranslations => Set<CompanyTranslation>();
     public DbSet<CompanyCategoryPivot> CompanyCategoryPivots => Set<CompanyCategoryPivot>();
+    public DbSet<ActivityArea> ActivityAreas => Set<ActivityArea>();
+    public DbSet<ActivityAreaTranslation> ActivityAreaTranslations => Set<ActivityAreaTranslation>();
+    public DbSet<CompanyActivityAreaPivot> CompanyActivityAreaPivots => Set<CompanyActivityAreaPivot>();
 
     public DbSet<User> Users => Set<User>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
@@ -44,8 +47,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<NewsCategory> NewsCategories => Set<NewsCategory>();
     public DbSet<NewsCategoryTranslation> NewsCategoryTranslations => Set<NewsCategoryTranslation>();
-    public DbSet<NewsAnnouncement> NewsAnnouncements => Set<NewsAnnouncement>();
-    public DbSet<NewsAnnouncementTranslation> NewsAnnouncementTranslations => Set<NewsAnnouncementTranslation>();
+    public DbSet<News> News => Set<News>();
+    public DbSet<NewsTranslation> NewsTranslations => Set<NewsTranslation>();
 
     public DbSet<FeaturedTechnology> FeaturedTechnologies => Set<FeaturedTechnology>();
     public DbSet<FeaturedTechnologyTranslation> FeaturedTechnologyTranslations => Set<FeaturedTechnologyTranslation>();
@@ -57,6 +60,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<InitiativeOffice> InitiativeOffices => Set<InitiativeOffice>();
     public DbSet<InitiativeOfficeTranslation> InitiativeOfficeTranslations => Set<InitiativeOfficeTranslation>();
+    public DbSet<InitiativeOfficeIncubator> InitiativeOfficeIncubators => Set<InitiativeOfficeIncubator>();
+    public DbSet<InitiativeOfficeIncubatorTranslation> InitiativeOfficeIncubatorTranslations => Set<InitiativeOfficeIncubatorTranslation>();
 
     public DbSet<Event> Events => Set<Event>();
     public DbSet<EventTranslation> EventTranslations => Set<EventTranslation>();
@@ -97,6 +102,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<PopupAnnouncement> PopupAnnouncements => Set<PopupAnnouncement>();
     public DbSet<PopupAnnouncementTranslation> PopupAnnouncementTranslations => Set<PopupAnnouncementTranslation>();
 
+    public DbSet<AnnouncementCategory> AnnouncementCategories => Set<AnnouncementCategory>();
+    public DbSet<AnnouncementCategoryTranslation> AnnouncementCategoryTranslations => Set<AnnouncementCategoryTranslation>();
+    public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<AnnouncementTranslation> AnnouncementTranslations => Set<AnnouncementTranslation>();
+    public DbSet<AnnouncementAttachment> AnnouncementAttachments => Set<AnnouncementAttachment>();
+
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<MenuItemTranslation> MenuItemTranslations => Set<MenuItemTranslation>();
 
@@ -110,6 +121,8 @@ public class ApplicationDbContext : DbContext
         configurationBuilder.Properties<CompanyStatus>().HaveConversion<LowerCaseEnumConverter<CompanyStatus>>();
         configurationBuilder.Properties<MediaType>().HaveConversion<LowerCaseEnumConverter<MediaType>>();
         configurationBuilder.Properties<ApplicationStatus>().HaveConversion<LowerCaseEnumConverter<ApplicationStatus>>();
+        configurationBuilder.Properties<InternshipTime>().HaveConversion<LowerCaseEnumConverter<InternshipTime>>();
+        configurationBuilder.Properties<InternshipType>().HaveConversion<LowerCaseEnumConverter<InternshipType>>();
         configurationBuilder.Properties<SettingType>().HaveConversion<LowerCaseEnumConverter<SettingType>>();
         configurationBuilder.Properties<MenuLocation>().HaveConversion<LowerCaseEnumConverter<MenuLocation>>();
         configurationBuilder.Properties<UserType>().HaveConversion<UserTypeConverter>();
@@ -119,8 +132,10 @@ public class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<RolePermission>().HasKey(rp => new { rp.RoleId, rp.PermissionId });
         modelBuilder.Entity<CompanyCategoryPivot>().HasKey(cp => new { cp.CompanyId, cp.CategoryId });
+        modelBuilder.Entity<CompanyActivityAreaPivot>().HasKey(ap => new { ap.CompanyId, ap.ActivityAreaId });
 
         modelBuilder.Entity<CompanyCategoryTranslation>().HasIndex(t => new { t.CompanyCategoryId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<ActivityAreaTranslation>().HasIndex(t => new { t.ActivityAreaId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<CompanyTranslation>().HasIndex(t => new { t.CompanyId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<PageTranslation>().HasIndex(t => new { t.PageId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<PageTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
@@ -134,8 +149,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<DocumentTranslation>().HasIndex(t => new { t.DocumentId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<ServiceTranslation>().HasIndex(t => new { t.ServiceId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<NewsCategoryTranslation>().HasIndex(t => new { t.NewsCategoryId, t.LanguageId }).IsUnique();
-        modelBuilder.Entity<NewsAnnouncementTranslation>().HasIndex(t => new { t.NewsId, t.LanguageId }).IsUnique();
-        modelBuilder.Entity<NewsAnnouncementTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<NewsTranslation>().HasIndex(t => new { t.NewsId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<NewsTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<News>().HasIndex(n => n.Slug).IsUnique();
         modelBuilder.Entity<FeaturedTechnologyTranslation>().HasIndex(t => new { t.FeaturedTechnologyId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<FeaturedTechnologyTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
         modelBuilder.Entity<MediaAlbumTranslation>().HasIndex(t => new { t.MediaAlbumId, t.LanguageId }).IsUnique();
@@ -156,5 +172,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<BannerTranslation>().HasIndex(t => new { t.BannerId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<PopupAnnouncementTranslation>().HasIndex(t => new { t.PopupAnnouncementId, t.LanguageId }).IsUnique();
         modelBuilder.Entity<MenuItemTranslation>().HasIndex(t => new { t.MenuItemId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<AnnouncementCategoryTranslation>().HasIndex(t => new { t.AnnouncementCategoryId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<AnnouncementTranslation>().HasIndex(t => new { t.AnnouncementId, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<AnnouncementTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
+        modelBuilder.Entity<Announcement>().HasIndex(a => a.Slug).IsUnique();
+        modelBuilder.Entity<AnnouncementAttachment>().HasIndex(a => new { a.AnnouncementId, a.FileId }).IsUnique();
     }
 }

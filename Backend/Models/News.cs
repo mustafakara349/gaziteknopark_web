@@ -9,7 +9,13 @@ public class NewsCategory
 {
     [Key]
     public uint Id { get; set; }
+    
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+    [MaxLength(100)]
+    public string? Slug { get; set; }
     public uint OrderNo { get; set; }
+
     public uint? CreatedBy { get; set; }
     public uint? UpdatedBy { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -18,7 +24,7 @@ public class NewsCategory
     public DateTime? DeletedAt { get; set; }
 
     public ICollection<NewsCategoryTranslation> Translations { get; set; } = new List<NewsCategoryTranslation>();
-    public ICollection<NewsAnnouncement> NewsAnnouncements { get; set; } = new List<NewsAnnouncement>();
+    public ICollection<News> NewsItems { get; set; } = new List<News>();
 }
 
 [Table("news_category_translations")]
@@ -37,8 +43,8 @@ public class NewsCategoryTranslation
     public Language Language { get; set; } = null!;
 }
 
-[Table("news_announcements")]
-public class NewsAnnouncement
+[Table("news")]
+public class News
 {
     [Key]
     public uint Id { get; set; }
@@ -49,6 +55,28 @@ public class NewsAnnouncement
     public ContentStatus Status { get; set; } = ContentStatus.Draft;
     public DateTime? PublishedAt { get; set; }
     public uint Views { get; set; }
+    public bool IsFeatured { get; set; }
+    [MaxLength(100)]
+    public string? AuthorName { get; set; }
+    public int? ReadTime { get; set; }
+    [MaxLength(500)]
+    public string? VideoUrl { get; set; }
+
+    // Core Text Content Fields
+    [MaxLength(255)]
+    public string Title { get; set; } = string.Empty;
+    [MaxLength(255)]
+    public string Slug { get; set; } = string.Empty;
+    [MaxLength(1000)]
+    public string? Summary { get; set; }
+    public string? Content { get; set; }
+    [MaxLength(255)]
+    public string? MetaTitle { get; set; }
+    [MaxLength(500)]
+    public string? MetaDescription { get; set; }
+    [MaxLength(500)]
+    public string? MetaKeywords { get; set; }
+
     public uint? CreatedBy { get; set; }
     public uint? UpdatedBy { get; set; }
     public uint? PublishedBy { get; set; }
@@ -62,11 +90,11 @@ public class NewsAnnouncement
     [ForeignKey(nameof(CoverImageFileId))]
     public FileAsset? CoverImageFile { get; set; }
 
-    public ICollection<NewsAnnouncementTranslation> Translations { get; set; } = new List<NewsAnnouncementTranslation>();
+    public ICollection<NewsTranslation> Translations { get; set; } = new List<NewsTranslation>();
 }
 
-[Table("news_announcement_translations")]
-public class NewsAnnouncementTranslation
+[Table("news_translations")]
+public class NewsTranslation
 {
     [Key]
     public uint Id { get; set; }
@@ -76,7 +104,7 @@ public class NewsAnnouncementTranslation
     public string Title { get; set; } = string.Empty;
     [MaxLength(255)]
     public string Slug { get; set; } = string.Empty;
-    [MaxLength(500)]
+    [MaxLength(1000)]
     public string? Summary { get; set; }
     public string? Content { get; set; }
     [MaxLength(255)]
@@ -92,7 +120,7 @@ public class NewsAnnouncementTranslation
     public string? SearchKeywords { get; set; }
 
     [ForeignKey(nameof(NewsId))]
-    public NewsAnnouncement News { get; set; } = null!;
+    public News News { get; set; } = null!;
     [ForeignKey(nameof(LanguageId))]
     public Language Language { get; set; } = null!;
     [ForeignKey(nameof(OgImageFileId))]

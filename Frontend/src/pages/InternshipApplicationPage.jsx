@@ -7,7 +7,7 @@ import ConsentModal from "../components/common/ConsentModal";
 
 /* ──────────────────────────── Constants ──────────────────────────── */
 
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; // Google test key
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
 const CLASS_OPTIONS = [
   { value: "", label: "Seçiniz" },
@@ -224,10 +224,13 @@ export default function InternshipApplicationPage() {
     if (!form.universityStartDate) {
       errs.universityStartDate = "Başlangıç tarihi zorunludur.";
     } else {
-      const startYear = new Date(form.universityStartDate).getFullYear();
-      const currentYear = new Date().getFullYear();
-      if (startYear < 1970 || startYear > currentYear) {
-        errs.universityStartDate = `Geçerli bir başlangıç tarihi giriniz.`;
+      const startDate = new Date(form.universityStartDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (startDate > today) {
+        errs.universityStartDate = "Başlangıç tarihi bugünden ileri bir tarih olamaz.";
+      } else if (startDate.getFullYear() < 1970) {
+        errs.universityStartDate = "Geçerli bir başlangıç tarihi giriniz (1970 ve sonrası).";
       }
     }
     if (!form.internshipTime) errs.internshipTime = "Staj zamanı seçimi zorunludur.";

@@ -36,7 +36,14 @@ public class NewsCategoriesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<NewsCategoryDto>> Create(NewsCategoryUpsertDto dto)
     {
-        var category = new NewsCategory { OrderNo = dto.OrderNo, CreatedAt = DateTime.UtcNow };
+        var category = new NewsCategory 
+        { 
+            Name = dto.Name,
+            Slug = dto.Slug,
+            OrderNo = dto.OrderNo, 
+            CreatedAt = DateTime.UtcNow 
+        };
+
         foreach (var t in dto.Translations)
         {
             category.Translations.Add(new NewsCategoryTranslation { LanguageId = t.LanguageId, Name = t.Name });
@@ -55,10 +62,14 @@ public class NewsCategoriesController : ControllerBase
             .FirstOrDefaultAsync(c => c.Id == id && c.DeletedAt == null);
         if (category is null) return NotFound();
 
+        category.Name = dto.Name;
+        category.Slug = dto.Slug;
         category.OrderNo = dto.OrderNo;
         category.UpdatedAt = DateTime.UtcNow;
+
         _db.NewsCategoryTranslations.RemoveRange(category.Translations);
         category.Translations.Clear();
+
         foreach (var t in dto.Translations)
         {
             category.Translations.Add(new NewsCategoryTranslation { LanguageId = t.LanguageId, Name = t.Name });
@@ -83,6 +94,8 @@ public class NewsCategoriesController : ControllerBase
     {
         Id = c.Id,
         OrderNo = c.OrderNo,
+        Name = c.Name,
+        Slug = c.Slug,
         Translations = c.Translations.Select(t => new NewsCategoryTranslationDto
         {
             LanguageId = t.LanguageId,
@@ -106,32 +119,177 @@ public class NewsController : ControllerBase
     private bool IsPrivileged => User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Editor"));
 
     [HttpGet]
-    public async Task<ActionResult<List<NewsDto>>> GetAll([FromQuery] uint? categoryId)
+    public async Task<ActionResult<List<NewsDto>>> GetAll(
+        [FromQuery] uint? categoryId,
+        [FromQuery] string? search,
+        [FromQuery] string? sort,
+        [FromQuery] DateTime? date,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
     {
-        var query = _db.NewsAnnouncements.Where(n => n.DeletedAt == null);
+        var query = _db.News
+            .AsNoTracking()
+            .Include(n => n.Category)
+            .Include(n => n.Translations).ThenInclude(t => t.Language)
+            .Where(n => n.DeletedAt == null);
+
         if (!IsPrivileged)
         {
             query = query.Where(n => n.Status == ContentStatus.Published);
         }
-        if (categoryId.HasValue)
+        if (categoryId.HasValue && categoryId.Value > 0)
         {
-            query = query.Where(n => n.CategoryId == categoryId);
+            query = query.Where(n => n.CategoryId == categoryId.Value);
+        }
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(n =>
+                EF.Functions.Like(n.Title.ToLower(), $"%{term}%") ||
+                (n.Summary != null && EF.Functions.Like(n.Summary.ToLower(), $"%{term}%")) ||
+                (n.Content != null && EF.Functions.Like(n.Content.ToLower(), $"%{term}%")) ||
+                (n.AuthorName != null && EF.Functions.Like(n.AuthorName.ToLower(), $"%{term}%")) ||
+                n.Translations.Any(t =>
+                    EF.Functions.Like(t.Title.ToLower(), $"%{term}%") ||
+                    (t.Summary != null && EF.Functions.Like(t.Summary.ToLower(), $"%{term}%")) ||
+                    (t.Content != null && EF.Functions.Like(t.Content.ToLower(), $"%{term}%")) ||
+                    (t.SearchKeywords != null && EF.Functions.Like(t.SearchKeywords.ToLower(), $"%{term}%"))
+                )
+            );
+        }
+        if (date.HasValue)
+        {
+            var targetDate = date.Value.Date;
+            query = query.Where(n => n.PublishedAt.HasValue && n.PublishedAt.Value.Date == targetDate);
+        }
+        if (startDate.HasValue)
+        {
+            query = query.Where(n => n.PublishedAt >= startDate.Value);
+        }
+        if (endDate.HasValue)
+        {
+            query = query.Where(n => n.PublishedAt <= endDate.Value);
         }
 
-        var news = await query
-            .Include(n => n.Translations).ThenInclude(t => t.Language)
-            .OrderByDescending(n => n.PublishedAt)
+        if (sort == "oldest")
+        {
+            query = query.OrderBy(n => n.PublishedAt ?? n.CreatedAt);
+        }
+        else
+        {
+            query = query.OrderByDescending(n => n.PublishedAt ?? n.CreatedAt);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var validPage = page.HasValue && page.Value > 0 ? page.Value : 1;
+        var validPageSize = pageSize.HasValue && pageSize.Value > 0 ? Math.Min(pageSize.Value, 100) : 10;
+        var totalPages = (int)Math.Ceiling((double)totalCount / validPageSize);
+
+        Response.Headers["X-Total-Count"] = totalCount.ToString();
+        Response.Headers["X-Total-Pages"] = totalPages.ToString();
+        Response.Headers["X-Current-Page"] = validPage.ToString();
+        Response.Headers["X-Page-Size"] = validPageSize.ToString();
+
+        query = query.Skip((validPage - 1) * validPageSize).Take(validPageSize);
+
+        var newsList = await query.ToListAsync();
+
+        // Optimized Batch Mapping to eliminate N+1 queries
+        var newsIds = newsList.Select(n => n.Id).ToList();
+        var coverFileIds = newsList.Where(n => n.CoverImageFileId.HasValue).Select(n => n.CoverImageFileId!.Value).Distinct().ToList();
+
+        var galleriesData = await _db.EntityGalleries
+            .Where(eg => (eg.ModelType == "News" || eg.ModelType == "NewsAnnouncement") && newsIds.Contains(eg.ModelId) && eg.DeletedAt == null)
+            .OrderBy(eg => eg.OrderNo)
             .ToListAsync();
 
-        return Ok(news.Select(Map).ToList());
+        var galleryFileIds = galleriesData.Select(eg => eg.FileId).Distinct().ToList();
+        var allFileIds = coverFileIds.Concat(galleryFileIds).Distinct().ToList();
+
+        var fileMap = await _db.Files
+            .Where(f => allFileIds.Contains(f.Id))
+            .ToDictionaryAsync(f => f.Id, f => f.Path);
+
+        var result = new List<NewsDto>();
+        foreach (var n in newsList)
+        {
+            var coverImageUrl = n.CoverImageFileId.HasValue && fileMap.TryGetValue(n.CoverImageFileId.Value, out var cPath) ? cPath : null;
+            var itemGalleries = galleriesData.Where(eg => eg.ModelId == n.Id).ToList();
+            
+            var additionalFileIds = itemGalleries.Select(eg => eg.FileId).ToList();
+            var additionalUrls = itemGalleries
+                .Select(eg => fileMap.TryGetValue(eg.FileId, out var gPath) ? gPath : null)
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Cast<string>()
+                .ToList();
+
+            result.Add(new NewsDto
+            {
+                Id = n.Id,
+                Uuid = n.Uuid,
+                CategoryId = n.CategoryId,
+                CategoryName = n.Category?.Name ?? "Genel",
+                CoverImageFileId = n.CoverImageFileId,
+                CoverImageUrl = coverImageUrl,
+                Status = n.Status.ToString(),
+                PublishedAt = n.PublishedAt,
+                Views = n.Views,
+                CreatedAt = n.CreatedAt,
+                IsFeatured = n.IsFeatured,
+                AuthorName = n.AuthorName,
+                ReadTime = n.ReadTime,
+                VideoUrl = n.VideoUrl,
+                Title = n.Title,
+                Slug = n.Slug,
+                Summary = n.Summary,
+                Content = n.Content,
+                MetaTitle = n.MetaTitle,
+                MetaDescription = n.MetaDescription,
+                AdditionalImageFileIds = additionalFileIds,
+                AdditionalImageUrls = additionalUrls,
+                Translations = n.Translations.Select(t => new NewsTranslationDto
+                {
+                    LanguageId = t.LanguageId,
+                    LanguageCode = t.Language?.Code,
+                    Title = t.Title,
+                    Slug = t.Slug,
+                    Summary = t.Summary,
+                    Content = t.Content,
+                    MetaTitle = t.MetaTitle,
+                    MetaDescription = t.MetaDescription,
+                    MetaKeywords = t.MetaKeywords,
+                    CanonicalUrl = t.CanonicalUrl,
+                    OgImageFileId = t.OgImageFileId,
+                    SearchKeywords = t.SearchKeywords
+                }).ToList()
+            });
+        }
+
+        return Ok(result);
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<NewsDto>> GetById(uint id)
+    [HttpGet("{idOrSlug}")]
+    public async Task<ActionResult<NewsDto>> GetByIdOrSlug(string idOrSlug)
     {
-        var news = await _db.NewsAnnouncements
-            .Include(n => n.Translations).ThenInclude(t => t.Language)
-            .FirstOrDefaultAsync(n => n.Id == id && n.DeletedAt == null);
+        News? news = null;
+        if (uint.TryParse(idOrSlug, out var id))
+        {
+            news = await _db.News
+                .Include(n => n.Category)
+                .Include(n => n.Translations).ThenInclude(t => t.Language)
+                .FirstOrDefaultAsync(n => n.Id == id && n.DeletedAt == null);
+        }
+
+        if (news == null)
+        {
+            news = await _db.News
+                .Include(n => n.Category)
+                .Include(n => n.Translations).ThenInclude(t => t.Language)
+                .FirstOrDefaultAsync(n => n.Slug == idOrSlug && n.DeletedAt == null);
+        }
 
         if (news is null) return NotFound();
         if (!IsPrivileged && news.Status != ContentStatus.Published) return NotFound();
@@ -139,7 +297,8 @@ public class NewsController : ControllerBase
         news.Views++;
         await _db.SaveChangesAsync();
 
-        return Ok(Map(news));
+        var dto = await MapAsync(news, _db);
+        return Ok(dto);
     }
 
     [Authorize(Roles = "Admin,Editor")]
@@ -151,18 +310,27 @@ public class NewsController : ControllerBase
             return BadRequest("Geçersiz durum değeri.");
         }
 
-        var news = new NewsAnnouncement
+        var news = new News
         {
             Uuid = Guid.NewGuid(),
             CategoryId = dto.CategoryId,
             CoverImageFileId = dto.CoverImageFileId,
             Status = status,
             PublishedAt = dto.PublishedAt,
+            IsFeatured = dto.IsFeatured,
+            AuthorName = dto.AuthorName,
+            ReadTime = dto.ReadTime,
+            VideoUrl = dto.VideoUrl,
+            Title = dto.Title,
+            Slug = dto.Slug,
+            Summary = dto.Summary,
+            Content = dto.Content,
             CreatedAt = DateTime.UtcNow
         };
+
         foreach (var t in dto.Translations)
         {
-            news.Translations.Add(new NewsAnnouncementTranslation
+            news.Translations.Add(new NewsTranslation
             {
                 LanguageId = t.LanguageId,
                 Title = t.Title,
@@ -178,9 +346,26 @@ public class NewsController : ControllerBase
             });
         }
 
-        _db.NewsAnnouncements.Add(news);
+        _db.News.Add(news);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = news.Id }, Map(news));
+
+        if (dto.AdditionalImageFileIds != null && dto.AdditionalImageFileIds.Any())
+        {
+            for (int i = 0; i < dto.AdditionalImageFileIds.Count; i++)
+            {
+                _db.EntityGalleries.Add(new EntityGallery
+                {
+                    ModelType = "News",
+                    ModelId = news.Id,
+                    FileId = dto.AdditionalImageFileIds[i],
+                    OrderNo = (uint)i,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+            await _db.SaveChangesAsync();
+        }
+
+        return CreatedAtAction(nameof(GetByIdOrSlug), new { idOrSlug = news.Id }, await MapAsync(news, _db));
     }
 
     [Authorize(Roles = "Admin,Editor")]
@@ -192,7 +377,7 @@ public class NewsController : ControllerBase
             return BadRequest("Geçersiz durum değeri.");
         }
 
-        var news = await _db.NewsAnnouncements.Include(n => n.Translations)
+        var news = await _db.News.Include(n => n.Translations)
             .FirstOrDefaultAsync(n => n.Id == id && n.DeletedAt == null);
         if (news is null) return NotFound();
 
@@ -200,13 +385,21 @@ public class NewsController : ControllerBase
         news.CoverImageFileId = dto.CoverImageFileId;
         news.Status = status;
         news.PublishedAt = dto.PublishedAt;
+        news.IsFeatured = dto.IsFeatured;
+        news.AuthorName = dto.AuthorName;
+        news.ReadTime = dto.ReadTime;
+        news.VideoUrl = dto.VideoUrl;
+        news.Title = dto.Title;
+        news.Slug = dto.Slug;
+        news.Summary = dto.Summary;
+        news.Content = dto.Content;
         news.UpdatedAt = DateTime.UtcNow;
 
-        _db.NewsAnnouncementTranslations.RemoveRange(news.Translations);
+        _db.NewsTranslations.RemoveRange(news.Translations);
         news.Translations.Clear();
         foreach (var t in dto.Translations)
         {
-            news.Translations.Add(new NewsAnnouncementTranslation
+            news.Translations.Add(new NewsTranslation
             {
                 LanguageId = t.LanguageId,
                 Title = t.Title,
@@ -222,45 +415,91 @@ public class NewsController : ControllerBase
             });
         }
 
+        if (dto.AdditionalImageFileIds != null)
+        {
+            var existingGalleries = await _db.EntityGalleries
+                .Where(eg => eg.ModelType == "News" && eg.ModelId == news.Id)
+                .ToListAsync();
+            _db.EntityGalleries.RemoveRange(existingGalleries);
+
+            for (int i = 0; i < dto.AdditionalImageFileIds.Count; i++)
+            {
+                _db.EntityGalleries.Add(new EntityGallery
+                {
+                    ModelType = "News",
+                    ModelId = news.Id,
+                    FileId = dto.AdditionalImageFileIds[i],
+                    OrderNo = (uint)i,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
         await _db.SaveChangesAsync();
-        return Ok(Map(news));
+        return Ok(await MapAsync(news, _db));
     }
 
     [Authorize(Roles = "Admin,Editor")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(uint id)
     {
-        var news = await _db.NewsAnnouncements.FirstOrDefaultAsync(n => n.Id == id && n.DeletedAt == null);
+        var news = await _db.News.FirstOrDefaultAsync(n => n.Id == id && n.DeletedAt == null);
         if (news is null) return NotFound();
         news.DeletedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return NoContent();
     }
 
-    private static NewsDto Map(NewsAnnouncement n) => new()
+    private static async Task<NewsDto> MapAsync(News n, ApplicationDbContext db)
     {
-        Id = n.Id,
-        Uuid = n.Uuid,
-        CategoryId = n.CategoryId,
-        CoverImageFileId = n.CoverImageFileId,
-        Status = n.Status.ToString(),
-        PublishedAt = n.PublishedAt,
-        Views = n.Views,
-        CreatedAt = n.CreatedAt,
-        Translations = n.Translations.Select(t => new NewsTranslationDto
+        var additionalImagesData = await db.EntityGalleries
+            .Where(eg => (eg.ModelType == "News" || eg.ModelType == "NewsAnnouncement") && eg.ModelId == n.Id && eg.DeletedAt == null)
+            .OrderBy(eg => eg.OrderNo)
+            .Select(eg => new { eg.FileId, FilePath = db.Files.Where(f => f.Id == eg.FileId).Select(f => f.Path).FirstOrDefault() })
+            .ToListAsync();
+
+        var coverImageUrl = n.CoverImageFileId.HasValue ? await db.Files.Where(f => f.Id == n.CoverImageFileId).Select(f => f.Path).FirstOrDefaultAsync() : null;
+        var categoryName = n.Category?.Name ?? "Genel";
+
+        return new NewsDto
         {
-            LanguageId = t.LanguageId,
-            LanguageCode = t.Language?.Code,
-            Title = t.Title,
-            Slug = t.Slug,
-            Summary = t.Summary,
-            Content = t.Content,
-            MetaTitle = t.MetaTitle,
-            MetaDescription = t.MetaDescription,
-            MetaKeywords = t.MetaKeywords,
-            CanonicalUrl = t.CanonicalUrl,
-            OgImageFileId = t.OgImageFileId,
-            SearchKeywords = t.SearchKeywords
-        }).ToList()
-    };
+            Id = n.Id,
+            Uuid = n.Uuid,
+            CategoryId = n.CategoryId,
+            CategoryName = categoryName,
+            CoverImageFileId = n.CoverImageFileId,
+            CoverImageUrl = coverImageUrl,
+            Status = n.Status.ToString(),
+            PublishedAt = n.PublishedAt,
+            Views = n.Views,
+            CreatedAt = n.CreatedAt,
+            IsFeatured = n.IsFeatured,
+            AuthorName = n.AuthorName,
+            ReadTime = n.ReadTime,
+            VideoUrl = n.VideoUrl,
+            Title = n.Title,
+            Slug = n.Slug,
+            Summary = n.Summary,
+            Content = n.Content,
+            MetaTitle = n.MetaTitle,
+            MetaDescription = n.MetaDescription,
+            AdditionalImageFileIds = additionalImagesData.Select(x => x.FileId).ToList(),
+            AdditionalImageUrls = additionalImagesData.Where(x => !string.IsNullOrEmpty(x.FilePath)).Select(x => x.FilePath!).ToList(),
+            Translations = n.Translations.Select(t => new NewsTranslationDto
+            {
+                LanguageId = t.LanguageId,
+                LanguageCode = t.Language?.Code,
+                Title = t.Title,
+                Slug = t.Slug,
+                Summary = t.Summary,
+                Content = t.Content,
+                MetaTitle = t.MetaTitle,
+                MetaDescription = t.MetaDescription,
+                MetaKeywords = t.MetaKeywords,
+                CanonicalUrl = t.CanonicalUrl,
+                OgImageFileId = t.OgImageFileId,
+                SearchKeywords = t.SearchKeywords
+            }).ToList()
+        };
+    }
 }
