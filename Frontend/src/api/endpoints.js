@@ -39,6 +39,11 @@ export const getTeamMembers = () => get("/team-members");
 export const getServices = () => get("/services");
 export const getDocuments = (params) => get("/documents", params);
 export const getDocumentCategories = () => get("/document-categories");
+
+// 3D International Offices Endpoint
+export const getInternationalOffices = () => get("/international-offices");
+
+// Announcements Endpoints
 export const getAnnouncements = (params) => get("/announcements", params);
 export const getAnnouncementBySlug = (slug) => get(`/announcements/${slug}`);
 export const getAnnouncementCategories = () => get("/announcement-categories");
