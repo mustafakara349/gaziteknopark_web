@@ -1,38 +1,70 @@
-import { useEffect, useState } from "react";
-import { getServices } from "../api/endpoints";
-import { pickTranslation } from "../utils/i18n";
+import React from "react";
+import { servicesContent } from "../data/services-content";
 import PageSection from "../components/common/PageSection";
-import EmptyState from "../components/common/EmptyState";
+import InteractiveHubSpoke from "../components/services/InteractiveHubSpoke";
+import ServiceUnitDetail from "../components/services/ServiceUnitDetail";
+import IncentivesSection from "../components/services/IncentivesSection";
+import CampusFacilities from "../components/services/CampusFacilities";
+import MembershipBadges from "../components/services/MembershipBadges";
+import FaqTeaser from "../components/services/FaqTeaser";
+import ServicesCallToAction from "../components/services/ServicesCallToAction";
 
 export default function ServicesPage() {
-  const [services, setServices] = useState([]);
-
-  useEffect(() => {
-    getServices().then(setServices).catch(() => setServices([]));
-  }, []);
-
   return (
-    <div>
-      <PageSection>
-        {services.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => {
-              const t = pickTranslation(service);
-              return (
-                <div key={service.id} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <span className="text-lg font-bold">{t.title?.charAt(0) ?? "H"}</span>
-                  </div>
-                  <h3 className="mt-4 text-base font-semibold text-[#333]">{t.title}</h3>
-                  {t.description && <p className="mt-2 line-clamp-3 text-sm text-gray-500">{t.description}</p>}
-                </div>
-              );
-            })}
-          </div>
-        )}
+    <div className="space-y-6 pb-12">
+      {/* İnteraktif Çekirdek (Hub & Spoke) Hizmet Alanı */}
+      <PageSection className="!py-0">
+        <InteractiveHubSpoke />
+      </PageSection>
+
+      {/* Detaylı Hizmetler Bölümü (Gazi TTO, Kuluçka vb.) */}
+      <PageSection className="!py-4">
+        <div className="text-center md:text-left mb-8 border-b border-gray-100 pb-4">
+          <span className="text-xs font-bold uppercase tracking-widest text-accent-blue">
+            Hizmet Detayları
+          </span>
+          <h2 className="mt-2 text-2xl font-extrabold text-primary sm:text-3xl">
+            Detaylı Faaliyet Alanlarımız
+          </h2>
+        </div>
+        <div className="space-y-6">
+          {servicesContent.units.map((unit) => (
+            <ServiceUnitDetail
+              key={unit.id}
+              unit={unit}
+            />
+          ))}
+        </div>
+      </PageSection>
+
+      {/* 5. Teşvikler / Yasal Avantajlar */}
+      <PageSection className="py-4">
+        <IncentivesSection incentives={servicesContent.incentives} />
+      </PageSection>
+
+      {/* 6. Kampüs İmkanları */}
+      <PageSection className="py-6">
+        <CampusFacilities
+          facilities={servicesContent.facilities}
+          facilityImages={servicesContent.facilityImages}
+        />
+      </PageSection>
+
+      {/* 8. SSS Köprüsü */}
+      <PageSection className="py-4">
+        <FaqTeaser questions={servicesContent.faq} />
+      </PageSection>
+
+      {/* 7. Üyelikler / Kurumsal Güven Rozetleri */}
+      <PageSection className="py-4">
+        <MembershipBadges badges={servicesContent.badges} />
+      </PageSection>
+
+      {/* 9. Kapanış CTA */}
+      <PageSection className="pt-4 pb-8">
+        <ServicesCallToAction cta={servicesContent.cta} />
       </PageSection>
     </div>
   );
 }
+

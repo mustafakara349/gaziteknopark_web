@@ -3,6 +3,7 @@ export const navConfig = [
     label: "Kurumsal",
     items: [
       { label: "Hakkımızda", to: "/kurumsal/hakkimizda" },
+      { label: "Hizmet ve İmkanlarımız", to: "/kurumsal/hizmetlerimiz" },
       { label: "Yönetim ve Ekip", to: "/kurumsal/yonetim-ve-ekip" },
       { label: "Mevzuat ve Belgeler", to: "/kurumsal/mevzuat-ve-belgeler" },
       { label: "Haberler", to: "/haberler" },
