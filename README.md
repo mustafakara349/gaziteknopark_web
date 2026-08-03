@@ -57,8 +57,18 @@ npm install
 
 # Geliştirme sunucusunu başlatın
 npm run dev
-# → http://localhost:5173
-```
+---
+
+## 🔑 Admin Paneli & Giriş Bilgileri
+
+Admin paneli JWT (Access + Refresh Token) tabanlı yetkilendirme altyapısı ile çalışır.
+
+- **Admin Login URL:** `http://localhost:5173/admin/login`
+- **Dashboard URL:** `http://localhost:5173/admin/dashboard`
+- **Varsayılan Admin E-posta:** `admin@gaziteknopark.com.tr`
+- **Varsayılan Admin Şifre:** `Admin@123456`
+
+> **Not:** Veritabanı `dotnet ef database update` ile güncellendiğinde veya `DbSeeder` çalıştığında admin kullanıcısı otomatik olarak veritabanına eklenir.
 
 ---
 

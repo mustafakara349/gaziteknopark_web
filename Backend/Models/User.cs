@@ -28,6 +28,10 @@ public class User
     public string? LastLoginIp { get; set; }
     public uint FailedLoginAttempts { get; set; }
     public DateTime? LockedUntil { get; set; }
+    [MaxLength(500)]
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
+    public DateTime? LastPasswordChangeAt { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }

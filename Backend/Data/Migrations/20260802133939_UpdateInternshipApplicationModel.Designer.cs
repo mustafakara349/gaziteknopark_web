@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802133939_UpdateInternshipApplicationModel")]
+    partial class UpdateInternshipApplicationModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4297,10 +4300,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("varchar(45)")
                         .HasColumnName("last_login_ip");
 
-                    b.Property<DateTime?>("LastPasswordChangeAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("last_password_change_at");
-
                     b.Property<DateTime?>("LockedUntil")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("locked_until");
@@ -4320,15 +4319,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Property<uint?>("PhotoFileId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("photo_file_id");
-
-                    b.Property<string>("RefreshToken")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("refresh_token");
-
-                    b.Property<DateTime?>("RefreshTokenExpiryTime")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("refresh_token_expiry_time");
 
                     b.Property<uint?>("RoleId")
                         .HasColumnType("int unsigned")

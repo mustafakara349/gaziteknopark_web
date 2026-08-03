@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using GaziTeknoparkApi.Data;
 using GaziTeknoparkApi.Dtos;
 using GaziTeknoparkApi.Models;
@@ -19,11 +21,13 @@ public class AuthController : ControllerBase
 
     private readonly ApplicationDbContext _db;
     private readonly IJwtTokenService _jwt;
+    private readonly IConfiguration _config;
 
-    public AuthController(ApplicationDbContext db, IJwtTokenService jwt)
+    public AuthController(ApplicationDbContext db, IJwtTokenService jwt, IConfiguration config)
     {
         _db = db;
         _jwt = jwt;
+        _config = config;
     }
 
     [HttpPost("register")]
@@ -48,13 +52,14 @@ public class AuthController : ControllerBase
             UserType = UserType.Company,
             CompanyId = dto.CompanyId,
             IsActive = true,
+            LastPasswordChangeAt = DateTime.UtcNow,
             CreatedAt = DateTime.UtcNow
         };
 
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
 
-        return Ok(BuildAuthResponse(user));
+        return Ok(await BuildAuthResponse(user));
     }
 
     [HttpPost("login")]
@@ -95,7 +100,51 @@ public class AuthController : ControllerBase
         user.LastLoginIp = HttpContext.Connection.RemoteIpAddress?.ToString();
         await _db.SaveChangesAsync();
 
-        return Ok(BuildAuthResponse(user));
+        return Ok(await BuildAuthResponse(user));
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult<AuthResponseDto>> RefreshToken(RefreshTokenRequestDto dto)
+    {
+        // Find user by matching hashed refresh token
+        var users = await _db.Users.Include(u => u.Role)
+            .Where(u => u.RefreshToken != null && u.DeletedAt == null && u.IsActive)
+            .ToListAsync();
+
+        var user = users.FirstOrDefault(u => VerifyRefreshTokenHash(dto.RefreshToken, u.RefreshToken!));
+
+        if (user is null)
+        {
+            return Unauthorized("Geçersiz refresh token.");
+        }
+
+        if (user.RefreshTokenExpiryTime < DateTime.UtcNow)
+        {
+            // Expired — clear it and force re-login
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+            await _db.SaveChangesAsync();
+            return Unauthorized("Refresh token süresi dolmuş. Lütfen tekrar giriş yapın.");
+        }
+
+        // Token Rotation: issue new pair, invalidate old refresh token
+        return Ok(await BuildAuthResponse(user));
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var id = uint.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await _db.Users.FindAsync(id);
+        if (user is not null)
+        {
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new { message = "Başarıyla çıkış yapıldı." });
     }
 
     [Authorize]
@@ -112,15 +161,38 @@ public class AuthController : ControllerBase
         return Ok(MapUser(user));
     }
 
-    private AuthResponseDto BuildAuthResponse(User user)
+    private async Task<AuthResponseDto> BuildAuthResponse(User user)
     {
-        var token = _jwt.GenerateToken(user, out var expiresAt);
+        var accessToken = _jwt.GenerateToken(user, out var expiresAt);
+        var refreshToken = _jwt.GenerateRefreshToken();
+        var refreshTokenExpiryDays = int.Parse(_config["Jwt:RefreshTokenExpiryDays"] ?? "7");
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpiryDays);
+
+        // Store hashed refresh token in DB
+        user.RefreshToken = HashRefreshToken(refreshToken);
+        user.RefreshTokenExpiryTime = refreshTokenExpiresAt;
+        await _db.SaveChangesAsync();
+
         return new AuthResponseDto
         {
-            Token = token,
+            Token = accessToken,
             ExpiresAt = expiresAt,
+            RefreshToken = refreshToken,
+            RefreshTokenExpiresAt = refreshTokenExpiresAt,
             User = MapUser(user)
         };
+    }
+
+    private static string HashRefreshToken(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
+    }
+
+    private static bool VerifyRefreshTokenHash(string token, string storedHash)
+    {
+        var hash = HashRefreshToken(token);
+        return hash == storedHash;
     }
 
     private static UserDto MapUser(User user) => new()
