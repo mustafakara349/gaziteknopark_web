@@ -5,7 +5,6 @@ import BiggArea from "../components/home/BiggArea";
 import SuccessStories from "../components/home/SuccessStories";
 import CompaniesSection from "../components/home/CompaniesSection";
 import TechnologiesSection from "../components/home/TechnologiesSection";
-import NewsletterGallery from "../components/home/NewsletterGallery";
 
 export default function HomePage() {
   return (
@@ -17,7 +16,6 @@ export default function HomePage() {
       <SuccessStories limit={10} layout="slider" />
       <CompaniesSection />
       <TechnologiesSection />
-      <NewsletterGallery />
     </div>
   );
 }

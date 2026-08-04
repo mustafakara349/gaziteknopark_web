@@ -119,10 +119,10 @@ export default function Footer() {
         { label: "Hakkımızda", to: "/kurumsal/hakkimizda" },
         { label: "Yönetim ve Ekip", to: "/kurumsal/yonetim-ve-ekip" },
         { label: "Mevzuat ve Belgeler", to: "/kurumsal/mevzuat-ve-belgeler" },
-        { label: "Haberler", to: "/haberler" },
         { label: "Duyurular", to: "/duyurular" },
-        { label: "Medya", to: "/medya" },
+        { label: "Haberler", to: "/haberler" },
         { label: "Etkinlikler", to: "/etkinlikler" },
+        { label: "Medya", to: "/medya" },
       ],
     },
     {
@@ -160,12 +160,12 @@ export default function Footer() {
               <SocialLink href="https://x.com/Gazi_Teknopark" label="X (Twitter)">
                 <XIcon />
               </SocialLink>
-              <SocialLink href="https://www.facebook.com/gaziteknoparktgb/" label="Facebook">
+              {/* <SocialLink href="https://www.facebook.com/gaziteknoparktgb/" label="Facebook">
                 <FacebookIcon />
-              </SocialLink>
-              <SocialLink href="https://www.youtube.com/@gaziteknopark4704" label="YouTube">
+              </SocialLink> */}
+              {/* <SocialLink href="https://www.youtube.com/@gaziteknopark4704" label="YouTube">
                 <YouTubeIcon />
-              </SocialLink>
+              </SocialLink> */}
             </div>
           </div>
 
