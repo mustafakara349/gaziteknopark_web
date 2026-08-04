@@ -34,11 +34,4 @@ export const navConfig = [
       { label: "BİGG Başvuru", to: "/basvuru/bigg", href: "https://www.gazibigg.com/", isExternal: true },
     ],
   },
-  {
-    label: "Destek",
-    items: [
-      { label: "Sıkça Sorulan Sorular", to: "/sss" },
-      { label: "İletişim", to: "/iletisim" },
-    ],
-  },
 ];
