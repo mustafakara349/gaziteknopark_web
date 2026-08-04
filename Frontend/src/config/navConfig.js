@@ -3,6 +3,7 @@ export const navConfig = [
     label: "Kurumsal",
     items: [
       { label: "Hakkımızda", to: "/kurumsal/hakkimizda" },
+      { label: "Hizmet ve İmkanlarımız", to: "/kurumsal/hizmetlerimiz" },
       { label: "Yönetim ve Ekip", to: "/kurumsal/yonetim-ve-ekip" },
       { label: "Mevzuat ve Belgeler", to: "/kurumsal/mevzuat-ve-belgeler" },
       { label: "Haberler", to: "/haberler" },
@@ -31,6 +32,13 @@ export const navConfig = [
       { label: "Staj Başvurusu", to: "/basvuru/staj" },
       { label: "Firma Başvurusu", to: "/basvuru/firma", href: "https://argeportal.gaziteknopark.com.tr/onbasvuruformu", isExternal: true },
       { label: "BİGG Başvuru", to: "/basvuru/bigg", href: "https://www.gazibigg.com/", isExternal: true },
+    ],
+  },
+  {
+    label: "Destek",
+    items: [
+      { label: "Sıkça Sorulan Sorular", to: "/sss" },
+      { label: "İletişim", to: "/iletisim" },
     ],
   },
 ];

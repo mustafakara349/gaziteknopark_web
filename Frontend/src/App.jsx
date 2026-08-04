@@ -20,6 +20,7 @@ import TechnologiesPage from "./pages/TechnologiesPage";
 import InternshipApplicationPage from "./pages/InternshipApplicationPage";
 import CompanyApplicationPage from "./pages/CompanyApplicationPage";
 import ContactPage from "./pages/ContactPage";
+import FaqPage from "./pages/FaqPage";
 
 // Admin Components & Pages
 import { AuthProvider } from "./context/AuthContext";
@@ -63,6 +64,7 @@ function App() {
           <Route path="/basvuru/staj" element={<InternshipApplicationPage />} />
           <Route path="/basvuru/firma" element={<CompanyApplicationPage />} />
           <Route path="/iletisim" element={<ContactPage />} />
+          <Route path="/sss" element={<FaqPage />} />
           <Route path="/giris" element={<ComingSoonPage />} />
         </Route>
 
@@ -88,6 +90,7 @@ function App() {
           <Route path="kullanicilar" element={<AdminUsersPage />} />
           <Route path="ayarlar" element={<AdminSettingsPage />} />
         </Route>
+
       </Routes>
     </AuthProvider>
   );
