@@ -102,6 +102,8 @@ Backend/appsettings.Development.json
 Backend/appsettings.Production.json
 Backend/appsettings.Staging.json
 Backend/wwwroot/uploads/*
+!Backend/wwwroot/uploads/**/
+!Backend/wwwroot/uploads/**/.gitkeep
 .vite/
 *.vite/
 Backend/.vite/
