@@ -8,6 +8,23 @@ public static class DbSeeder
 {
     public static void Seed(ApplicationDbContext db)
     {
+        // ── Default Admin User ───────────────────────────────────────────
+        if (!db.Users.Any(u => u.UserType == UserType.Admin))
+        {
+            db.Users.Add(new User
+            {
+                Uuid = Guid.NewGuid(),
+                Name = "Admin",
+                Email = "admin@gaziteknopark.com.tr",
+                Password = BCrypt.Net.BCrypt.HashPassword("Admin@123456"),
+                UserType = UserType.Admin,
+                IsActive = true,
+                LastPasswordChangeAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+            db.SaveChanges();
+        }
+
         // Fix any existing category names if empty
         var emptyNameCats = db.NewsCategories.Include(c => c.Translations).Where(c => c.Name == "").ToList();
         if (emptyNameCats.Any())
