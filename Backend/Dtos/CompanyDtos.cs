@@ -78,7 +78,9 @@ public class CompanyDto
     public uint Id { get; set; }
     public Guid? Uuid { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? ShortName { get; set; }
     public uint? LogoFileId { get; set; }
+    public string? LogoUrl { get; set; }
     public string? Website { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
@@ -86,6 +88,11 @@ public class CompanyDto
     public int? FoundedYear { get; set; }
     public uint? EmployeeCount { get; set; }
     public string? OfficeNo { get; set; }
+    public string? FacebookUrl { get; set; }
+    public string? InstagramUrl { get; set; }
+    public string? XUrl { get; set; }
+    public string? LinkedInUrl { get; set; }
+    public string? YoutubeUrl { get; set; }
     public string Status { get; set; } = string.Empty;
     public List<uint> CategoryIds { get; set; } = new();
     public List<uint> ActivityAreaIds { get; set; } = new();
@@ -96,6 +103,8 @@ public class CompanyUpsertDto
 {
     [Required, MaxLength(200)]
     public string Name { get; set; } = string.Empty;
+    [MaxLength(100)]
+    public string? ShortName { get; set; }
     public uint? LogoFileId { get; set; }
     [MaxLength(255)]
     public string? Website { get; set; }
@@ -109,6 +118,16 @@ public class CompanyUpsertDto
     public uint? EmployeeCount { get; set; }
     [MaxLength(50)]
     public string? OfficeNo { get; set; }
+    [MaxLength(255)]
+    public string? FacebookUrl { get; set; }
+    [MaxLength(255)]
+    public string? InstagramUrl { get; set; }
+    [MaxLength(255)]
+    public string? XUrl { get; set; }
+    [MaxLength(255)]
+    public string? LinkedInUrl { get; set; }
+    [MaxLength(255)]
+    public string? YoutubeUrl { get; set; }
     [Required]
     public string Status { get; set; } = "aktif";
     public List<uint> CategoryIds { get; set; } = new();

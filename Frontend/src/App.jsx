@@ -14,6 +14,7 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import MediaPage from "./pages/MediaPage";
 import CompaniesPage from "./pages/CompaniesPage";
+import CompanyDetailPage from "./pages/CompanyDetailPage";
 import SuccessStoriesPage from "./pages/SuccessStoriesPage";
 import InitiativeOfficePage from "./pages/InitiativeOfficePage";
 import TechnologiesPage from "./pages/TechnologiesPage";
@@ -58,6 +59,7 @@ function App() {
           <Route path="/etkinlikler/:slug" element={<EventDetailPage />} />
           <Route path="/medya" element={<MediaPage />} />
           <Route path="/firmalar" element={<CompaniesPage />} />
+          <Route path="/firmalar/:id" element={<CompanyDetailPage />} />
           <Route path="/basari-oykuleri" element={<SuccessStoriesPage />} />
           <Route path="/girisimler/girisim-ofisi" element={<InitiativeOfficePage />} />
           <Route path="/girisimler/teknolojiler" element={<TechnologiesPage />} />

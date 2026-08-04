@@ -201,10 +201,11 @@ public class CompaniesController : ControllerBase
             .Include(c => c.Translations).ThenInclude(t => t.Language)
             .Include(c => c.CategoryPivots)
             .Include(c => c.ActivityAreaPivots)
+            .Include(c => c.LogoFile)
             .OrderBy(c => c.Name)
             .ToListAsync();
 
-        return Ok(companies.Select(Map).ToList());
+        return Ok(companies.Select(c => Map(c)).ToList());
     }
 
     [HttpGet("{id}")]
@@ -214,6 +215,7 @@ public class CompaniesController : ControllerBase
             .Include(c => c.Translations).ThenInclude(t => t.Language)
             .Include(c => c.CategoryPivots)
             .Include(c => c.ActivityAreaPivots)
+            .Include(c => c.LogoFile)
             .FirstOrDefaultAsync(c => c.Id == id && c.DeletedAt == null);
 
         if (company is null) return NotFound();
@@ -235,6 +237,7 @@ public class CompaniesController : ControllerBase
         {
             Uuid = Guid.NewGuid(),
             Name = dto.Name,
+            ShortName = dto.ShortName,
             LogoFileId = dto.LogoFileId,
             Website = dto.Website,
             Email = dto.Email,
@@ -243,6 +246,11 @@ public class CompaniesController : ControllerBase
             FoundedYear = dto.FoundedYear,
             EmployeeCount = dto.EmployeeCount,
             OfficeNo = dto.OfficeNo,
+            FacebookUrl = dto.FacebookUrl,
+            InstagramUrl = dto.InstagramUrl,
+            XUrl = dto.XUrl,
+            LinkedInUrl = dto.LinkedInUrl,
+            YoutubeUrl = dto.YoutubeUrl,
             Status = status,
             CreatedAt = DateTime.UtcNow
         };
@@ -262,6 +270,7 @@ public class CompaniesController : ControllerBase
 
         _db.Companies.Add(company);
         await _db.SaveChangesAsync();
+        await _db.Entry(company).Reference(c => c.LogoFile).LoadAsync();
         return CreatedAtAction(nameof(GetById), new { id = company.Id }, Map(company));
     }
 
@@ -278,10 +287,12 @@ public class CompaniesController : ControllerBase
             .Include(c => c.Translations)
             .Include(c => c.CategoryPivots)
             .Include(c => c.ActivityAreaPivots)
+            .Include(c => c.LogoFile)
             .FirstOrDefaultAsync(c => c.Id == id && c.DeletedAt == null);
         if (company is null) return NotFound();
 
         company.Name = dto.Name;
+        company.ShortName = dto.ShortName;
         company.LogoFileId = dto.LogoFileId;
         company.Website = dto.Website;
         company.Email = dto.Email;
@@ -290,6 +301,11 @@ public class CompaniesController : ControllerBase
         company.FoundedYear = dto.FoundedYear;
         company.EmployeeCount = dto.EmployeeCount;
         company.OfficeNo = dto.OfficeNo;
+        company.FacebookUrl = dto.FacebookUrl;
+        company.InstagramUrl = dto.InstagramUrl;
+        company.XUrl = dto.XUrl;
+        company.LinkedInUrl = dto.LinkedInUrl;
+        company.YoutubeUrl = dto.YoutubeUrl;
         company.Status = status;
         company.UpdatedAt = DateTime.UtcNow;
 
@@ -329,12 +345,14 @@ public class CompaniesController : ControllerBase
         return NoContent();
     }
 
-    private static CompanyDto Map(Company c) => new()
+    private CompanyDto Map(Company c) => new()
     {
         Id = c.Id,
         Uuid = c.Uuid,
         Name = c.Name,
+        ShortName = c.ShortName,
         LogoFileId = c.LogoFileId,
+        LogoUrl = FileUrlHelper.ToAbsoluteUrl(Request, c.LogoFile),
         Website = c.Website,
         Email = c.Email,
         Phone = c.Phone,
@@ -342,6 +360,11 @@ public class CompaniesController : ControllerBase
         FoundedYear = c.FoundedYear,
         EmployeeCount = c.EmployeeCount,
         OfficeNo = c.OfficeNo,
+        FacebookUrl = c.FacebookUrl,
+        InstagramUrl = c.InstagramUrl,
+        XUrl = c.XUrl,
+        LinkedInUrl = c.LinkedInUrl,
+        YoutubeUrl = c.YoutubeUrl,
         Status = c.Status.ToString(),
         CategoryIds = c.CategoryPivots.Select(p => p.CategoryId).ToList(),
         ActivityAreaIds = c.ActivityAreaPivots.Select(p => p.ActivityAreaId).ToList(),
