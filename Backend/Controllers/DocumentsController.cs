@@ -113,6 +113,7 @@ public class DocumentsController : ControllerBase
         }
 
         var documents = await query.Include(d => d.Translations).ThenInclude(t => t.Language)
+            .Include(d => d.Translations).ThenInclude(t => t.File)
             .OrderBy(d => d.OrderNo).ToListAsync();
         return Ok(documents.Select(Map).ToList());
     }
@@ -185,7 +186,7 @@ public class DocumentsController : ControllerBase
         return NoContent();
     }
 
-    private static DocumentDto Map(Document d) => new()
+    private DocumentDto Map(Document d) => new()
     {
         Id = d.Id,
         Uuid = d.Uuid,
@@ -198,7 +199,10 @@ public class DocumentsController : ControllerBase
             LanguageId = t.LanguageId,
             LanguageCode = t.Language?.Code,
             Title = t.Title,
-            FileId = t.FileId
+            FileId = t.FileId,
+            FileUrl = FileUrlHelper.ToAbsoluteUrl(Request, t.File),
+            FilePath = t.File?.Path,
+            FileSize = t.File?.Size
         }).ToList()
     };
 }

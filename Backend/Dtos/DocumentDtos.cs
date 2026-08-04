@@ -35,6 +35,9 @@ public class DocumentTranslationDto
     public string? LanguageCode { get; set; }
     public string Title { get; set; } = string.Empty;
     public uint FileId { get; set; }
+    public string? FileUrl { get; set; }
+    public string? FilePath { get; set; }
+    public uint? FileSize { get; set; }
 }
 
 public class DocumentTranslationUpsertDto

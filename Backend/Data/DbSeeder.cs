@@ -435,5 +435,112 @@ public static class DbSeeder
             }
             db.SaveChanges();
         }
+
+        // ── Document Categories & Documents ────────────────────────────────
+        if (!db.DocumentCategories.Any())
+        {
+            var catMevzuat = new DocumentCategory { CreatedAt = DateTime.UtcNow };
+            catMevzuat.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Teknoloji Geliştirme Bölgeleri Hakkında Mevzuat" });
+
+            var catArge = new DocumentCategory { CreatedAt = DateTime.UtcNow };
+            catArge.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Ar-Ge Faaliyetleri Hakkında Mevzuat" });
+
+            var catDiger = new DocumentCategory { CreatedAt = DateTime.UtcNow };
+            catDiger.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Diğer Belgeler" });
+
+            db.DocumentCategories.AddRange(catMevzuat, catArge, catDiger);
+            db.SaveChanges();
+
+            var file1 = new FileAsset
+            {
+                Uuid = Guid.NewGuid(),
+                Name = "4691_sayili_kanun.pdf",
+                OriginalName = "4691_sayili_kanun.pdf",
+                Path = "/uploads/documents/4691_sayili_kanun.pdf",
+                Mime = "application/pdf",
+                Size = 2516582, // ~2.4 MB
+                CreatedAt = DateTime.UtcNow
+            };
+            var file2 = new FileAsset
+            {
+                Uuid = Guid.NewGuid(),
+                Name = "uygulama_yonetmeligi.pdf",
+                OriginalName = "uygulama_yonetmeligi.pdf",
+                Path = "/uploads/documents/uygulama_yonetmeligi.pdf",
+                Mime = "application/pdf",
+                Size = 1887436, // ~1.8 MB
+                CreatedAt = DateTime.UtcNow
+            };
+            var file3 = new FileAsset
+            {
+                Uuid = Guid.NewGuid(),
+                Name = "5746_sayili_kanun.pdf",
+                OriginalName = "5746_sayili_kanun.pdf",
+                Path = "/uploads/documents/5746_sayili_kanun.pdf",
+                Mime = "application/pdf",
+                Size = 1048576, // ~1.0 MB
+                CreatedAt = DateTime.UtcNow
+            };
+
+            db.Files.AddRange(file1, file2, file3);
+            db.SaveChanges();
+
+            db.Documents.Add(new Document
+            {
+                Uuid = Guid.NewGuid(),
+                CategoryId = catMevzuat.Id,
+                PublishedDate = new DateTime(2001, 7, 6),
+                OrderNo = 1,
+                Status = ContentStatus.Published,
+                CreatedAt = DateTime.UtcNow,
+                Translations = new List<DocumentTranslation>
+                {
+                    new DocumentTranslation { LanguageId = 1, Title = "06.07.2001 - 4691 Sayılı Teknoloji Geliştirme Bölgeleri Kanunu", FileId = file1.Id }
+                }
+            });
+
+            db.Documents.Add(new Document
+            {
+                Uuid = Guid.NewGuid(),
+                CategoryId = catMevzuat.Id,
+                PublishedDate = new DateTime(2016, 8, 10),
+                OrderNo = 2,
+                Status = ContentStatus.Published,
+                CreatedAt = DateTime.UtcNow,
+                Translations = new List<DocumentTranslation>
+                {
+                    new DocumentTranslation { LanguageId = 1, Title = "10.08.2016 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği", FileId = file2.Id }
+                }
+            });
+
+            db.Documents.Add(new Document
+            {
+                Uuid = Guid.NewGuid(),
+                CategoryId = catArge.Id,
+                PublishedDate = new DateTime(2008, 3, 12),
+                OrderNo = 3,
+                Status = ContentStatus.Published,
+                CreatedAt = DateTime.UtcNow,
+                Translations = new List<DocumentTranslation>
+                {
+                    new DocumentTranslation { LanguageId = 1, Title = "12.03.2008 - 5746 Sayılı Araştırma, Geliştirme ve Tasarım Faaliyetlerinin Desteklenmesi Hakkında Kanun", FileId = file3.Id }
+                }
+            });
+
+            db.SaveChanges();
+        }
+
+        // Update existing files with size if null
+        var seededFiles = db.Files.Where(f => f.Size == null).ToList();
+        if (seededFiles.Any())
+        {
+            foreach (var file in seededFiles)
+            {
+                if (file.Name == "4691_sayili_kanun.pdf") file.Size = 2516582;
+                else if (file.Name == "uygulama_yonetmeligi.pdf") file.Size = 1887436;
+                else if (file.Name == "5746_sayili_kanun.pdf") file.Size = 1048576;
+            }
+            db.SaveChanges();
+        }
     }
 }
