@@ -12,7 +12,7 @@ const SEARCH_DEBOUNCE_MS = 400;
 function CardSkeleton() {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.03)] animate-pulse">
-      <div className="aspect-square w-full bg-gray-100" />
+      <div className="aspect-[9/5] w-full bg-gray-100" />
       <div className="flex flex-1 flex-col p-8">
         <div className="mb-4 h-3.5 w-24 rounded-full bg-gray-100" />
         <div className="mb-2.5 h-5 w-full rounded-lg bg-gray-100" />

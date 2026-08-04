@@ -17,8 +17,8 @@ export default function EventCard({ event }) {
       to={`/etkinlikler/${event.slug}`}
       className="group/card flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)]"
     >
-      {/* Banner alanı - 1080x1080 kapak görselleriyle birebir uyumlu kare (1:1) alan korunuyor */}
-      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-gradient-to-br from-primary to-primary-light">
+      {/* Banner alanı - haberler sayfasındaki kartlarla aynı 900x500 (9:5) oranı */}
+      <div className="relative aspect-[9/5] w-full shrink-0 overflow-hidden bg-gradient-to-br from-primary to-primary-light">
         {event.coverImageUrl ? (
           <img
             src={event.coverImageUrl}
