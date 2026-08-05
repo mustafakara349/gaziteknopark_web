@@ -16,7 +16,7 @@ export default function EventFilterBar({
   setSort
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between md:p-6">
+    <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between md:rounded-full md:p-6">
       {/* Zaman Durumu Filtresi: native radio grubu, tam klavye ve ekran okuyucu desteği */}
       <fieldset className="flex flex-wrap items-center gap-2">
         <legend className="sr-only">Zaman durumuna göre filtrele</legend>

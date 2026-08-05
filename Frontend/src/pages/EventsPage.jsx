@@ -11,18 +11,11 @@ const SEARCH_DEBOUNCE_MS = 400;
 
 function CardSkeleton() {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.03)] animate-pulse">
-      <div className="aspect-[9/5] w-full bg-gray-100" />
-      <div className="flex flex-1 flex-col p-8">
-        <div className="mb-4 h-3.5 w-24 rounded-full bg-gray-100" />
-        <div className="mb-2.5 h-5 w-full rounded-lg bg-gray-100" />
-        <div className="mb-5 h-5 w-3/4 rounded-lg bg-gray-100" />
-        <div className="mb-2 h-3.5 w-full rounded-md bg-gray-100" />
-        <div className="mb-8 h-3.5 w-4/5 rounded-md bg-gray-100" />
-        <div className="mt-auto flex items-center gap-2">
-          <div className="h-4 w-24 rounded-md bg-gray-100" />
-          <div className="h-4 w-4 rounded-full bg-gray-100" />
-        </div>
+    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-gray-100 animate-pulse">
+      <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5">
+        <div className="h-3 w-28 rounded-full bg-gray-200" />
+        <div className="h-4 w-full rounded-md bg-gray-200" />
+        <div className="h-4 w-2/3 rounded-md bg-gray-200" />
       </div>
     </div>
   );
