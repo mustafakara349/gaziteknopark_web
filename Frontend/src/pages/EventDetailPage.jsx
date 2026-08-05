@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Calendar, Clock, MapPin, Share2, CalendarPlus, CalendarDays } from "lucide-react";
 import { getEventBySlug, getEventsList } from "../api/endpoints";
@@ -97,6 +97,23 @@ export default function EventDetailPage() {
   const [related, setRelated] = useState([]);
   const [prevEvent, setPrevEvent] = useState(null);
   const [nextEvent, setNextEvent] = useState(null);
+  const posterColRef = useRef(null);
+  const layoutRef = useRef(null);
+
+  useEffect(() => {
+    const posterEl = posterColRef.current;
+    const layoutEl = layoutRef.current;
+    if (!posterEl || !layoutEl) return;
+
+    const syncHeight = () => {
+      layoutEl.style.setProperty("--poster-col-h", `${posterEl.offsetHeight}px`);
+    };
+    syncHeight();
+
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(posterEl);
+    return () => observer.disconnect();
+  }, [status, event]);
 
   useEffect(() => {
     let cancelled = false;
@@ -265,65 +282,71 @@ export default function EventDetailPage() {
           {event.title}
         </h1>
 
-        {/* Kapak görseli - detay sayfasında 2:1 oranında, ortalanmış afiş */}
-        <div className="mb-10 overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
-          <div className="relative aspect-[2/1] w-full overflow-hidden bg-gradient-to-br from-primary to-primary-light">
-            {event.coverImageUrl ? (
-              <img
-                src={event.coverImageUrl}
-                alt={event.title}
-                className="absolute inset-0 h-full w-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-white/15">
-                <CalendarDays className="h-24 w-24" strokeWidth={1.2} />
+        {/* Afiş + bilgiler solda, açıklama sağda; sağdaki kart soldaki bloğun yüksekliğiyle eşleşir */}
+        <div ref={layoutRef} className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+          {/* Sol: Afiş ve altındaki bilgiler */}
+          <div ref={posterColRef} className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-primary to-primary-light">
+              {event.coverImageUrl ? (
+                <img
+                  src={event.coverImageUrl}
+                  alt={event.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-white/15">
+                  <CalendarDays className="h-24 w-24" strokeWidth={1.2} />
+                </div>
+              )}
+            </div>
+
+            {/* Etkinlik bilgileri - hakkımızda sayfasındaki görsel altı bilgi şeridiyle aynı düzen */}
+            {infoStats.length > 0 && (
+              <div className={`grid divide-x divide-gray-100 border-t border-gray-100 ${INFO_GRID_COLS[infoStats.length] || "grid-cols-3"}`}>
+                {infoStats.map((stat) => (
+                  <div key={stat.label} className="flex flex-col items-center gap-1.5 px-3 py-5 text-center">
+                    <stat.icon size={16} className="text-[#0066cc]" strokeWidth={2} />
+                    <p className="text-sm font-bold text-[#0B2558] md:text-base">{stat.value}</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500 md:text-[11px]">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {calendarUrl && (
+              <div className="border-t border-gray-100 p-4">
+                <a
+                  href={calendarUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0066cc] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0055b8]"
+                >
+                  <CalendarPlus size={16} />
+                  Takvime Ekle
+                </a>
               </div>
             )}
           </div>
 
-          {/* Etkinlik bilgileri - hakkımızda sayfasındaki görsel altı bilgi şeridiyle aynı düzen */}
-          {infoStats.length > 0 && (
-            <div className={`grid divide-x divide-gray-100 border-t border-gray-100 ${INFO_GRID_COLS[infoStats.length] || "grid-cols-3"}`}>
-              {infoStats.map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center gap-1.5 px-3 py-5 text-center">
-                  <stat.icon size={16} className="text-[#0066cc]" strokeWidth={2} />
-                  <p className="text-sm font-bold text-[#0B2558] md:text-base">{stat.value}</p>
-                  <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500 md:text-[11px]">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
+          {/* Sağ: Açıklama kartı - soldaki bloğun yüksekliğinde, taşan içerik aşağı doğru kayar */}
+          <div className="flex max-h-[70vh] min-h-0 flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm md:p-8 lg:max-h-[var(--poster-col-h)] lg:h-[var(--poster-col-h)]">
+            <h2 className="mb-4 shrink-0 text-lg font-bold text-[#0B2558]">Etkinlik Hakkında</h2>
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+              {event.description ? (
+                <div
+                  className="prose prose-sm md:prose-base max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc] leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                />
+              ) : (
+                <p className="text-sm text-gray-400">Bu etkinlik için henüz açıklama eklenmedi.</p>
+              )}
             </div>
-          )}
-
-          {calendarUrl && (
-            <div className="border-t border-gray-100 p-4">
-              <a
-                href={calendarUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0066cc] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0055b8]"
-              >
-                <CalendarPlus size={16} />
-                Takvime Ekle
-              </a>
-            </div>
-          )}
-        </div>
-
-        {/* Açıklama */}
-        <div>
-          {event.description ? (
-            <div
-              className="prose prose-sm md:prose-base max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc] leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: event.description }}
-            />
-          ) : (
-            <p className="text-sm text-gray-400">Bu etkinlik için henüz açıklama eklenmedi.</p>
-          )}
+          </div>
         </div>
 
         {/* Önceki / Sonraki Etkinlik */}
