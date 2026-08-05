@@ -32,10 +32,12 @@ export default function CompanyCard({ company }) {
 
   return (
     <div className="group flex flex-col rounded-3xl bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      {/* Logo Alanı: kare ikon ve geniş fonttype logolar için object-contain, kutu/arka plan yok */}
-      <div className="flex h-20 items-center justify-center">
+      {/* Logo Alanı: kare ikon ve geniş fonttype logolar için object-contain, kutu/arka plan yok.
+          Yükseklik geniş wordmark logolara göre değil, kare/dikey logolar da yeterince büyük
+          görünsün diye biraz daha ferah tutuluyor (yükseklik sınırlı kare logolar küçük kalmasın). */}
+      <div className="flex h-28 items-center justify-center">
         {logo ? (
-          <img src={logo} alt={companyName} className="max-h-full max-w-[75%] object-contain" />
+          <img src={logo} alt={companyName} className="max-h-full max-w-[85%] object-contain" />
         ) : (
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light text-base font-bold text-white">
             {getInitials(companyName)}
