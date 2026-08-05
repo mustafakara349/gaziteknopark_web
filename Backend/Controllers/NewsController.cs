@@ -32,7 +32,7 @@ public class NewsCategoriesController : ControllerBase
         return Ok(categories.Select(Map).ToList());
     }
 
-    [Authorize(Roles = "Admin,Editor")]
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<NewsCategoryDto>> Create(NewsCategoryUpsertDto dto)
     {
@@ -54,7 +54,7 @@ public class NewsCategoriesController : ControllerBase
         return CreatedAtAction(nameof(GetAll), new { id = category.Id }, Map(category));
     }
 
-    [Authorize(Roles = "Admin,Editor")]
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<NewsCategoryDto>> Update(uint id, NewsCategoryUpsertDto dto)
     {
@@ -79,7 +79,7 @@ public class NewsCategoriesController : ControllerBase
         return Ok(Map(category));
     }
 
-    [Authorize(Roles = "Admin,Editor")]
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(uint id)
     {
@@ -116,7 +116,7 @@ public class NewsController : ControllerBase
         _db = db;
     }
 
-    private bool IsPrivileged => User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Editor"));
+    private bool IsPrivileged => User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Editor") || User.IsInRole("SuperAdmin") || User.FindFirst("user_type")?.Value == "Admin" || User.FindFirst("user_type")?.Value == "SuperAdmin");
 
     [HttpGet]
     public async Task<ActionResult<List<NewsDto>>> GetAll(
@@ -137,7 +137,7 @@ public class NewsController : ControllerBase
 
         if (!IsPrivileged)
         {
-            query = query.Where(n => n.Status == ContentStatus.Published);
+            query = query.Where(n => n.Status == ContentStatus.Published && (n.UnpublishedAt == null || n.UnpublishedAt > DateTime.UtcNow));
         }
         if (categoryId.HasValue && categoryId.Value > 0)
         {
@@ -236,6 +236,7 @@ public class NewsController : ControllerBase
                 CoverImageUrl = coverImageUrl,
                 Status = n.Status.ToString(),
                 PublishedAt = n.PublishedAt,
+                UnpublishedAt = n.UnpublishedAt,
                 Views = n.Views,
                 CreatedAt = n.CreatedAt,
                 IsFeatured = n.IsFeatured,
@@ -301,7 +302,7 @@ public class NewsController : ControllerBase
         return Ok(dto);
     }
 
-    [Authorize(Roles = "Admin,Editor")]
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<NewsDto>> Create(NewsUpsertDto dto)
     {
@@ -317,6 +318,7 @@ public class NewsController : ControllerBase
             CoverImageFileId = dto.CoverImageFileId,
             Status = status,
             PublishedAt = dto.PublishedAt,
+            UnpublishedAt = dto.UnpublishedAt,
             IsFeatured = dto.IsFeatured,
             AuthorName = dto.AuthorName,
             ReadTime = dto.ReadTime,
@@ -368,7 +370,7 @@ public class NewsController : ControllerBase
         return CreatedAtAction(nameof(GetByIdOrSlug), new { idOrSlug = news.Id }, await MapAsync(news, _db));
     }
 
-    [Authorize(Roles = "Admin,Editor")]
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<NewsDto>> Update(uint id, NewsUpsertDto dto)
     {
@@ -385,6 +387,7 @@ public class NewsController : ControllerBase
         news.CoverImageFileId = dto.CoverImageFileId;
         news.Status = status;
         news.PublishedAt = dto.PublishedAt;
+        news.UnpublishedAt = dto.UnpublishedAt;
         news.IsFeatured = dto.IsFeatured;
         news.AuthorName = dto.AuthorName;
         news.ReadTime = dto.ReadTime;
@@ -439,7 +442,7 @@ public class NewsController : ControllerBase
         return Ok(await MapAsync(news, _db));
     }
 
-    [Authorize(Roles = "Admin,Editor")]
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(uint id)
     {
@@ -471,6 +474,7 @@ public class NewsController : ControllerBase
             CoverImageUrl = coverImageUrl,
             Status = n.Status.ToString(),
             PublishedAt = n.PublishedAt,
+            UnpublishedAt = n.UnpublishedAt,
             Views = n.Views,
             CreatedAt = n.CreatedAt,
             IsFeatured = n.IsFeatured,
