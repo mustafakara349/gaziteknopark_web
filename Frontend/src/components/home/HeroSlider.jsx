@@ -3,8 +3,16 @@ import { getSliders } from "../../api/endpoints";
 import { pickTranslation } from "../../utils/i18n";
 
 const defaultSlides = [
+
   {
     id: "default-1",
+    type: "image_only",
+    title: "Gazi Teknopark",
+    imageUrl: "/slider-1.jpeg",
+  },
+
+  {
+    id: "default-2",
     type: "button_hero",
     badge: "GİRİŞİMCİLİK VE AR-GE",
     title: "Gazi Teknopark'ta Yeriniz Hazır",
@@ -14,11 +22,10 @@ const defaultSlides = [
     primaryButtonUrl: "https://argeportal.gaziteknopark.com.tr/onbasvuruformu",
     secondaryButtonText: "Hizmetlerimizi İnceleyin",
     secondaryButtonUrl: "/hakkinda/hizmetlerimiz",
-    imageUrl:
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
+    imageUrl: "/slider-1.jpeg",
   },
   {
-    id: "default-2",
+    id: "default-3",
     type: "announcement",
     badge: "DUYURU & BİGG",
     title: "TÜBİTAK BİGG 2026 Çağrı Başvuruları Devam Ediyor",
@@ -30,7 +37,7 @@ const defaultSlides = [
       "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop",
   },
   {
-    id: "default-3",
+    id: "default-4",
     type: "pure_visual",
     badge: "KAMPÜS & AR-GE MERKEZİ",
     title: "Teknolojinin ve İnovasyonun Merkezi",
@@ -131,8 +138,8 @@ export default function HeroSlider() {
                     <div className="relative z-10 flex h-full w-full flex-col justify-center px-8 pt-[120px] pb-12 md:px-16 lg:px-24">
                       <div
                         className={`max-w-2xl transition-all duration-500 delay-100 transform ${index === active
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 translate-y-4"
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
                           }`}
                       >
                         {badge && (
@@ -178,8 +185,8 @@ export default function HeroSlider() {
                     <div className="relative z-10 flex h-full w-full flex-col justify-center px-8 pt-[120px] pb-12 md:px-16 lg:px-24">
                       <div
                         className={`max-w-xl transition-all duration-500 delay-100 transform ${index === active
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 translate-y-4"
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
                           }`}
                       >
                         {badge && (
@@ -215,8 +222,8 @@ export default function HeroSlider() {
                     <div className="relative z-10 flex h-full w-full flex-col justify-end px-8 pb-20 pt-[120px] md:px-16 lg:px-24">
                       <div
                         className={`transition-all duration-500 delay-100 transform ${index === active
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 translate-y-4"
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
                           }`}
                       >
                         {badge && (

@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Share2, Mail, Paperclip, Download, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Share2, Mail, Paperclip, Download, Tag, ChevronLeft, ChevronRight, Pin } from 'lucide-react';
 import DOMPurify from 'dompurify';
-import { getAnnouncementBySlug } from '../api/endpoints';
+import { getAnnouncementBySlug, getAnnouncements } from '../api/endpoints';
 
 export default function AnnouncementDetailPage() {
   const { slug } = useParams();
   const [announcement, setAnnouncement] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [relatedAnnouncements, setRelatedAnnouncements] = useState([]);
+  const [prevAnnouncement, setPrevAnnouncement] = useState(null);
+  const [nextAnnouncement, setNextAnnouncement] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -23,10 +26,57 @@ export default function AnnouncementDetailPage() {
       .finally(() => setLoading(false));
   }, [slug]);
 
+  useEffect(() => {
+    if (!announcement) return;
+    let cancelled = false;
+
+    getAnnouncements({ pageSize: 100 })
+      .then((res) => {
+        if (cancelled) return;
+        const list = Array.isArray(res) ? res : (res?.data || []);
+
+        setRelatedAnnouncements(
+          list.filter((item) => item.id !== announcement.id && item.slug !== announcement.slug).slice(0, 3)
+        );
+
+        const idx = list.findIndex(
+          (item) => item.id === announcement.id || (item.slug && item.slug === announcement.slug)
+        );
+
+        if (idx !== -1) {
+          setPrevAnnouncement(idx > 0 ? list[idx - 1] : null);
+          setNextAnnouncement(idx < list.length - 1 ? list[idx + 1] : null);
+        } else {
+          setPrevAnnouncement(null);
+          setNextAnnouncement(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRelatedAnnouncements([]);
+          setPrevAnnouncement(null);
+          setNextAnnouncement(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [announcement]);
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     return new Date(dateString).toLocaleDateString('tr-TR', options);
+  };
+
+  const parseDateParts = (dateString) => {
+    if (!dateString) return { day: "", month: "" };
+    const date = new Date(dateString);
+    if (isNaN(date)) return { day: "", month: "" };
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleDateString('tr-TR', { month: 'short' });
+    return { day, month };
   };
 
   const handleShare = () => {
@@ -235,7 +285,109 @@ export default function AnnouncementDetailPage() {
 
         </div>
 
+        {/* Önceki & Sonraki Duyuru Butonları */}
+        {(prevAnnouncement || nextAnnouncement) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 mb-12">
+            {prevAnnouncement ? (
+              <Link
+                to={`/duyurular/${prevAnnouncement.slug || prevAnnouncement.id}`}
+                className="group flex items-center gap-4 p-5 rounded-[2rem] border border-gray-100 bg-white shadow-sm hover:border-[#0066cc]/30 hover:shadow-md transition-all"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066cc] flex items-center justify-center shrink-0 shadow-sm group-hover:bg-[#0066cc] group-hover:text-white transition-all">
+                  <ChevronLeft size={20} />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[0.75rem] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
+                    Önceki Duyuru
+                  </span>
+                  <span className="text-sm font-bold text-[#0B2558] line-clamp-1 group-hover:text-[#0066cc] transition-colors">
+                    {prevAnnouncement.title || "Önceki Duyuru"}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
+
+            {nextAnnouncement ? (
+              <Link
+                to={`/duyurular/${nextAnnouncement.slug || nextAnnouncement.id}`}
+                className="group flex items-center justify-end text-right gap-4 p-5 rounded-[2rem] border border-gray-100 bg-white shadow-sm hover:border-[#0066cc]/30 hover:shadow-md transition-all sm:col-start-2"
+              >
+                <div className="min-w-0">
+                  <span className="text-[0.75rem] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
+                    Sonraki Duyuru
+                  </span>
+                  <span className="text-sm font-bold text-[#0B2558] line-clamp-1 group-hover:text-[#0066cc] transition-colors">
+                    {nextAnnouncement.title || "Sonraki Duyuru"}
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066cc] flex items-center justify-center shrink-0 shadow-sm group-hover:bg-[#0066cc] group-hover:text-white transition-all">
+                  <ChevronRight size={20} />
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
+          </div>
+        )}
+
       </div>
+
+      {/* Diğer Duyurular */}
+      {relatedAnnouncements.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
+          <h3 className="mb-6 text-2xl font-bold text-[#0B2558]">Diğer Duyurular</h3>
+          <div className="space-y-4">
+            {relatedAnnouncements.map((item) => {
+              const { day, month } = parseDateParts(item.publishedAt);
+              const itemCategory = item.categoryName || "Duyuru";
+
+              return (
+                <Link
+                  key={item.id}
+                  to={`/duyurular/${item.slug || item.id}`}
+                  className="bg-white rounded-[2rem] p-5 flex flex-col md:flex-row items-center justify-between border border-gray-100 hover:border-blue-300 transition-all group cursor-pointer shadow-sm hover:shadow-md"
+                >
+                  <div className="flex items-start md:items-center gap-5 md:gap-6 w-full md:w-auto flex-1">
+                    {/* Date Block */}
+                    <div className="w-16 h-20 md:w-20 md:h-24 rounded-2xl bg-[#EBF3FF] flex flex-col items-center justify-center shrink-0">
+                      <span className="text-2xl md:text-3xl font-extrabold text-[#1E3A8A] leading-none mb-1">{day}</span>
+                      <span className="text-xs font-semibold text-[#1E3A8A] uppercase tracking-wider">{month}</span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="px-3 py-0.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-full uppercase tracking-wide">
+                          {itemCategory}
+                        </span>
+                        {item.isPinned && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-[#0066cc] text-xs font-bold rounded-full border border-blue-100 uppercase tracking-wide">
+                            <Pin size={11} className="fill-[#0066cc]" />
+                            Öne Çıkan
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-base md:text-lg font-bold text-[#0B2558] mb-1.5 group-hover:text-[#0066cc] transition-colors leading-snug truncate">
+                        {item.title}
+                      </h4>
+                      <p className="text-gray-500 text-xs md:text-sm leading-relaxed line-clamp-1 md:pr-8">
+                        {item.summary}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Detay Link */}
+                  <div className="hidden md:flex items-center gap-2 text-[#0066cc] font-semibold text-sm shrink-0 pl-6 border-l border-gray-100 h-full py-4 ml-4">
+                    Detay <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
