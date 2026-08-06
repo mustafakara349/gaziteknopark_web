@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/layout/Layout";
+import ScrollToTop from "./components/common/ScrollToTop";
 import HomePage from "./pages/HomePage";
 import AboutUs from "./pages/AboutUs";
 import ComingSoonPage from "./pages/ComingSoonPage";
@@ -40,8 +42,15 @@ import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 function App() {
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
   return (
     <AuthProvider>
+      <ScrollToTop />
       <Routes>
         {/* ─── Public Routes ──────────────────────────── */}
         <Route element={<Layout />}>
