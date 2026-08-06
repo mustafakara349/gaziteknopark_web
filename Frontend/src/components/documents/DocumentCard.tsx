@@ -43,10 +43,8 @@ const getFileTypeStyle = (ext: string) => {
 };
 
 export default function DocumentCard({ document, categoryName, onPreview }: DocumentCardProps) {
-  const t = pickTranslation(document) as { title?: string; fileUrl?: string; filePath?: string; fileSize?: number };
-  const title = t.title || "İsimsiz Belge";
-  const fileUrl = t.fileUrl;
-  const fileSize = t.fileSize;
+  const title = document.title || "İsimsiz Belge";
+  const fileUrl = document.externalUrl;
 
   const getFileExtension = (urlOrPath?: string) => {
     if (!urlOrPath) return "pdf";
@@ -55,8 +53,8 @@ export default function DocumentCard({ document, categoryName, onPreview }: Docu
     return ext || "pdf";
   };
 
-  const fileExt = getFileExtension(fileUrl || t.filePath);
-  const sizeText = formatSize(fileSize);
+  const fileExt = getFileExtension(fileUrl);
+  const sizeText = "";
   const dateText = formatDateMonthYear(document.publishedDate);
 
   const handleCardClick = () => {
@@ -77,9 +75,7 @@ export default function DocumentCard({ document, categoryName, onPreview }: Docu
     if (!fileUrl) {
       e.preventDefault();
       alert("Dosya bağlantısı bulunamadı.");
-      return;
     }
-    window.open(fileUrl, "_blank");
   };
 
   return (
@@ -139,6 +135,8 @@ export default function DocumentCard({ document, categoryName, onPreview }: Docu
         <a
           href={fileUrl || "#"}
           onClick={handleDownloadClick}
+          target="_blank"
+          rel="noopener noreferrer"
           download
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-primary-light cursor-pointer sm:w-auto shadow-sm shadow-primary/10 active:scale-95"
         >

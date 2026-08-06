@@ -55,6 +55,11 @@ public class Document
     public DateTime? DeletedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
+    [Required, MaxLength(255)]
+    public string Title { get; set; } = string.Empty;
+    [MaxLength(2000)]
+    public string? ExternalUrl { get; set; }
+
     [ForeignKey(nameof(CategoryId))]
     public DocumentCategory? Category { get; set; }
 
