@@ -1,14 +1,14 @@
 import { useRef, useState } from "react";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
-import { latLngToVector3 } from "./GlobeScene";
+import { latLngToVector3 } from "./globeUtils";
 
-// Custom label offsets per city to prevent overlap in densely populated regions (e.g. London & Amsterdam)
+// Custom label offsets per city to prevent overlap
 const CITY_LABEL_OFFSETS = {
-  london: [-0.14, 0.18, 0],   // Top-left offset for London
-  amsterdam: [0.14, 0.14, 0], // Top-right offset for Amsterdam
-  ankara: [0, 0.16, 0],       // Centered for Ankara
-  dubai: [0, 0.16, 0],        // Centered for Dubai
+  london: [-0.14, 0.16, 0],
+  amsterdam: [0.14, 0.14, 0],
+  ankara: [0, 0.16, 0],
+  dubai: [0, 0.16, 0],
 };
 
 export default function GlobeMarker({ office, radius = 2, isSelected, onClick }) {
@@ -18,22 +18,30 @@ export default function GlobeMarker({ office, radius = 2, isSelected, onClick })
   const pos = latLngToVector3(office.latitude, office.longitude, radius + 0.03);
   const labelOffset = CITY_LABEL_OFFSETS[office.id] || [0, 0.16, 0];
 
-  // Normal vector pointing outward from sphere center
   const normal = pos.clone().normalize();
   const pinQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
 
+  // All markers use Gazi Red (#e30613)
+  const beaconColor = "#e30613";
+  const ringColor = "#e30613";
+
   return (
     <group position={pos} quaternion={pinQuaternion}>
-      {/* Concentric Glowing Red Pulse Rings on Earth Surface */}
+      {/* Concentric Gazi Red Pulse Ring on Earth Surface */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.02, 0.05, 32]} />
-        <meshBasicMaterial color="#e30613" transparent opacity={hovered || isSelected ? 0.9 : 0.45} side={THREE.DoubleSide} />
+        <ringGeometry args={[0.02, 0.06, 32]} />
+        <meshBasicMaterial
+          color={ringColor}
+          transparent
+          opacity={hovered || isSelected ? 0.95 : 0.6}
+          side={THREE.DoubleSide}
+        />
       </mesh>
 
-      {/* 3D Premium Pushpin (Raptiye) Mesh Group */}
+      {/* 3D Modern Soft Beacon Dot */}
       <group
         ref={pinRef}
-        scale={hovered || isSelected ? [1.2, 1.2, 1.2] : [0.9, 0.9, 0.9]}
+        scale={hovered || isSelected ? [1.3, 1.3, 1.3] : [1, 1, 1]}
         onPointerOver={(e) => {
           e.stopPropagation();
           setHovered(true);
@@ -48,53 +56,38 @@ export default function GlobeMarker({ office, radius = 2, isSelected, onClick })
           onClick(office);
         }}
       >
-        {/* Silver Metallic Pin Needle Tip */}
-        <mesh position={[0, 0.04, 0]}>
-          <coneGeometry args={[0.01, 0.08, 16]} />
-          <meshStandardMaterial color="#f1f5f9" metalness={0.95} roughness={0.1} />
-        </mesh>
-
-        {/* Red Metallic Pushpin Body Rim */}
-        <mesh position={[0, 0.08, 0]}>
-          <cylinderGeometry args={[0.035, 0.016, 0.025, 16]} />
-          <meshStandardMaterial color="#e30613" roughness={0.15} metalness={0.2} />
-        </mesh>
-
-        {/* Red Metallic Pushpin Knob Head */}
-        <mesh position={[0, 0.105, 0]}>
-          <sphereGeometry args={[0.038, 16, 16]} />
+        {/* Inner Glowing Core Dot in Gazi Red */}
+        <mesh position={[0, 0.05, 0]}>
+          <sphereGeometry args={[0.045, 24, 24]} />
           <meshStandardMaterial
-            color="#e30613"
-            emissive="#e30613"
-            emissiveIntensity={isSelected ? 0.7 : 0.3}
-            roughness={0.1}
+            color={beaconColor}
+            emissive={beaconColor}
+            emissiveIntensity={hovered || isSelected ? 0.95 : 0.6}
+            roughness={0.15}
           />
         </mesh>
       </group>
 
-      {/* Micro Glassmorphic City Tag Label with Smart Offset to Prevent Overlap */}
-      <Html
-        position={labelOffset}
-        center
-        zIndexRange={[10, 0]}
-      >
+      {/* Modern Soft City Tag Pill (All Red Accents) */}
+      <Html position={labelOffset} center zIndexRange={[10, 0]}>
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onClick(office);
           }}
-          className={`group flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-tight uppercase transition-all duration-200 cursor-pointer whitespace-nowrap border border-white/20 shadow-xs ${
+          className={`group flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer whitespace-nowrap border shadow-sm font-sans ${
             isSelected
-              ? "bg-[#e30613] text-white ring-1 ring-white/60 scale-95"
+              ? "bg-[#e30613] text-white border-[#e30613] ring-2 ring-[#e30613]/50 scale-105"
               : hovered
-              ? "bg-[#082b5c] text-white scale-95"
-              : "bg-[#051d40]/85 text-white/90 backdrop-blur-xs hover:border-white/50"
+              ? "bg-[#b8040f] text-white border-[#b8040f] scale-105"
+              : "bg-white/95 text-[#0B2558] border-gray-200 backdrop-blur-md hover:border-[#e30613]"
           }`}
-          style={{ transform: "scale(0.85)" }}
         >
-          <span className="text-[9px]">{office.flag}</span>
-          <span className="font-extrabold">{office.city}</span>
+          <span className="font-extrabold text-[9px] px-1 py-0.5 rounded bg-[#e30613] text-white">
+            {office.countryCode || "TR"}
+          </span>
+          <span className="font-bold">{office.city}</span>
         </button>
       </Html>
     </group>
