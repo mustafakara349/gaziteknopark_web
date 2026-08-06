@@ -54,8 +54,10 @@ public class Announcement
     public uint? CoverImageFileId { get; set; }
     public ContentStatus Status { get; set; } = ContentStatus.Draft;
     public DateTime? PublishedAt { get; set; }
+    public DateTime? UnpublishedAt { get; set; }
     public uint Views { get; set; }
     public bool IsPinned { get; set; }
+    public bool IsActive { get; set; } = true;
 
     // Core Text Content Fields
     [MaxLength(255)]

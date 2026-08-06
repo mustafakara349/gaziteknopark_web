@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, ChevronLeft, ChevronRight, ArrowRight, Calendar, Filter, RotateCcw, ChevronDown, Pin } from "lucide-react";
 import apiClient from "../api/client";
 import { getAnnouncementCategories } from "../api/endpoints";
+import { getImageUrl } from "../utils/imageUrl";
 
 const ITEMS_PER_PAGE = 6;
 

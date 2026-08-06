@@ -116,7 +116,21 @@ public class AnnouncementsController : ControllerBase
         _db = db;
     }
 
-    private bool IsPrivileged => User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Editor"));
+    private bool IsPrivileged => User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Editor") || User.IsInRole("SuperAdmin") || User.FindFirst("user_type")?.Value == "Admin" || User.FindFirst("user_type")?.Value == "SuperAdmin");
+
+    private async Task DeactivateExpiredAnnouncementsAsync()
+    {
+        try
+        {
+            await _db.Announcements
+                .Where(a => a.IsActive && a.UnpublishedAt.HasValue && a.UnpublishedAt.Value <= DateTime.UtcNow)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.IsActive, false));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DeactivateExpiredAnnouncements Error]: {ex.Message}");
+        }
+    }
 
     [HttpGet]
     public async Task<ActionResult<List<AnnouncementDto>>> GetAll(
@@ -130,6 +144,7 @@ public class AnnouncementsController : ControllerBase
         [FromQuery] int? page,
         [FromQuery] int? pageSize)
     {
+        await DeactivateExpiredAnnouncementsAsync();
         var query = _db.Announcements
             .AsNoTracking()
             .Include(a => a.Category)
@@ -138,7 +153,10 @@ public class AnnouncementsController : ControllerBase
 
         if (!IsPrivileged)
         {
-            query = query.Where(a => a.Status == ContentStatus.Published);
+            var now = DateTime.UtcNow;
+            query = query.Where(a => a.IsActive && 
+                                     (a.PublishedAt == null || a.PublishedAt <= now) &&
+                                     (a.UnpublishedAt == null || a.UnpublishedAt > now));
         }
         if (isPinned.HasValue)
         {
@@ -206,10 +224,12 @@ public class AnnouncementsController : ControllerBase
             CoverImageFileId = a.CoverImageFileId,
             CoverImageUrl = a.CoverImageFileId.HasValue && fileMap.TryGetValue(a.CoverImageFileId.Value, out var cPath) ? cPath : null,
             Status = a.Status.ToString(),
-            PublishedAt = a.PublishedAt,
+            PublishedAt = a.PublishedAt.HasValue ? DateTime.SpecifyKind(a.PublishedAt.Value, DateTimeKind.Utc) : null,
+            UnpublishedAt = a.UnpublishedAt.HasValue ? DateTime.SpecifyKind(a.UnpublishedAt.Value, DateTimeKind.Utc) : null,
             Views = a.Views,
-            CreatedAt = a.CreatedAt,
+            CreatedAt = a.CreatedAt.HasValue ? DateTime.SpecifyKind(a.CreatedAt.Value, DateTimeKind.Utc) : null,
             IsPinned = a.IsPinned,
+            IsActive = a.IsActive,
             Title = a.Title,
             Slug = a.Slug,
             Summary = a.Summary,
@@ -232,6 +252,7 @@ public class AnnouncementsController : ControllerBase
     [HttpGet("{idOrSlug}")]
     public async Task<ActionResult<AnnouncementDto>> GetByIdOrSlug(string idOrSlug)
     {
+        await DeactivateExpiredAnnouncementsAsync();
         Announcement? announcement = null;
         if (uint.TryParse(idOrSlug, out var id))
         {
@@ -252,7 +273,16 @@ public class AnnouncementsController : ControllerBase
         }
 
         if (announcement is null) return NotFound();
-        if (!IsPrivileged && announcement.Status != ContentStatus.Published) return NotFound();
+        if (!IsPrivileged)
+        {
+            var now = DateTime.UtcNow;
+            if (!announcement.IsActive || 
+                (announcement.PublishedAt.HasValue && announcement.PublishedAt.Value > now) || 
+                (announcement.UnpublishedAt.HasValue && announcement.UnpublishedAt.Value <= now))
+            {
+                return NotFound();
+            }
+        }
 
         announcement.Views++;
         await _db.SaveChangesAsync();
@@ -265,6 +295,11 @@ public class AnnouncementsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<AnnouncementDto>> Create(AnnouncementUpsertDto dto)
     {
+        if (dto.IsActive && dto.UnpublishedAt.HasValue && dto.UnpublishedAt.Value <= DateTime.UtcNow)
+        {
+            return BadRequest("Duyuruyu tekrar aktifleştirebilmek için lütfen yayından kaldırılma tarihini kontrol ediniz.");
+        }
+
         if (!EnumParsing.TryParse<ContentStatus>(dto.Status, out var status))
         {
             return BadRequest("Geçersiz durum değeri.");
@@ -277,7 +312,9 @@ public class AnnouncementsController : ControllerBase
             CoverImageFileId = dto.CoverImageFileId,
             Status = status,
             PublishedAt = dto.PublishedAt,
+            UnpublishedAt = dto.UnpublishedAt,
             IsPinned = dto.IsPinned,
+            IsActive = dto.IsActive,
             Title = dto.Title,
             Slug = dto.Slug,
             Summary = dto.Summary,
@@ -331,6 +368,11 @@ public class AnnouncementsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<AnnouncementDto>> Update(uint id, AnnouncementUpsertDto dto)
     {
+        if (dto.IsActive && dto.UnpublishedAt.HasValue && dto.UnpublishedAt.Value <= DateTime.UtcNow)
+        {
+            return BadRequest("Duyuruyu tekrar aktifleştirebilmek için lütfen yayından kaldırılma tarihini kontrol ediniz.");
+        }
+
         if (!EnumParsing.TryParse<ContentStatus>(dto.Status, out var status))
         {
             return BadRequest("Geçersiz durum değeri.");
@@ -344,7 +386,9 @@ public class AnnouncementsController : ControllerBase
         announcement.CoverImageFileId = dto.CoverImageFileId;
         announcement.Status = status;
         announcement.PublishedAt = dto.PublishedAt;
+        announcement.UnpublishedAt = dto.UnpublishedAt;
         announcement.IsPinned = dto.IsPinned;
+        announcement.IsActive = dto.IsActive;
         announcement.Title = dto.Title;
         announcement.Slug = dto.Slug;
         announcement.Summary = dto.Summary;
@@ -432,10 +476,12 @@ public class AnnouncementsController : ControllerBase
             CoverImageFileId = a.CoverImageFileId,
             CoverImageUrl = coverImageUrl,
             Status = a.Status.ToString(),
-            PublishedAt = a.PublishedAt,
+            PublishedAt = a.PublishedAt.HasValue ? DateTime.SpecifyKind(a.PublishedAt.Value, DateTimeKind.Utc) : null,
+            UnpublishedAt = a.UnpublishedAt.HasValue ? DateTime.SpecifyKind(a.UnpublishedAt.Value, DateTimeKind.Utc) : null,
             Views = a.Views,
-            CreatedAt = a.CreatedAt,
+            CreatedAt = a.CreatedAt.HasValue ? DateTime.SpecifyKind(a.CreatedAt.Value, DateTimeKind.Utc) : null,
             IsPinned = a.IsPinned,
+            IsActive = a.IsActive,
             Title = a.Title,
             Slug = a.Slug,
             Summary = a.Summary,
