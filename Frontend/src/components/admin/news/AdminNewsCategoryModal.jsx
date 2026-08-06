@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import adminAxios from "../../../utils/adminAxios";
 import { X, Plus, Edit2, Trash2, Check, Loader2 } from "lucide-react";
 
-export default function AdminNewsCategoryModal({ isOpen, onClose }) {
+export default function AdminNewsCategoryModal({ isOpen, onClose, onSuccess }) {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -46,7 +46,7 @@ export default function AdminNewsCategoryModal({ isOpen, onClose }) {
   };
 
   const handleSave = async () => {
-    if (!name) return;
+    if (!name.trim()) return;
     
     // Check for duplicate orderNo
     const isDuplicateOrder = categories.some(
@@ -79,8 +79,10 @@ export default function AdminNewsCategoryModal({ isOpen, onClose }) {
       
       await fetchCategories();
       resetForm();
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Error saving category", error);
+      alert("Kategori kaydedilirken bir hata oluştu.");
     } finally {
       setIsLoading(false);
     }
@@ -93,8 +95,10 @@ export default function AdminNewsCategoryModal({ isOpen, onClose }) {
     try {
       await adminAxios.delete(`/news-categories/${id}`);
       await fetchCategories();
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Error deleting category", error);
+      alert("Kategori silinirken bir hata oluştu.");
     } finally {
       setIsLoading(false);
     }

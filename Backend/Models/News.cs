@@ -52,10 +52,11 @@ public class News
     public Guid? Uuid { get; set; }
     public uint? CategoryId { get; set; }
     public uint? CoverImageFileId { get; set; }
-    public ContentStatus Status { get; set; } = ContentStatus.Draft;
+    public ContentStatus Status { get; set; } = ContentStatus.Published;
     public DateTime? PublishedAt { get; set; }
     public uint Views { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsActive { get; set; } = true;
     [MaxLength(100)]
     public string? AuthorName { get; set; }
     public int? ReadTime { get; set; }

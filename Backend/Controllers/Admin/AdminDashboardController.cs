@@ -23,7 +23,7 @@ public class AdminDashboardController : ControllerBase
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats()
     {
-        var totalNews = await _db.News.CountAsync(n => n.Status == ContentStatus.Published);
+        var totalNews = await _db.News.CountAsync(n => n.IsActive && n.DeletedAt == null);
         var totalAnnouncements = await _db.Announcements.CountAsync(a => a.Status == ContentStatus.Published);
         var totalCompanies = await _db.Companies.CountAsync(c => c.DeletedAt == null);
         var totalEvents = await _db.Events.CountAsync(e => e.Status == ContentStatus.Published);

@@ -1,27 +1,34 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import adminAxios from "../../../utils/adminAxios";
-import { X, Save, Loader2, Image as ImageIcon, Upload } from "lucide-react";
+import { X, Save, Loader2, Upload, Trash2 } from "lucide-react";
 import RichTextEditor from "../common/RichTextEditor";
+import { formatContentLinks } from "../../../utils/htmlSanitizer";
+import { getImageUrl } from "../../../utils/imageUrl";
 
 export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId, categories }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
     categoryId: "",
-    status: "draft",
+    isActive: true,
+    authorName: "",
     summary: "",
     content: "",
     publishedAt: "",
     unpublishedAt: "",
     readTime: "",
-    coverImageFileId: ""
+    coverImageFileId: "",
+    additionalImageFileIds: []
   });
   
   const [coverImageUrl, setCoverImageUrl] = useState(null);
+  const [additionalImageUrls, setAdditionalImageUrls] = useState([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -33,24 +40,38 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
     }
   }, [isOpen, editId]);
 
+  const safeFormatDate = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      return d.toISOString().slice(0, 16);
+    } catch {
+      return "";
+    }
+  };
+
   const fetchNewsDetails = async (id) => {
     setIsLoading(true);
     try {
-      const response = await adminAxios.get(`/news/${id}`);
+      const response = await adminAxios.get(`/news/${id}?countView=false`);
       const data = response.data;
       setFormData({
         title: data.title || "",
         slug: data.slug || "",
         categoryId: data.categoryId || "",
-        status: data.status || "draft",
+        isActive: data.isActive !== undefined ? data.isActive : true,
+        authorName: data.authorName || "",
         summary: data.summary || "",
         content: data.content || "",
-        publishedAt: data.publishedAt ? new Date(data.publishedAt).toISOString().slice(0, 16) : "",
-        unpublishedAt: data.unpublishedAt ? new Date(data.unpublishedAt).toISOString().slice(0, 16) : "",
+        publishedAt: safeFormatDate(data.publishedAt),
+        unpublishedAt: safeFormatDate(data.unpublishedAt),
         readTime: data.readTime || "",
-        coverImageFileId: data.coverImageFileId || ""
+        coverImageFileId: data.coverImageFileId || "",
+        additionalImageFileIds: data.additionalImageFileIds || []
       });
-      setCoverImageUrl(data.coverImageUrl || null);
+      setCoverImageUrl(data.coverImageUrl);
+      setAdditionalImageUrls(data.additionalImageUrls || []);
     } catch (error) {
       console.error("Error fetching news details", error);
     } finally {
@@ -63,20 +84,27 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
       title: "",
       slug: "",
       categoryId: "",
-      status: "draft",
+      isActive: true,
+      authorName: "",
       summary: "",
       content: "",
       publishedAt: "",
       unpublishedAt: "",
       readTime: "",
-      coverImageFileId: ""
+      coverImageFileId: "",
+      additionalImageFileIds: []
     });
     setCoverImageUrl(null);
+    setAdditionalImageUrls([]);
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    let parsedValue = value;
+    if (name === "isActive") {
+      parsedValue = value === "true";
+    }
+    setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
 
   const handleContentChange = (value) => {
@@ -99,9 +127,7 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
       const fileId = response.data.id;
       const fileUrl = response.data.url;
       setFormData(prev => ({ ...prev, coverImageFileId: fileId }));
-      
-      const baseUrl = import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') : 'http://localhost:5080';
-      setCoverImageUrl(fileUrl.startsWith('http') ? fileUrl : `${baseUrl}${fileUrl}`);
+      setCoverImageUrl(fileUrl);
     } catch (error) {
       console.error("Error uploading file", error);
       alert("Dosya yüklenirken bir hata oluştu.");
@@ -113,28 +139,85 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
     }
   };
 
+  const handleGalleryUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setIsGalleryUploading(true);
+    try {
+      const newIds = [];
+      const newUrls = [];
+      
+      for (const file of files) {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", file);
+        
+        const response = await adminAxios.post("/files/upload", formDataUpload, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        
+        newIds.push(response.data.id);
+        newUrls.push(response.data.url);
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        additionalImageFileIds: [...(prev.additionalImageFileIds || []), ...newIds]
+      }));
+      setAdditionalImageUrls(prev => [...prev, ...newUrls]);
+    } catch (error) {
+      console.error("Error uploading gallery files", error);
+      alert("Galeri görselleri yüklenirken bir hata oluştu.");
+    } finally {
+      setIsGalleryUploading(false);
+      if (galleryInputRef.current) {
+        galleryInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveGalleryImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalImageFileIds: (prev.additionalImageFileIds || []).filter((_, i) => i !== index)
+    }));
+    setAdditionalImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.isActive && formData.unpublishedAt) {
+      const unpublishDate = new Date(formData.unpublishedAt);
+      if (unpublishDate <= new Date()) {
+        alert("Haberi tekrar aktifleştirebilmek için lütfen yayından kaldırılma tarihini kontrol ediniz.");
+        return;
+      }
+    }
+
     setIsLoading(true);
     try {
+      const formattedContent = formatContentLinks(formData.content);
       const payload = {
         title: formData.title,
         slug: formData.slug || formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
-        status: formData.status,
+        isActive: formData.isActive,
+        authorName: formData.authorName ? formData.authorName.trim() : "Gazi Teknopark",
         summary: formData.summary,
-        content: formData.content,
+        content: formattedContent,
         publishedAt: formData.publishedAt ? new Date(formData.publishedAt).toISOString() : null,
         unpublishedAt: formData.unpublishedAt ? new Date(formData.unpublishedAt).toISOString() : null,
         readTime: formData.readTime ? parseInt(formData.readTime) : null,
         coverImageFileId: formData.coverImageFileId ? parseInt(formData.coverImageFileId) : null,
+        additionalImageFileIds: formData.additionalImageFileIds || [],
         translations: [
           {
             languageId: 1, // Default TR
             title: formData.title,
             slug: formData.slug || formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
             summary: formData.summary,
-            content: formData.content,
+            content: formattedContent,
           }
         ]
       };
@@ -148,7 +231,8 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
       onSuccess();
     } catch (error) {
       console.error("Error saving news", error);
-      alert("Bir hata oluştu. Lütfen tüm zorunlu alanları kontrol edin.");
+      const serverMessage = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null);
+      alert(serverMessage || "Bir hata oluştu. Lütfen tüm zorunlu alanları kontrol edin.");
     } finally {
       setIsLoading(false);
     }
@@ -173,9 +257,9 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
         <div className="flex-1 overflow-y-auto p-6">
           <form id="newsForm" onSubmit={handleSubmit} className="space-y-6">
             
-            {/* Top Row: Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+            {/* Top Row: Basic Info & Author */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Başlık *</label>
                 <input
                   type="text"
@@ -205,22 +289,36 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
               </div>
             </div>
 
-            {/* Second Row: Status, Dates, ReadTime */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Second Row: Author & Status (Aktiflik) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Durum</label>
+                <label className="block text-sm font-medium text-gray-700">Yazar Adı</label>
+                <input
+                  type="text"
+                  name="authorName"
+                  value={formData.authorName}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  placeholder="Gazi Teknopark"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Aktiflik Durumu</label>
                 <select
-                  name="status"
-                  value={formData.status}
+                  name="isActive"
+                  value={formData.isActive.toString()}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
-                  <option value="draft">Taslak</option>
-                  <option value="published">Yayında</option>
-                  <option value="archived">Arşiv</option>
+                  <option value="true">Aktif</option>
+                  <option value="false">Pasif</option>
                 </select>
               </div>
+            </div>
 
+            {/* Third Row: Dates & Read Time */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Okuma Süresi (dk)</label>
                 <input
@@ -283,8 +381,9 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
               <label className="block text-sm font-medium text-gray-700">Kapak Görseli</label>
               <div className="flex items-center gap-4">
                 {coverImageUrl && (
-                  <div className="w-24 h-24 rounded-xl border border-gray-200 overflow-hidden shrink-0">
-                    <img src={coverImageUrl} alt="Kapak" className="w-full h-full object-cover" />
+                  <div className="relative w-24 h-24 rounded-xl border border-gray-200 overflow-hidden shrink-0 group">
+                    <img src={getImageUrl(coverImageUrl)} alt="" className="absolute inset-0 w-full h-full object-cover blur-md brightness-75 scale-110" />
+                    <img src={getImageUrl(coverImageUrl)} alt="Kapak" className="relative w-full h-full object-contain" />
                   </div>
                 )}
                 
@@ -309,6 +408,55 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Gallery Upload */}
+            <div className="space-y-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Haber İçi Ekstra Görseller (Galeri)</label>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Haber detayında gösterilecek ekstra fotoğrafları seçin. Birden fazla seçebilirsiniz.
+                  </p>
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    ref={galleryInputRef}
+                    onChange={handleGalleryUpload}
+                    className="hidden"
+                    id="galleryImageUpload"
+                  />
+                  <label
+                    htmlFor="galleryImageUpload"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    {isGalleryUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {isGalleryUploading ? "Yükleniyor..." : "Görsel Seç"}
+                  </label>
+                </div>
+              </div>
+
+              {additionalImageUrls.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                  {additionalImageUrls.map((url, index) => (
+                    <div key={index} className="relative w-full aspect-square rounded-xl border border-gray-200 overflow-hidden group">
+                      <img src={getImageUrl(url)} alt="" className="absolute inset-0 w-full h-full object-cover blur-md brightness-75 scale-110" />
+                      <img src={getImageUrl(url)} alt="Galeri" className="relative w-full h-full object-contain" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGalleryImage(index)}
+                        className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                        title="Görseli Sil"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </form>
