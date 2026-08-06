@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getDocuments, getDocumentCategories } from "../../services/documentService";
 import { DocumentItem, DocumentCategory } from "../../types/document";
-import { pickTranslation } from "../../utils/i18n";
+import { pickTranslation } from "../../utils/i18n.js";
 import DocumentFilter from "./DocumentFilter";
 import DocumentTabs from "./DocumentTabs";
 import DocumentCard from "./DocumentCard";

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, Download, Printer } from "lucide-react";
 import { DocumentItem } from "../../types/document";
-import { pickTranslation } from "../../utils/i18n";
 
 interface DocumentViewerProps {
   document: DocumentItem | null;
@@ -11,7 +10,7 @@ interface DocumentViewerProps {
 
 export default function DocumentViewer({ document: docItem, isOpen, onClose }: DocumentViewerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  
+
   // States to manage mount/unmount and smooth css transitions
   const [isRendered, setIsRendered] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -77,17 +76,15 @@ export default function DocumentViewer({ document: docItem, isOpen, onClose }: D
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop with Fade transition */}
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ease-out cursor-pointer ${
-          isAnimating ? "opacity-100" : "opacity-0"
-        }`}
+        className={`fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ease-out cursor-pointer ${isAnimating ? "opacity-100" : "opacity-0"
+          }`}
         onClick={onClose}
       />
 
       {/* Drawer / Modal Container with Slide transition */}
       <div
-        className={`relative z-10 flex h-full w-full flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-[600px] md:w-1/2 md:rounded-l-2xl ${
-          isAnimating ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`relative z-10 flex h-full w-full flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-[600px] md:w-1/2 md:rounded-l-2xl ${isAnimating ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
