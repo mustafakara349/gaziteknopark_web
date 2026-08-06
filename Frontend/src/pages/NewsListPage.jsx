@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, Filter, Calendar, ArrowUpDown, RotateCcw, X, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { getNews, getNewsCategories } from "../api/endpoints";
+import { getImageUrl } from "../utils/imageUrl";
 
 export default function NewsListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -267,12 +268,17 @@ export default function NewsListPage() {
                       key={item.id}
                       className="bg-white rounded-3xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col transition-all hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] group/card"
                     >
-                      <div className="h-[210px] overflow-hidden relative">
+                      <div className="w-full aspect-[3/2] overflow-hidden relative bg-gray-50">
                         <img
-                          src={item.coverImageUrl || DEFAULT_COVER}
+                          src={getImageUrl(item.coverImageUrl) || DEFAULT_COVER}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover blur-xl brightness-75 scale-110"
+                        />
+                        <img
+                          src={getImageUrl(item.coverImageUrl) || DEFAULT_COVER}
                           alt={title}
                           onError={(e) => { e.target.src = DEFAULT_COVER; }}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                          className="relative w-full h-full object-contain transition-transform duration-700 group-hover/card:scale-110"
                         />
                       </div>
                       <div className="p-8 flex flex-col flex-grow">

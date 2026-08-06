@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { MailIcon, socialIcon } from "../common/icons";
+import { socialIcon } from "../common/icons";
 import { pickTranslation } from "../../utils/i18n";
+import { Phone, Mail, MapPin, Clock, Copy, Check, ArrowUpRight } from "lucide-react";
 
 export default function ContactCards({ contactInfo, socialLinks }) {
   const [copied, setCopied] = useState(false);
@@ -21,100 +22,91 @@ export default function ContactCards({ contactInfo, socialLinks }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {/* 1. Santral */}
-      <div className="group flex flex-col justify-between rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/40 hover:bg-white/15 hover:shadow-2xl">
+      <div className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 shadow-xs transition-all duration-200 hover:shadow-md">
         <div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm group-hover:bg-white group-hover:text-primary transition-colors">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-              />
-            </svg>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Phone className="h-5 w-5" />
           </div>
-          <h3 className="mt-4 text-[11px] font-bold uppercase tracking-wider text-blue-200">Santral</h3>
-          <p className="mt-1 text-lg font-black text-white">{phone}</p>
-          <p className="mt-0.5 text-xs text-blue-100/70 font-medium">Faks: +90 312 212 90 01</p>
+          <h3 className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-400">Santral</h3>
+          <p className="mt-1 text-base font-bold text-gray-900">{phone}</p>
+          <p className="mt-0.5 text-xs text-gray-500 font-medium">Faks: +90 312 212 90 01</p>
         </div>
 
         <a
           href={`tel:${phone.replace(/\s+/g, "")}`}
-          className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-white hover:text-blue-200 transition-colors"
+          className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-dark transition-colors"
         >
           <span>Doğrudan Ara</span>
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
+          <ArrowUpRight className="h-3.5 w-3.5" />
         </a>
       </div>
 
       {/* 2. E-Posta & KEP */}
-      <div className="group flex flex-col justify-between rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/40 hover:bg-white/15 hover:shadow-2xl">
+      <div className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 shadow-xs transition-all duration-200 hover:shadow-md">
         <div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm group-hover:bg-white group-hover:text-primary transition-colors">
-            <MailIcon className="h-5 w-5" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Mail className="h-5 w-5" />
           </div>
-          <h3 className="mt-4 text-[11px] font-bold uppercase tracking-wider text-blue-200">E-Posta & KEP</h3>
-          <p className="mt-1 text-sm font-black text-white truncate" title={email}>
+          <h3 className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-400">E-Posta & KEP</h3>
+          <p className="mt-1 text-sm font-bold text-gray-900 truncate" title={email}>
             {email}
           </p>
-          <p className="mt-0.5 text-xs text-blue-100/70 font-medium truncate" title="gaziteknopark@hs01.kep.tr">
+          <p className="mt-0.5 text-xs text-gray-500 font-medium truncate" title="gaziteknopark@hs01.kep.tr">
             KEP: gaziteknopark@hs01.kep.tr
           </p>
         </div>
 
         <a
           href={`mailto:${email}`}
-          className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-white hover:text-blue-200 transition-colors"
+          className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-dark transition-colors"
         >
           <span>E-Posta Gönder</span>
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
+          <ArrowUpRight className="h-3.5 w-3.5" />
         </a>
       </div>
 
       {/* 3. Adres */}
-      <div className="group flex flex-col justify-between rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/40 hover:bg-white/15 hover:shadow-2xl">
+      <div className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 shadow-xs transition-all duration-200 hover:shadow-md">
         <div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm group-hover:bg-white group-hover:text-primary transition-colors">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <MapPin className="h-5 w-5" />
           </div>
-          <h3 className="mt-4 text-[11px] font-bold uppercase tracking-wider text-blue-200">Açık Adres</h3>
-          <p className="mt-1 text-xs font-medium text-white/90 leading-relaxed line-clamp-3">{address}</p>
+          <h3 className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-400">Açık Adres</h3>
+          <p className="mt-1 text-xs font-medium text-gray-700 leading-relaxed line-clamp-3">{address}</p>
         </div>
 
         <button
           type="button"
           onClick={handleCopyAddress}
-          className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-white hover:text-blue-200 transition-colors cursor-pointer text-left"
+          className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-dark transition-colors cursor-pointer text-left"
         >
-          {copied ? <span>✓ Adres Kopyalandı</span> : <span>📋 Adresi Kopyala</span>}
+          {copied ? (
+            <>
+              <Check className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="text-emerald-600">Adres Kopyalandı</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3.5 w-3.5" />
+              <span>Adresi Kopyala</span>
+            </>
+          )}
         </button>
       </div>
 
-      {/* 4. Çalışma Saatleri & Sosyal */}
-      <div className="group flex flex-col justify-between rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/40 hover:bg-white/15 hover:shadow-2xl">
+      {/* 4. Mesai Saatleri */}
+      <div className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 shadow-xs transition-all duration-200 hover:shadow-md">
         <div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm group-hover:bg-white group-hover:text-primary transition-colors">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Clock className="h-5 w-5" />
           </div>
-          <h3 className="mt-4 text-[11px] font-bold uppercase tracking-wider text-blue-200">Mesai Saatleri</h3>
-          <p className="mt-1 text-sm font-black text-white">{workingHours}</p>
-          <p className="mt-0.5 text-xs text-blue-100/70 font-medium">Hafta Sonu: Kapalı</p>
+          <h3 className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-400">Mesai Saatleri</h3>
+          <p className="mt-1 text-sm font-bold text-gray-900">{workingHours}</p>
+          <p className="mt-0.5 text-xs text-gray-500 font-medium">Hafta Sonu: Kapalı</p>
         </div>
 
         {socialLinks && socialLinks.length > 0 && (
-          <div className="mt-6 flex items-center gap-2 border-t border-white/15 pt-3">
+          <div className="mt-6 flex items-center gap-2 border-t border-gray-100 pt-3">
             {socialLinks.map((link) => {
               const Icon = socialIcon(link.icon);
               return (
@@ -124,7 +116,7 @@ export default function ContactCards({ contactInfo, socialLinks }) {
                   target="_blank"
                   rel="noreferrer"
                   title={link.title || link.name}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white hover:text-primary transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:border-primary hover:bg-primary hover:text-white transition-all"
                 >
                   <Icon className="h-3.5 w-3.5" />
                 </a>

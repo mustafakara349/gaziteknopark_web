@@ -25,6 +25,7 @@ export const getSettings = () => get("/settings");
 export const getSuccessStories = () => get("/success-stories");
 export const getLinkedInPosts = (params) => get("/linkedin-posts", params);
 export const getCompanies = (params) => get("/companies", params);
+export const getCompanyById = (id) => get(`/companies/${id}`);
 export const getCompanyCategories = () => get("/company-categories");
 export const getActivityAreas = () => get("/activity-areas");
 export const getFeaturedTechnologies = () => get("/featured-technologies");

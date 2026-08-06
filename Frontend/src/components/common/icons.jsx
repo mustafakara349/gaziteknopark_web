@@ -106,6 +106,22 @@ export function LinkedinIcon({ style, className = "h-4 w-4", ...props }) {
   );
 }
 
+export function YoutubeIcon({ style, className = "h-4 w-4", ...props }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      style={{ width: 16, height: 16, ...style }}
+      className={className}
+      {...props}
+    >
+      <path d="M21.6 7.2a2.7 2.7 0 00-1.9-1.9C18.1 5 12 5 12 5s-6.1 0-7.7.3A2.7 2.7 0 002.4 7.2 28 28 0 002 12a28 28 0 00.4 4.8 2.7 2.7 0 001.9 1.9C6 19 12 19 12 19s6.1 0 7.7-.3a2.7 2.7 0 001.9-1.9A28 28 0 0022 12a28 28 0 00-.4-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z" />
+    </svg>
+  );
+}
+
 export function MailIcon({ style, className = "h-4 w-4", ...props }) {
   return (
     <svg
@@ -150,5 +166,6 @@ export function socialIcon(name) {
   if (key.includes("instagram")) return InstagramIcon;
   if (key.includes("x") || key.includes("twitter")) return XIcon;
   if (key.includes("linkedin")) return LinkedinIcon;
+  if (key.includes("youtube")) return YoutubeIcon;
   return FacebookIcon;
 }

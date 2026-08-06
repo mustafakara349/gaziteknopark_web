@@ -79,6 +79,8 @@ public class Company
     public Guid? Uuid { get; set; }
     [MaxLength(200)]
     public string Name { get; set; } = string.Empty;
+    [MaxLength(100)]
+    public string? ShortName { get; set; }
     public uint? LogoFileId { get; set; }
     [MaxLength(255)]
     public string? Website { get; set; }
@@ -92,6 +94,16 @@ public class Company
     public uint? EmployeeCount { get; set; }
     [MaxLength(50)]
     public string? OfficeNo { get; set; }
+    [MaxLength(255)]
+    public string? FacebookUrl { get; set; }
+    [MaxLength(255)]
+    public string? InstagramUrl { get; set; }
+    [MaxLength(255)]
+    public string? XUrl { get; set; }
+    [MaxLength(255)]
+    public string? LinkedInUrl { get; set; }
+    [MaxLength(255)]
+    public string? YoutubeUrl { get; set; }
     public CompanyStatus Status { get; set; } = CompanyStatus.Aktif;
     public uint? CreatedBy { get; set; }
     public uint? UpdatedBy { get; set; }

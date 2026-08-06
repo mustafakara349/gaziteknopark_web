@@ -164,7 +164,7 @@ export default function GlobalOfficesMap() {
                       fill="#ffffff"
                       fontSize="10"
                       fontWeight="bold"
-                      fontFamily="sans-serif"
+                      fontFamily="'Host Grotesk', sans-serif"
                     >
                       {office.flag} {office.city}
                     </text>

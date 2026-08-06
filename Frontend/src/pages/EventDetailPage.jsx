@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock, MapPin, Share2, CalendarPlus, CalendarDays } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Clock, MapPin, Share2, CalendarPlus, CalendarDays } from "lucide-react";
 import { getEventBySlug, getEventsList } from "../api/endpoints";
 import PageSection from "../components/common/PageSection";
 import EventCard from "../components/events/EventCard";
+
+const INFO_GRID_COLS = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3" };
 
 const STATUS_META = {
   upcoming: { label: "Yaklaşan Etkinlik", className: "bg-[#E6F0FA] text-[#0066cc]" },
@@ -73,19 +75,16 @@ function buildGoogleCalendarUrl(event) {
 
 function DetailSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl animate-pulse">
+    <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 animate-pulse">
       <div className="mb-8 h-4 w-32 rounded-md bg-gray-100" />
       <div className="mb-4 h-6 w-40 rounded-full bg-gray-100" />
       <div className="mb-2.5 h-10 w-4/5 rounded-xl bg-gray-100" />
       <div className="mb-8 h-10 w-3/5 rounded-xl bg-gray-100" />
-      <div className="mb-10 h-[320px] w-full rounded-[2rem] bg-gray-100 md:h-[420px]" />
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-        <div className="space-y-4 md:col-span-2">
-          <div className="h-4 w-full rounded-md bg-gray-100" />
-          <div className="h-4 w-11/12 rounded-md bg-gray-100" />
-          <div className="h-4 w-4/5 rounded-md bg-gray-100" />
-        </div>
-        <div className="h-52 rounded-3xl bg-gray-100 md:col-span-1" />
+      <div className="mb-10 aspect-[9/5] w-full rounded-[2rem] bg-gray-100" />
+      <div className="space-y-4">
+        <div className="h-4 w-full rounded-md bg-gray-100" />
+        <div className="h-4 w-11/12 rounded-md bg-gray-100" />
+        <div className="h-4 w-4/5 rounded-md bg-gray-100" />
       </div>
     </div>
   );
@@ -96,6 +95,25 @@ export default function EventDetailPage() {
   const [status, setStatus] = useState("loading");
   const [event, setEvent] = useState(null);
   const [related, setRelated] = useState([]);
+  const [prevEvent, setPrevEvent] = useState(null);
+  const [nextEvent, setNextEvent] = useState(null);
+  const posterColRef = useRef(null);
+  const layoutRef = useRef(null);
+
+  useEffect(() => {
+    const posterEl = posterColRef.current;
+    const layoutEl = layoutRef.current;
+    if (!posterEl || !layoutEl) return;
+
+    const syncHeight = () => {
+      layoutEl.style.setProperty("--poster-col-h", `${posterEl.offsetHeight}px`);
+    };
+    syncHeight();
+
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(posterEl);
+    return () => observer.disconnect();
+  }, [status, event]);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,6 +148,30 @@ export default function EventDetailPage() {
       })
       .catch(() => {
         if (!cancelled) setRelated([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [status, event]);
+
+  useEffect(() => {
+    if (status !== "success" || !event) return;
+    let cancelled = false;
+
+    getEventsList({ when: "all", sort: "date_asc", pageSize: 100 })
+      .then((data) => {
+        if (cancelled) return;
+        const items = data.items || [];
+        const index = items.findIndex((item) => item.slug === event.slug);
+        setPrevEvent(index > 0 ? items[index - 1] : null);
+        setNextEvent(index >= 0 && index < items.length - 1 ? items[index + 1] : null);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPrevEvent(null);
+          setNextEvent(null);
+        }
       });
 
     return () => {
@@ -185,9 +227,16 @@ export default function EventDetailPage() {
   const timeLabel = formatTimeLabel(event.startDate);
   const calendarUrl = buildGoogleCalendarUrl(event);
 
+  const infoStats = [
+    dateLabel && { icon: Calendar, value: dateLabel, label: "Tarih" },
+    timeLabel && { icon: Clock, value: timeLabel, label: "Saat" },
+    event.location && { icon: MapPin, value: event.location, label: "Konum" }
+  ].filter(Boolean);
+
   return (
     <PageSection className="pt-8 pb-16 md:pt-14">
-      <div className="mx-auto max-w-5xl">
+      {/* Haberler detay sayfasıyla aynı içerik genişliği için aynı padding şeması (px-4 sm:px-6 lg:px-8) */}
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         {/* Üst gezinme: geri dön + paylaş */}
         <div className="mb-8 flex items-center justify-between">
           <Link
@@ -233,93 +282,107 @@ export default function EventDetailPage() {
           {event.title}
         </h1>
 
-        {/* Kapak görseli - 1080x1080 kapak görselleriyle birebir uyumlu kare (1:1) alan; afiş formatı korunuyor */}
-        <div className="relative mx-auto mb-10 aspect-square w-full max-w-xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary to-primary-light shadow-sm">
-          {event.coverImageUrl ? (
-            <img
-              src={event.coverImageUrl}
-              alt={event.title}
-              className="absolute inset-0 h-full w-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-white/15">
-              <CalendarDays className="h-24 w-24" strokeWidth={1.2} />
+        {/* Afiş + bilgiler solda, açıklama sağda; sağdaki kart soldaki bloğun yüksekliğiyle eşleşir */}
+        <div ref={layoutRef} className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+          {/* Sol: Afiş ve altındaki bilgiler */}
+          <div ref={posterColRef} className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-primary to-primary-light">
+              {event.coverImageUrl ? (
+                <img
+                  src={event.coverImageUrl}
+                  alt={event.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-white/15">
+                  <CalendarDays className="h-24 w-24" strokeWidth={1.2} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* İçerik + bilgi kartı */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div className="md:col-span-2">
-            {event.description ? (
-              <div
-                className="prose prose-sm md:prose-base max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc] leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: event.description }}
-              />
-            ) : (
-              <p className="text-sm text-gray-400">Bu etkinlik için henüz açıklama eklenmedi.</p>
+            {/* Etkinlik bilgileri - hakkımızda sayfasındaki görsel altı bilgi şeridiyle aynı düzen */}
+            {infoStats.length > 0 && (
+              <div className={`grid divide-x divide-gray-100 border-t border-gray-100 ${INFO_GRID_COLS[infoStats.length] || "grid-cols-3"}`}>
+                {infoStats.map((stat) => (
+                  <div key={stat.label} className="flex flex-col items-center gap-1.5 px-3 py-5 text-center">
+                    <stat.icon size={16} className="text-[#0066cc]" strokeWidth={2} />
+                    <p className="text-sm font-bold text-[#0B2558] md:text-base">{stat.value}</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500 md:text-[11px]">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
-          </div>
 
-          <aside className="md:col-span-1">
-            <div className="sticky top-24 rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
-              <h2 className="mb-5 text-xs font-bold uppercase tracking-wider text-gray-400">Etkinlik Bilgileri</h2>
-
-              <dl className="space-y-4">
-                {dateLabel && (
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F0FA] text-[#0066cc]">
-                      <Calendar size={15} />
-                    </span>
-                    <div>
-                      <dt className="text-xs font-semibold text-gray-400">Tarih</dt>
-                      <dd className="text-sm font-medium text-[#0B2558]">{dateLabel}</dd>
-                    </div>
-                  </div>
-                )}
-
-                {timeLabel && (
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F0FA] text-[#0066cc]">
-                      <Clock size={15} />
-                    </span>
-                    <div>
-                      <dt className="text-xs font-semibold text-gray-400">Saat</dt>
-                      <dd className="text-sm font-medium text-[#0B2558]">{timeLabel}</dd>
-                    </div>
-                  </div>
-                )}
-
-                {event.location && (
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F0FA] text-[#0066cc]">
-                      <MapPin size={15} />
-                    </span>
-                    <div>
-                      <dt className="text-xs font-semibold text-gray-400">Konum</dt>
-                      <dd className="text-sm font-medium text-[#0B2558]">{event.location}</dd>
-                    </div>
-                  </div>
-                )}
-              </dl>
-
-              {calendarUrl && (
+            {calendarUrl && (
+              <div className="border-t border-gray-100 p-4">
                 <a
                   href={calendarUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0066cc] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0055b8]"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0066cc] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0055b8]"
                 >
                   <CalendarPlus size={16} />
                   Takvime Ekle
                 </a>
+              </div>
+            )}
+          </div>
+
+          {/* Sağ: Açıklama kartı - soldaki bloğun yüksekliğinde, taşan içerik aşağı doğru kayar */}
+          <div className="flex max-h-[70vh] min-h-0 flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm md:p-8 lg:max-h-[var(--poster-col-h)] lg:h-[var(--poster-col-h)]">
+            <h2 className="mb-4 shrink-0 text-lg font-bold text-[#0B2558]">Etkinlik Hakkında</h2>
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+              {event.description ? (
+                <div
+                  className="prose prose-sm md:prose-base max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc] leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                />
+              ) : (
+                <p className="text-sm text-gray-400">Bu etkinlik için henüz açıklama eklenmedi.</p>
               )}
             </div>
-          </aside>
+          </div>
         </div>
+
+        {/* Önceki / Sonraki Etkinlik */}
+        {(prevEvent || nextEvent) && (
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {prevEvent ? (
+              <Link
+                to={`/etkinlikler/${prevEvent.slug}`}
+                className="group flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-colors hover:border-[#0066cc]/20 hover:bg-[#E6F0FA] hover:shadow-md"
+              >
+                <ArrowLeft size={18} className="shrink-0 text-[#0066cc] transition-transform group-hover:-translate-x-1" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 group-hover:text-[#0066cc]/70">Önceki Etkinlik</p>
+                  <p className="truncate font-bold text-[#0B2558] group-hover:text-[#0066cc]">{prevEvent.title}</p>
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
+
+            {nextEvent ? (
+              <Link
+                to={`/etkinlikler/${nextEvent.slug}`}
+                className="group flex items-center justify-end gap-3 rounded-2xl border border-gray-100 bg-white p-5 text-right shadow-sm transition-colors hover:border-[#0066cc]/20 hover:bg-[#E6F0FA] hover:shadow-md"
+              >
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 group-hover:text-[#0066cc]/70">Sonraki Etkinlik</p>
+                  <p className="truncate font-bold text-[#0B2558] group-hover:text-[#0066cc]">{nextEvent.title}</p>
+                </div>
+                <ArrowRight size={18} className="shrink-0 text-[#0066cc] transition-transform group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <div />
+            )}
+          </div>
+        )}
 
         {/* Diğer Etkinlikler */}
         {related.length > 0 && (

@@ -1,14 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Calendar, User, Share2, X, Tag } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, User, Share2, X, Tag, ChevronRight, ChevronLeft } from 'lucide-react';
 import DOMPurify from 'dompurify';
-import { getNewsById } from '../api/endpoints';
-
+import { sanitizeAndFormatHtml } from '../utils/htmlSanitizer';
+import { getImageUrl } from '../utils/imageUrl';
+import { getNewsById, getNews } from '../api/endpoints';
 export default function NewsDetailPage() {
   const { id } = useParams();
   const [newsItem, setNewsItem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [lightboxImg, setLightboxImg] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [prevNews, setPrevNews] = useState(null);
+  const [nextNews, setNextNews] = useState(null);
+  const galleryRef = useRef(null);
+
+  const handlePrevLightbox = (e) => {
+    e?.stopPropagation();
+    if (!newsItem?.additionalImageUrls?.length) return;
+    setLightboxIndex((prev) => (prev === 0 ? newsItem.additionalImageUrls.length - 1 : prev - 1));
+  };
+
+  const handleNextLightbox = (e) => {
+    e?.stopPropagation();
+    if (!newsItem?.additionalImageUrls?.length) return;
+    setLightboxIndex((prev) => (prev === newsItem.additionalImageUrls.length - 1 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft") handlePrevLightbox();
+      if (e.key === "ArrowRight") handleNextLightbox();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxIndex, newsItem]);
+
+  const scrollGallery = (direction) => {
+    if (galleryRef.current) {
+      const scrollAmount = 300;
+      galleryRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -20,6 +55,40 @@ export default function NewsDetailPage() {
       .catch((err) => console.error("Haber detayı çekilirken hata:", err))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!newsItem) return;
+    let cancelled = false;
+
+    getNews({ pageSize: 100, sort: "newest" })
+      .then((res) => {
+        if (cancelled) return;
+        const data = res?.data || [];
+        // Filter out current news item for related news list (up to 3)
+        setRelated(data.filter((item) => item.id !== newsItem.id && item.slug !== newsItem.slug).slice(0, 3));
+
+        // Find current news position to calculate prev & next
+        const idx = data.findIndex((item) => item.id === newsItem.id || (item.slug && item.slug === newsItem.slug));
+        if (idx !== -1) {
+          setPrevNews(idx > 0 ? data[idx - 1] : null);
+          setNextNews(idx < data.length - 1 ? data[idx + 1] : null);
+        } else {
+          setPrevNews(null);
+          setNextNews(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRelated([]);
+          setPrevNews(null);
+          setNextNews(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [newsItem]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -106,11 +175,9 @@ export default function NewsDetailPage() {
                 <Clock size={15} className="mr-1.5 opacity-70" /> {newsItem.readTime} dk okuma
               </span>
             )}
-            {newsItem.authorName && (
-              <span className="flex items-center">
-                <User size={15} className="mr-1.5 opacity-70" /> {newsItem.authorName}
-              </span>
-            )}
+            <span className="flex items-center">
+              <User size={15} className="mr-1.5 opacity-70" /> {newsItem.authorName || "Gazi Teknopark"}
+            </span>
           </div>
 
           <h1 className="text-[2.2rem] md:text-[2.8rem] leading-[1.15] font-extrabold text-[#0B2558] mb-8 tracking-tight">
@@ -118,71 +185,247 @@ export default function NewsDetailPage() {
           </h1>
 
           {newsItem.coverImageUrl && (
-            <div className="w-full h-[400px] md:h-[480px] rounded-[2rem] overflow-hidden shadow-sm relative bg-gray-100">
+            <div className="w-full aspect-[3/2] rounded-[2rem] overflow-hidden shadow-sm relative bg-gray-50">
               <img
-                src={newsItem.coverImageUrl}
+                src={getImageUrl(newsItem.coverImageUrl)}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover blur-xl brightness-75 scale-110"
+              />
+              <img
+                src={getImageUrl(newsItem.coverImageUrl)}
                 alt={title}
                 onError={(e) => { e.target.parentElement.style.display = 'none'; }}
-                className="w-full h-full object-cover"
+                className="relative w-full h-full object-contain"
               />
             </div>
           )}
         </div>
 
-        <div className="mb-12">
-          <div
-            className="prose prose-lg max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc]"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
-          />
+        {/* Main Content Card */}
+        <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-sm border border-gray-100 mb-8">
+          <div>
+            <div
+              className="prose prose-lg max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc] prose-p:last:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeAndFormatHtml(content) }}
+            />
+          </div>
+
+          {newsItem.additionalImageUrls && newsItem.additionalImageUrls.length > 0 && (
+            <div className="mt-10 pt-10 border-t border-gray-100">
+              <div className="flex items-center gap-4 mb-6">
+                <h3 className="text-2xl font-bold text-[#0B2558]">Haberden Kareler</h3>
+              </div>
+              
+              <div className="relative group/slider">
+                {/* Left Arrow */}
+                <button 
+                  onClick={() => scrollGallery('left')}
+                  className="absolute -left-6 md:-left-14 top-1/2 -translate-y-1/2 z-10 p-2 flex items-center justify-center text-gray-300 hover:text-[#0066cc] transition-colors"
+                  aria-label="Önceki"
+                >
+                  <ChevronLeft size={48} strokeWidth={1.5} />
+                </button>
+
+                {/* Horizontal slider container */}
+                <div 
+                  ref={galleryRef}
+                  className="flex overflow-x-auto gap-6 pb-6 snap-x snap-mandatory scrollbar-hide scroll-smooth px-2" 
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {newsItem.additionalImageUrls.map((imgUrl, index) => (
+                    <div
+                      key={index}
+                      className="h-56 min-w-[280px] w-[280px] sm:min-w-[320px] sm:w-[320px] shrink-0 snap-center rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100 group cursor-pointer relative"
+                      onClick={() => setLightboxIndex(index)}
+                    >
+                      <img
+                        src={getImageUrl(imgUrl)}
+                        alt={`Galeri ${index + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      {/* Subtle overlay on hover for better UX */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Right Arrow */}
+                <button 
+                  onClick={() => scrollGallery('right')}
+                  className="absolute -right-6 md:-right-14 top-1/2 -translate-y-1/2 z-10 p-2 flex items-center justify-center text-gray-300 hover:text-[#0066cc] transition-colors"
+                  aria-label="Sonraki"
+                >
+                  <ChevronRight size={48} strokeWidth={1.5} />
+                </button>
+              </div>
+
+              {/* Add global style just in case inline styles are not enough for webkit */}
+              <style>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+              `}</style>
+            </div>
+          )}
         </div>
 
-        {newsItem.additionalImageUrls && newsItem.additionalImageUrls.length > 0 && (
-          <div>
-            <div className="flex items-center gap-4 mb-6">
-              <h3 className="text-2xl font-bold text-[#0B2558]">Haberden Kareler</h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {newsItem.additionalImageUrls.map((imgUrl, index) => (
-                <div
-                  key={index}
-                  className="h-52 rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100 group cursor-pointer"
-                  onClick={() => setLightboxImg(imgUrl)}
-                >
-                  <img
-                    src={imgUrl}
-                    alt={`Galeri ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+        {/* Önceki & Sonraki Haber Butonları */}
+        {(prevNews || nextNews) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+            {prevNews ? (
+              <Link
+                to={`/haberler/${prevNews.slug || prevNews.id}`}
+                className="group flex items-center gap-4 p-5 rounded-[2rem] border border-gray-100 bg-white shadow-sm hover:border-[#0066cc]/30 hover:shadow-md transition-all"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066cc] flex items-center justify-center shrink-0 shadow-sm group-hover:bg-[#0066cc] group-hover:text-white transition-all">
+                  <ChevronLeft size={20} />
                 </div>
-              ))}
-            </div>
+                <div className="min-w-0">
+                  <span className="text-[0.75rem] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
+                    Önceki Haber
+                  </span>
+                  <span className="text-sm font-bold text-[#0B2558] line-clamp-1 group-hover:text-[#0066cc] transition-colors">
+                    {prevNews.title || prevNews.translations?.[0]?.title || "Önceki Haber"}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
+
+            {nextNews ? (
+              <Link
+                to={`/haberler/${nextNews.slug || nextNews.id}`}
+                className="group flex items-center justify-end text-right gap-4 p-5 rounded-[2rem] border border-gray-100 bg-white shadow-sm hover:border-[#0066cc]/30 hover:shadow-md transition-all sm:col-start-2"
+              >
+                <div className="min-w-0">
+                  <span className="text-[0.75rem] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
+                    Sonraki Haber
+                  </span>
+                  <span className="text-sm font-bold text-[#0B2558] line-clamp-1 group-hover:text-[#0066cc] transition-colors">
+                    {nextNews.title || nextNews.translations?.[0]?.title || "Sonraki Haber"}
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066cc] flex items-center justify-center shrink-0 shadow-sm group-hover:bg-[#0066cc] group-hover:text-white transition-all">
+                  <ChevronRight size={20} />
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
           </div>
         )}
 
       </div>
 
+      {/* Diğer Haberler */}
+      {related.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+          <h3 className="mb-6 text-2xl font-bold text-[#0B2558]">Diğer Haberler</h3>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((item) => {
+              const itemTitle = item.title || item.translations?.[0]?.title || "Başlıksız Haber";
+              const itemSummary = item.summary || item.translations?.[0]?.summary || "";
+              const DEFAULT_COVER = "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=800";
+
+              return (
+                <Link
+                  to={`/haberler/${item.slug || item.id}`}
+                  key={item.id}
+                  className="bg-white rounded-3xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col transition-all hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] group/card"
+                >
+                  <div className="h-[210px] overflow-hidden relative">
+                    <img
+                      src={item.coverImageUrl || DEFAULT_COVER}
+                      alt={itemTitle}
+                      onError={(e) => { e.target.src = DEFAULT_COVER; }}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                    />
+                  </div>
+                  <div className="p-8 flex flex-col flex-grow">
+                    <div className="text-[#0066cc] text-[0.85rem] font-medium mb-3">
+                      {formatDate(item.publishedAt)}
+                    </div>
+                    <h3 className="text-[1.3rem] font-bold text-[#0B2558] mb-4 leading-snug group-hover/card:text-[#0066cc] transition-colors">
+                      {itemTitle}
+                    </h3>
+                    <p className="text-gray-500 text-[0.9rem] mb-8 line-clamp-2 leading-relaxed">
+                      {itemSummary}
+                    </p>
+
+                    <div className="mt-auto">
+                      <span className="inline-flex items-center text-[#0B2558] font-bold text-[0.85rem] group/btn">
+                        Devamını Oku
+                        <ChevronRight
+                          size={16}
+                          strokeWidth={2.5}
+                          className="ml-1 text-[#0066cc] transition-transform group-hover/card:translate-x-1"
+                        />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Lightbox Modal */}
-      {lightboxImg && (
+      {lightboxIndex !== null && newsItem?.additionalImageUrls?.[lightboxIndex] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setLightboxImg(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 select-none"
+          onClick={() => setLightboxIndex(null)}
         >
+          {/* Kapat Butonu */}
           <button
-            className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors p-2"
-            onClick={(e) => { e.stopPropagation(); setLightboxImg(null); }}
+            className="absolute top-6 right-6 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 p-2.5 rounded-full transition-all z-20"
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+            title="Kapat (Esc)"
           >
-            <X size={32} />
+            <X size={26} />
           </button>
+
+          {/* Önceki Görsel Butonu */}
+          {newsItem.additionalImageUrls.length > 1 && (
+            <button
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 p-3 rounded-full transition-all z-20 hover:scale-110"
+              onClick={handlePrevLightbox}
+              title="Önceki Görsel (Sol Ok)"
+            >
+              <ChevronLeft size={32} />
+            </button>
+          )}
+
+          {/* Görsel Çerçevesi */}
           <div
-            className="relative max-w-5xl max-h-[90vh] w-full"
+            className="relative max-w-6xl max-h-[85vh] flex flex-col items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={lightboxImg}
-              alt="Büyük görünüm"
-              className="w-full max-h-[90vh] object-contain rounded-lg"
+              src={getImageUrl(newsItem.additionalImageUrls[lightboxIndex])}
+              alt={`Görsel ${lightboxIndex + 1}`}
+              className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl transition-all duration-300"
             />
+            
+            {/* Sayfa Sayacı */}
+            {newsItem.additionalImageUrls.length > 1 && (
+              <div className="mt-4 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium border border-white/10">
+                {lightboxIndex + 1} / {newsItem.additionalImageUrls.length}
+              </div>
+            )}
           </div>
+
+          {/* Sonraki Görsel Butonu */}
+          {newsItem.additionalImageUrls.length > 1 && (
+            <button
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 p-3 rounded-full transition-all z-20 hover:scale-110"
+              onClick={handleNextLightbox}
+              title="Sonraki Görsel (Sağ Ok)"
+            >
+              <ChevronRight size={32} />
+            </button>
+          )}
         </div>
       )}
     </div>

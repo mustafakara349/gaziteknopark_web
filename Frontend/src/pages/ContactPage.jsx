@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getContactInfo } from "../api/endpoints";
-import PageSection from "../components/common/PageSection";
 import CampusTransportSection from "../components/contact/CampusTransportSection";
 import GlobeContainer from "../features/globe/GlobeContainer";
 
@@ -12,14 +11,14 @@ export default function ContactPage() {
   }, []);
 
   return (
-    <div className="min-h-screen pb-16 bg-[#f8fafc]">
-      <PageSection className="!py-6">
-        {/* 1. Ankara Yerleşkesi, Açık Adres & Harita */}
+    <div className="w-full bg-[#f8f9fa] min-h-screen font-sans">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 space-y-8">
+        {/* 1. Ankara Yerleşkesi, Adres & Harita (Mevzuat/Duyurular tipografisinde, telefonsuz & emojisiz) */}
         <CampusTransportSection contactInfo={contactInfo} />
 
-        {/* 2. React Three Fiber + Drei + GSAP Modüler 3D Dünya Küresi Simülasyonu */}
+        {/* 2. 3D Dünya Küresi Simülasyonu (Emojiler ve telefonlar temizlenmiş) */}
         <GlobeContainer />
-      </PageSection>
+      </div>
     </div>
   );
 }

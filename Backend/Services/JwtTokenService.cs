@@ -18,18 +18,19 @@ public class JwtTokenService : IJwtTokenService
 
     public string GenerateToken(User user, out DateTime expiresAt)
     {
+        // A user's effective role is their assigned Role (e.g. "Editor") when set,
+        // otherwise it falls back to their account type (e.g. "Admin"). This lets an
+        // Admin-type account be scoped down to Editor-level access via role_id.
+        var effectiveRole = user.Role?.Name ?? user.UserType.ToString();
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Name, user.Name),
             new("user_type", user.UserType.ToString()),
+            new(ClaimTypes.Role, effectiveRole),
         };
-
-        if (user.Role is not null)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, user.Role.Name));
-        }
 
         if (user.CompanyId.HasValue)
         {

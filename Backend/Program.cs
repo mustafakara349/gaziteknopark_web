@@ -7,6 +7,13 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+// wwwroot .gitignore'da (yüklenen dosyalar commit'lenmiyor), bu yüzden ilk çalıştırmada
+// diskte mevcut olmayabilir. ASP.NET Core, host başlarken wwwroot'u bulamazsa statik dosya
+// sağlayıcısını kalıcı olarak devre dışı bırakır (NullFileProvider) — klasör sonradan
+// oluşsa bile o çalışma ömrü boyunca 404 döner. Bu yüzden builder oluşturulmadan önce
+// klasörün var olduğundan emin oluyoruz.
+Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"));
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -117,7 +124,13 @@ app.UseHttpsRedirection();
 
 app.UseCors();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+    }
+});
 
 app.UseRateLimiter();
 

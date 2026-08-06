@@ -12,64 +12,67 @@ export default function OfficeSidePanel({ office, onClose }) {
   };
 
   return (
-    <div className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-surface p-6 sm:p-7 space-y-5 animate-fade-in shadow-xs">
+    <div className="h-full flex flex-col justify-between rounded-[1.5rem] border border-gray-200 bg-[#fcfcfd] p-5 sm:p-6 shadow-xs font-sans">
       <div>
-        <div className="flex items-center justify-between border-b border-gray-200/60 pb-3">
+        {/* Top Header with Badge & Close Button */}
+        <div className="flex items-center justify-between border-b border-gray-200/60 pb-2.5">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{office.flag}</span>
+            <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-full uppercase tracking-wide">
+              {office.countryCode || office.country}
+            </span>
             <div>
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
+              <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-[#0066cc] text-xs font-bold rounded-full border border-blue-100 uppercase tracking-wide">
                 {office.country}
               </span>
-              <span className="block text-[10px] text-gray-400 font-medium mt-0.5">{office.badge}</span>
+              <span className="block text-[11px] text-gray-500 font-medium mt-0.5">{office.badge}</span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-gray-400 hover:bg-gray-100 hover:text-ink transition-colors cursor-pointer border border-gray-200/80"
-            title="Kapat & Haritaya Dön"
+            className="px-2.5 py-1 text-xs font-bold text-gray-400 hover:text-[#0B2558] hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+            title="Kapat"
           >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            Kapat
           </button>
         </div>
 
-        <h3 className="mt-4 text-xl font-extrabold text-primary">{office.title}</h3>
-        <p className="mt-1 text-xs text-gray-500 font-mono">
+        {/* Office Title & Coordinates */}
+        <h3 className="mt-2.5 text-base md:text-lg font-bold text-[#0B2558] leading-tight">{office.title}</h3>
+        <p className="mt-0.5 text-[11px] text-gray-500 font-medium">
           Koordinat: {office.latitude}° N, {office.longitude}° E
         </p>
 
         {/* Contact Details List */}
-        <div className="mt-5 space-y-3 text-xs">
-          <div className="rounded-xl bg-white p-3.5 border border-gray-100 shadow-xs">
-            <span className="font-bold text-gray-400 uppercase tracking-wider text-[10px]">Açık Adres</span>
-            <p className="mt-1 font-medium text-ink leading-relaxed">{office.address}</p>
+        <div className="mt-3 space-y-2 text-xs">
+          <div className="rounded-xl bg-white p-3 border border-gray-200 shadow-xs">
+            <div className="text-[10px] font-bold text-[#0B2558] uppercase tracking-wider mb-0.5">
+              Açık Adres
+            </div>
+            <p className="font-medium text-gray-700 leading-relaxed text-xs">{office.address}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl bg-white p-3 border border-gray-100 shadow-xs">
-              <span className="font-bold text-gray-400 uppercase tracking-wider text-[9px]">Telefon</span>
-              <p className="mt-0.5 font-bold text-primary text-xs truncate">{office.phone}</p>
+          <div className="rounded-xl bg-white p-3 border border-gray-200 shadow-xs">
+            <div className="text-[10px] font-bold text-[#0B2558] uppercase tracking-wider mb-0.5">
+              E-Posta & KEP
             </div>
-
-            <div className="rounded-xl bg-white p-3 border border-gray-100 shadow-xs">
-              <span className="font-bold text-gray-400 uppercase tracking-wider text-[9px]">E-Posta</span>
-              <p className="mt-0.5 font-bold text-primary text-xs truncate">{office.email}</p>
-            </div>
+            <p className="font-bold text-[#0B2558] text-xs truncate">{office.email}</p>
+            {office.kepEmail && (
+              <p className="text-[11px] text-gray-500 mt-0.5">KEP: {office.kepEmail}</p>
+            )}
           </div>
 
           {office.website && (
-            <div className="rounded-xl bg-white p-3.5 border border-gray-100 shadow-xs">
-              <span className="font-bold text-gray-400 uppercase tracking-wider text-[10px]">Resmi Web Sitesi</span>
+            <div className="rounded-xl bg-white p-3 border border-gray-200 shadow-xs">
+              <div className="text-[10px] font-bold text-[#0B2558] uppercase tracking-wider mb-0.5">
+                Resmi Web Sitesi
+              </div>
               <a
                 href={office.website}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-0.5 block font-semibold text-accent hover:underline truncate"
+                className="block font-semibold text-[#0066cc] hover:underline truncate text-xs"
               >
                 {office.website}
               </a>
@@ -78,22 +81,14 @@ export default function OfficeSidePanel({ office, onClose }) {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="space-y-2 pt-2 border-t border-gray-200/60">
+      {/* Single Clean Action Button */}
+      <div className="pt-2 border-t border-gray-200/60">
         <button
           type="button"
           onClick={handleCopyAddress}
-          className="w-full rounded-full bg-primary px-6 py-2.5 text-xs font-bold text-white transition-opacity hover:opacity-90 cursor-pointer shadow-xs"
+          className="w-full rounded-full bg-[#1E3A8A] px-6 py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#152e6e] cursor-pointer shadow-xs text-center"
         >
-          {copied ? <span>✓ Adres Kopyalandı</span> : <span>Adresi Kopyala</span>}
-        </button>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-full rounded-full border border-gray-200 py-2 text-xs font-semibold text-gray-600 hover:bg-white transition-colors cursor-pointer"
-        >
-          🔄 Haritaya Dön & Dönüşü Başlat
+          {copied ? "Adres Kopyalandı" : "Adresi Kopyala"}
         </button>
       </div>
     </div>

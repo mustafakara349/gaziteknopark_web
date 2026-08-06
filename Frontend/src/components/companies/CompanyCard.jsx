@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { LinkedinIcon } from "../common/icons";
+
 function getInitials(name) {
   if (!name) return "GP";
   const words = name.trim().split(" ");
@@ -24,15 +27,17 @@ function ArrowIcon({ className = "h-3 w-3" }) {
   );
 }
 
-export default function CompanyCard({ company, onViewDetails }) {
-  const { logo, companyName, sector, activityArea, tags, website } = company;
+export default function CompanyCard({ company }) {
+  const { logo, companyName, sector, activityArea, tags, website, linkedin } = company;
 
   return (
     <div className="group flex flex-col rounded-3xl bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      {/* Logo Alanı: kare ikon ve geniş fonttype logolar için object-contain, kutu/arka plan yok */}
-      <div className="flex h-20 items-center justify-center">
+      {/* Logo Alanı: kare ikon ve geniş fonttype logolar için object-contain, kutu/arka plan yok.
+          Yükseklik geniş wordmark logolara göre değil, kare/dikey logolar da yeterince büyük
+          görünsün diye biraz daha ferah tutuluyor (yükseklik sınırlı kare logolar küçük kalmasın). */}
+      <div className="flex h-28 items-center justify-center">
         {logo ? (
-          <img src={logo} alt={companyName} className="max-h-full max-w-[75%] object-contain" />
+          <img src={logo} alt={companyName} className="max-h-full max-w-[85%] object-contain" />
         ) : (
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light text-base font-bold text-white">
             {getInitials(companyName)}
@@ -54,28 +59,38 @@ export default function CompanyCard({ company, onViewDetails }) {
       )}
 
       <div className="mt-6 flex items-center justify-between">
-        {website ? (
-          <a
-            href={website}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Web sitesi"
-            className="text-gray-300 transition-colors hover:text-accent-blue"
-          >
-            <GlobeIcon className="h-[18px] w-[18px]" />
-          </a>
-        ) : (
-          <span className="h-[18px] w-[18px]" />
-        )}
+        <div className="flex items-center gap-3">
+          {website && (
+            <a
+              href={website}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Web sitesi"
+              className="text-gray-300 transition-colors hover:text-accent-blue"
+            >
+              <GlobeIcon className="h-[18px] w-[18px]" />
+            </a>
+          )}
+          {linkedin && (
+            <a
+              href={linkedin}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="LinkedIn"
+              className="text-gray-300 transition-colors hover:text-accent-blue"
+            >
+              <LinkedinIcon className="h-[18px] w-[18px]" />
+            </a>
+          )}
+        </div>
 
-        <button
-          type="button"
-          onClick={() => onViewDetails(company)}
-          className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-primary transition-all hover:gap-1.5"
+        <Link
+          to={`/firmalar/${company.id}`}
+          className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition-all hover:gap-1.5"
         >
           Detayları Gör
           <ArrowIcon className="h-3 w-3" />
-        </button>
+        </Link>
       </div>
     </div>
   );

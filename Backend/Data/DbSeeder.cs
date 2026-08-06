@@ -135,7 +135,7 @@ public static class DbSeeder
                     Uuid = Guid.NewGuid(),
                     CategoryId = categoriesList[catIndex].Id,
                     CoverImageFileId = coverFile.Id,
-                    Status = ContentStatus.Published,
+                    IsActive = true,
                     PublishedAt = DateTime.UtcNow.AddDays(-(i * 2 + 1)),
                     IsFeatured = i % 4 == 0,
                     AuthorName = i % 2 == 0 ? "Gazi Teknopark Basın Ofisi" : "Teknoloji Transfer Ofisi",

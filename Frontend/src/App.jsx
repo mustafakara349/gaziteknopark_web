@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/layout/Layout";
+import ScrollToTop from "./components/common/ScrollToTop";
 import HomePage from "./pages/HomePage";
 import AboutUs from "./pages/AboutUs";
 import ComingSoonPage from "./pages/ComingSoonPage";
@@ -14,12 +16,14 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import MediaPage from "./pages/MediaPage";
 import CompaniesPage from "./pages/CompaniesPage";
+import CompanyDetailPage from "./pages/CompanyDetailPage";
 import SuccessStoriesPage from "./pages/SuccessStoriesPage";
 import InitiativeOfficePage from "./pages/InitiativeOfficePage";
 import TechnologiesPage from "./pages/TechnologiesPage";
 import InternshipApplicationPage from "./pages/InternshipApplicationPage";
 import CompanyApplicationPage from "./pages/CompanyApplicationPage";
 import ContactPage from "./pages/ContactPage";
+import FaqPage from "./pages/FaqPage";
 
 // Admin Components & Pages
 import { AuthProvider } from "./context/AuthContext";
@@ -38,8 +42,15 @@ import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 function App() {
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
   return (
     <AuthProvider>
+      <ScrollToTop />
       <Routes>
         {/* ─── Public Routes ──────────────────────────── */}
         <Route element={<Layout />}>
@@ -57,12 +68,14 @@ function App() {
           <Route path="/etkinlikler/:slug" element={<EventDetailPage />} />
           <Route path="/medya" element={<MediaPage />} />
           <Route path="/firmalar" element={<CompaniesPage />} />
+          <Route path="/firmalar/:id" element={<CompanyDetailPage />} />
           <Route path="/basari-oykuleri" element={<SuccessStoriesPage />} />
           <Route path="/girisimler/girisim-ofisi" element={<InitiativeOfficePage />} />
           <Route path="/girisimler/teknolojiler" element={<TechnologiesPage />} />
           <Route path="/basvuru/staj" element={<InternshipApplicationPage />} />
           <Route path="/basvuru/firma" element={<CompanyApplicationPage />} />
           <Route path="/iletisim" element={<ContactPage />} />
+          <Route path="/sss" element={<FaqPage />} />
           <Route path="/giris" element={<ComingSoonPage />} />
         </Route>
 
@@ -88,6 +101,7 @@ function App() {
           <Route path="kullanicilar" element={<AdminUsersPage />} />
           <Route path="ayarlar" element={<AdminSettingsPage />} />
         </Route>
+
       </Routes>
     </AuthProvider>
   );
