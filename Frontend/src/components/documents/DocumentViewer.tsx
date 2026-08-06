@@ -42,9 +42,8 @@ export default function DocumentViewer({ document: docItem, isOpen, onClose }: D
 
   if (!docItem || !isRendered) return null;
 
-  const t = pickTranslation(docItem) as { title?: string; fileUrl?: string };
-  const title = t.title || "Belge Önizleme";
-  const fileUrl = t.fileUrl;
+  const title = docItem.title || "Belge Önizleme";
+  const fileUrl = docItem.externalUrl;
 
   const handlePrint = () => {
     if (iframeRef.current && iframeRef.current.contentWindow) {
@@ -64,6 +63,15 @@ export default function DocumentViewer({ document: docItem, isOpen, onClose }: D
     if (!fileUrl) return;
     window.open(fileUrl, "_blank");
   };
+
+  const backendBaseUrl = (import.meta.env.VITE_API_BASE_URL as string || "http://localhost:5080/api")
+    .replace("/api", "");
+
+  const isExternal =
+    fileUrl &&
+    (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) &&
+    !fileUrl.includes(window.location.host) &&
+    !fileUrl.includes(backendBaseUrl);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -126,14 +134,34 @@ export default function DocumentViewer({ document: docItem, isOpen, onClose }: D
         {/* Content iframe: h-[calc(100vh-80px)] is simulated here inside a flex-1 viewport container */}
         <div className="flex-1 bg-gray-50 p-4 h-[calc(100vh-80px)] overflow-hidden">
           {fileUrl ? (
-            <iframe
-              id="document-iframe"
-              ref={iframeRef}
-              src={fileUrl}
-              title={title}
-              className="h-full w-full rounded-xl border border-gray-200 bg-white shadow-sm"
-              loading="lazy"
-            />
+            isExternal ? (
+              <div className="flex h-full flex-col items-center justify-center rounded-xl border border-gray-100 bg-white p-6 text-center shadow-xs">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#e8f2fc] text-primary mb-4 border border-[#d2e5f9]">
+                  <Download className="h-6 w-6" />
+                </div>
+                <h4 className="text-base font-bold text-slate-700 mb-1.5">Harici Kaynak Belgesi</h4>
+                <p className="text-sm text-slate-400 max-w-sm mb-6 leading-relaxed">
+                  Bu belge harici resmi kaynaklarda (resmigazete.gov.tr, mevzuat.gov.tr vb.) barındırılmaktadır. Güvenlik politikaları nedeniyle doğrudan bu pencerede görüntülenemez.
+                </p>
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-primary-light cursor-pointer active:scale-95 shadow-sm shadow-primary/10"
+                >
+                  <span>Belgeyi Yeni Sekmede Aç</span>
+                </a>
+              </div>
+            ) : (
+              <iframe
+                id="document-iframe"
+                ref={iframeRef}
+                src={fileUrl}
+                title={title}
+                className="h-full w-full rounded-xl border border-gray-200 bg-white shadow-sm"
+                loading="lazy"
+              />
+            )
           ) : (
             <div className="flex h-full flex-col items-center justify-center text-gray-400">
               <p className="text-sm">Doküman yüklenemedi: Dosya bağlantısı eksik.</p>

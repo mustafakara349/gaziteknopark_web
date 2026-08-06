@@ -53,11 +53,14 @@ public class DocumentTranslationUpsertDto
 public class DocumentDto
 {
     public uint Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string? PublishedDate { get; set; }
+    public string? ExternalUrl { get; set; }
+    public string Status { get; set; } = string.Empty;
     public Guid? Uuid { get; set; }
     public uint? CategoryId { get; set; }
-    public DateTime? PublishedDate { get; set; }
     public uint OrderNo { get; set; }
-    public string Status { get; set; } = string.Empty;
     public List<DocumentTranslationDto> Translations { get; set; } = new();
 }
 

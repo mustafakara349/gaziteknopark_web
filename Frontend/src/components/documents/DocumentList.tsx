@@ -64,11 +64,19 @@ export default function DocumentList() {
     return ext || "";
   };
 
+  // Dynamically extract unique file extensions from all documents loaded
+  const fileTypes = Array.from(
+    new Set(
+      documents
+        .map((doc) => getFileExtension(doc.externalUrl))
+        .filter((ext) => ext !== "")
+    )
+  ).sort();
+
   // Filter logic
   const filteredDocuments = documents.filter((doc) => {
-    const translation = pickTranslation(doc) as { title?: string; fileUrl?: string; filePath?: string };
-    const title = translation.title || "";
-    const fileUrl = translation.fileUrl || translation.filePath || "";
+    const title = doc.title || "";
+    const fileUrl = doc.externalUrl || "";
 
     // 1. Search text filter
     const matchesSearch =
@@ -79,17 +87,8 @@ export default function DocumentList() {
       selectedCategory === null || doc.categoryId === selectedCategory;
 
     // 3. File type filter
-    let matchesFileType = true;
-    if (selectedFileType) {
-      const ext = getFileExtension(fileUrl);
-      if (selectedFileType === "pdf") {
-        matchesFileType = ext === "pdf";
-      } else if (selectedFileType === "doc") {
-        matchesFileType = ext === "doc" || ext === "docx";
-      } else if (selectedFileType === "xls") {
-        matchesFileType = ext === "xls" || ext === "xlsx";
-      }
-    }
+    const matchesFileType =
+      !selectedFileType || getFileExtension(fileUrl) === selectedFileType;
 
     return matchesSearch && matchesCategory && matchesFileType;
   });
@@ -121,6 +120,7 @@ export default function DocumentList() {
         setSearch={setSearchText}
         selectedFileType={selectedFileType}
         setSelectedFileType={setSelectedFileType}
+        fileTypes={fileTypes}
       />
 
       {/* 2. Category Tabs */}
@@ -192,7 +192,7 @@ export default function DocumentList() {
               <DocumentCard
                 key={doc.id}
                 document={doc}
-                categoryName={getCategoryName(doc.categoryId)}
+                categoryName={doc.category}
                 onPreview={handlePreview}
               />
             ))}

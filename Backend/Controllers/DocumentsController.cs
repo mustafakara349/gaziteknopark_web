@@ -112,7 +112,8 @@ public class DocumentsController : ControllerBase
             query = query.Where(d => d.CategoryId == categoryId);
         }
 
-        var documents = await query.Include(d => d.Translations).ThenInclude(t => t.Language)
+        var documents = await query.Include(d => d.Category).ThenInclude(c => c!.Translations)
+            .Include(d => d.Translations).ThenInclude(t => t.Language)
             .Include(d => d.Translations).ThenInclude(t => t.File)
             .OrderBy(d => d.OrderNo).ToListAsync();
         return Ok(documents.Select(Map).ToList());
@@ -189,11 +190,14 @@ public class DocumentsController : ControllerBase
     private DocumentDto Map(Document d) => new()
     {
         Id = d.Id,
+        Title = d.Title,
+        Category = d.Category?.Translations.FirstOrDefault(t => t.LanguageId == 1)?.Name ?? string.Empty,
+        PublishedDate = d.PublishedDate?.ToString("yyyy-MM-dd"),
+        ExternalUrl = ResolveExternalUrl(Request, d.ExternalUrl),
+        Status = d.Status.ToString().ToLower(),
         Uuid = d.Uuid,
         CategoryId = d.CategoryId,
-        PublishedDate = d.PublishedDate,
         OrderNo = d.OrderNo,
-        Status = d.Status.ToString(),
         Translations = d.Translations.Select(t => new DocumentTranslationDto
         {
             LanguageId = t.LanguageId,
@@ -205,4 +209,15 @@ public class DocumentsController : ControllerBase
             FileSize = t.File?.Size
         }).ToList()
     };
+
+    private static string? ResolveExternalUrl(HttpRequest request, string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+        if (url.StartsWith("/") || url.StartsWith("\\"))
+        {
+            var relativePath = url.Replace('\\', '/').TrimStart('/');
+            return $"{request.Scheme}://{request.Host}/{relativePath}";
+        }
+        return url;
+    }
 }

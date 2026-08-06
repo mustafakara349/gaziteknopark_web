@@ -437,110 +437,121 @@ public static class DbSeeder
         }
 
         // ── Document Categories & Documents ────────────────────────────────
-        if (!db.DocumentCategories.Any())
+        var docCatMevzuat = db.DocumentCategories.Include(c => c.Translations)
+            .FirstOrDefault(c => c.Translations.Any(t => t.Name == "Teknoloji Geliştirme Bölgeleri Hakkında Mevzuat"));
+        if (docCatMevzuat == null)
         {
-            var catMevzuat = new DocumentCategory { CreatedAt = DateTime.UtcNow };
-            catMevzuat.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Teknoloji Geliştirme Bölgeleri Hakkında Mevzuat" });
-
-            var catArge = new DocumentCategory { CreatedAt = DateTime.UtcNow };
-            catArge.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Ar-Ge Faaliyetleri Hakkında Mevzuat" });
-
-            var catDiger = new DocumentCategory { CreatedAt = DateTime.UtcNow };
-            catDiger.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Diğer Belgeler" });
-
-            db.DocumentCategories.AddRange(catMevzuat, catArge, catDiger);
-            db.SaveChanges();
-
-            var file1 = new FileAsset
-            {
-                Uuid = Guid.NewGuid(),
-                Name = "4691_sayili_kanun.pdf",
-                OriginalName = "4691_sayili_kanun.pdf",
-                Path = "/uploads/documents/4691_sayili_kanun.pdf",
-                Mime = "application/pdf",
-                Size = 2516582, // ~2.4 MB
-                CreatedAt = DateTime.UtcNow
-            };
-            var file2 = new FileAsset
-            {
-                Uuid = Guid.NewGuid(),
-                Name = "uygulama_yonetmeligi.pdf",
-                OriginalName = "uygulama_yonetmeligi.pdf",
-                Path = "/uploads/documents/uygulama_yonetmeligi.pdf",
-                Mime = "application/pdf",
-                Size = 1887436, // ~1.8 MB
-                CreatedAt = DateTime.UtcNow
-            };
-            var file3 = new FileAsset
-            {
-                Uuid = Guid.NewGuid(),
-                Name = "5746_sayili_kanun.pdf",
-                OriginalName = "5746_sayili_kanun.pdf",
-                Path = "/uploads/documents/5746_sayili_kanun.pdf",
-                Mime = "application/pdf",
-                Size = 1048576, // ~1.0 MB
-                CreatedAt = DateTime.UtcNow
-            };
-
-            db.Files.AddRange(file1, file2, file3);
-            db.SaveChanges();
-
-            db.Documents.Add(new Document
-            {
-                Uuid = Guid.NewGuid(),
-                CategoryId = catMevzuat.Id,
-                PublishedDate = new DateTime(2001, 7, 6),
-                OrderNo = 1,
-                Status = ContentStatus.Published,
-                CreatedAt = DateTime.UtcNow,
-                Translations = new List<DocumentTranslation>
-                {
-                    new DocumentTranslation { LanguageId = 1, Title = "06.07.2001 - 4691 Sayılı Teknoloji Geliştirme Bölgeleri Kanunu", FileId = file1.Id }
-                }
-            });
-
-            db.Documents.Add(new Document
-            {
-                Uuid = Guid.NewGuid(),
-                CategoryId = catMevzuat.Id,
-                PublishedDate = new DateTime(2016, 8, 10),
-                OrderNo = 2,
-                Status = ContentStatus.Published,
-                CreatedAt = DateTime.UtcNow,
-                Translations = new List<DocumentTranslation>
-                {
-                    new DocumentTranslation { LanguageId = 1, Title = "10.08.2016 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği", FileId = file2.Id }
-                }
-            });
-
-            db.Documents.Add(new Document
-            {
-                Uuid = Guid.NewGuid(),
-                CategoryId = catArge.Id,
-                PublishedDate = new DateTime(2008, 3, 12),
-                OrderNo = 3,
-                Status = ContentStatus.Published,
-                CreatedAt = DateTime.UtcNow,
-                Translations = new List<DocumentTranslation>
-                {
-                    new DocumentTranslation { LanguageId = 1, Title = "12.03.2008 - 5746 Sayılı Araştırma, Geliştirme ve Tasarım Faaliyetlerinin Desteklenmesi Hakkında Kanun", FileId = file3.Id }
-                }
-            });
-
+            docCatMevzuat = new DocumentCategory { CreatedAt = DateTime.UtcNow };
+            docCatMevzuat.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Teknoloji Geliştirme Bölgeleri Hakkında Mevzuat" });
+            db.DocumentCategories.Add(docCatMevzuat);
             db.SaveChanges();
         }
 
-        // Update existing files with size if null
-        var seededFiles = db.Files.Where(f => f.Size == null).ToList();
-        if (seededFiles.Any())
+        var docCatArge = db.DocumentCategories.Include(c => c.Translations)
+            .FirstOrDefault(c => c.Translations.Any(t => t.Name == "Ar-Ge Faaliyetleri Hakkında Mevzuat"));
+        if (docCatArge == null)
         {
-            foreach (var file in seededFiles)
+            docCatArge = new DocumentCategory { CreatedAt = DateTime.UtcNow };
+            docCatArge.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Ar-Ge Faaliyetleri Hakkında Mevzuat" });
+            db.DocumentCategories.Add(docCatArge);
+            db.SaveChanges();
+        }
+
+        var docCatDiger = db.DocumentCategories.Include(c => c.Translations)
+            .FirstOrDefault(c => c.Translations.Any(t => t.Name == "Diğer Belgeler"));
+        if (docCatDiger == null)
+        {
+            docCatDiger = new DocumentCategory { CreatedAt = DateTime.UtcNow };
+            docCatDiger.Translations.Add(new DocumentCategoryTranslation { LanguageId = 1, Name = "Diğer Belgeler" });
+            db.DocumentCategories.Add(docCatDiger);
+            db.SaveChanges();
+        }
+
+        var realTitles = new HashSet<string>
+        {
+            // Category 1
+            "06.07.2001 - 4691 Sayılı Teknoloji Geliştirme Bölgeleri Kanunu",
+            "19.06.2002 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği",
+            "25.09.2008 Tarih ve 2008-85 Nolu Araştırma ve Geliştirme Faaliyetlerinin Desteklenmesi Konulu Genelgesi",
+            "06.02.2009 Tarih ve 2009-21 Nolu Araştırma ve Geliştirme Faaliyetlerinin Desteklenmesi Konulu Genelgesi",
+            "03.07.2009 - KDV Genel Uygulama Tebliği (3065 Sayılı Kanunun Geçici 20/1 inci Maddesi)",
+            "12.03.2011 - 6170 Sayılı Teknoloji Geliştirme Bölgeleri Kanununda Değişiklik Yapılmasına Dair Kanun",
+            "31.12.2012 - 28514 Sayılı Resmi Gazetede Yayımlanan 7 Seri Nolu Kurumlar Vergisi Genel Tebliği",
+            "12.03.2014 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği",
+            "16.02.2016 - 6676 Sayılı Ar-Ge Reform Paketi",
+            "10.08.2016 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği",
+            "22.02.2018 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik",
+            "10.02.2022 Tarih 31746 Sayılı Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik",
+            "21.12.2022 - 6583 Sayılı Cumhurbaşkanı Kararı",
+            "12.03.2023 - 32130 Sayılı Bazı Alacakların Yeniden Yapılandırılması ile Bazı Kanunlarda Değişiklik Yapılmasına Dair Kanun",
+            "20.04.2023 - 7103 Sayılı Cumhurbaşkanı Kararı",
+            "28.12.2024 - 9368 Sayılı Cumhurbaşkanı Kararı",
+            // Category 2
+            "28.02.2008 - 5746 Sayılı Ar-Ge Faaliyetlerinin Desteklenmesi Hakkında Kanun",
+            "10.08.2016 - 5746 Sayılı Araştırma, Geliştirme ve Tasarım Faaliyetlerinin Desteklenmesi Hakkında Kanun Uygulamasına ve Denetimine İlişkin Usul ve Esaslar"
+        };
+
+        // Clear test documents that are not in the real list or have null Title
+        var testDocs = db.Documents.Where(d => d.Title == null || d.Title == "" || !realTitles.Contains(d.Title)).ToList();
+        if (testDocs.Any())
+        {
+            db.Documents.RemoveRange(testDocs);
+            db.SaveChanges();
+        }
+
+        var documentsToSeed = new List<(string Title, DateTime PublishedDate, string ExternalUrl, uint OrderNo, uint CategoryId)>
+        {
+            // Category 1
+            ("06.07.2001 - 4691 Sayılı Teknoloji Geliştirme Bölgeleri Kanunu", new DateTime(2001, 7, 6), "/uploads/documents/1.5.4691.pdf", 1, docCatMevzuat.Id),
+            ("19.06.2002 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği", new DateTime(2002, 6, 19), "https://www.resmigazete.gov.tr/eskiler/2002/06/20020619.htm#14", 2, docCatMevzuat.Id),
+            ("25.09.2008 Tarih ve 2008-85 Nolu Araştırma ve Geliştirme Faaliyetlerinin Desteklenmesi Konulu Genelgesi", new DateTime(2008, 9, 25), "https://www.pwc.com.tr/tr/ar-ge/mevzuat/ar-ge-faaliyetlerinin-desteklenmesi-ile-ilgili-2008-85-sayili-sgk-genelgesi.pdf", 3, docCatMevzuat.Id),
+            ("06.02.2009 Tarih ve 2009-21 Nolu Araştırma ve Geliştirme Faaliyetlerinin Desteklenmesi Konulu Genelgesi", new DateTime(2009, 2, 6), "https://www.pwc.com.tr/tr/ar-ge/mevzuat/ar-ge-faaliyetlerinin-desteklenmesi-ile-ilgili-2009-21-sayili-sgk-genelgesi.pdf", 4, docCatMevzuat.Id),
+            ("03.07.2009 - KDV Genel Uygulama Tebliği (3065 Sayılı Kanunun Geçici 20/1 inci Maddesi)", new DateTime(2009, 7, 3), "https://www.resmigazete.gov.tr/eskiler/2009/07/20090703-1..htm", 5, docCatMevzuat.Id),
+            ("12.03.2011 - 6170 Sayılı Teknoloji Geliştirme Bölgeleri Kanununda Değişiklik Yapılmasına Dair Kanun", new DateTime(2011, 3, 12), "https://www.resmigazete.gov.tr/eskiler/2011/03/20110312-2.htm", 6, docCatMevzuat.Id),
+            ("31.12.2012 - 28514 Sayılı Resmi Gazetede Yayımlanan 7 Seri Nolu Kurumlar Vergisi Genel Tebliği", new DateTime(2012, 12, 31), "https://www.resmigazete.gov.tr/eskiler/2012/12/20121231M4-13.htm", 7, docCatMevzuat.Id),
+            ("12.03.2014 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği", new DateTime(2014, 3, 12), "https://www.resmigazete.gov.tr/eskiler/2014/03/20140312-2.htm", 8, docCatMevzuat.Id),
+            ("16.02.2016 - 6676 Sayılı Ar-Ge Reform Paketi", new DateTime(2016, 2, 16), "https://www.resmigazete.gov.tr/eskiler/2016/02/20160226-1.pdf", 9, docCatMevzuat.Id),
+            ("10.08.2016 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliği", new DateTime(2016, 8, 10), "https://www.resmigazete.gov.tr/eskiler/2016/08/20160810-8.htm", 10, docCatMevzuat.Id),
+            ("22.02.2018 - Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik", new DateTime(2018, 2, 22), "https://www.resmigazete.gov.tr/eskiler/2018/02/20180222-6.htm", 11, docCatMevzuat.Id),
+            ("10.02.2022 Tarih 31746 Sayılı Teknoloji Geliştirme Bölgeleri Uygulama Yönetmeliğinde Değişiklik Yapılmasına Dair Yönetmelik", new DateTime(2022, 2, 10), "https://www.resmigazete.gov.tr/eskiler/2022/02/20220210-3.htm", 12, docCatMevzuat.Id),
+            ("21.12.2022 - 6583 Sayılı Cumhurbaşkanı Kararı", new DateTime(2022, 12, 21), "https://www.resmigazete.gov.tr/eskiler/2022/12/20221221-3.pdf", 13, docCatMevzuat.Id),
+            ("12.03.2023 - 32130 Sayılı Bazı Alacakların Yeniden Yapılandırılması ile Bazı Kanunlarda Değişiklik Yapılmasına Dair Kanun", new DateTime(2023, 3, 12), "https://www.resmigazete.gov.tr/eskiler/2023/03/20230312-14.htm", 14, docCatMevzuat.Id),
+            ("20.04.2023 - 7103 Sayılı Cumhurbaşkanı Kararı", new DateTime(2023, 4, 20), "https://www.mevzuat.gov.tr/MevzuatMetin/20.5.7103.pdf", 15, docCatMevzuat.Id),
+            ("28.12.2024 - 9368 Sayılı Cumhurbaşkanı Kararı", new DateTime(2024, 12, 28), "https://www.mevzuat.gov.tr/MevzuatMetin/20.5.9368.pdf", 16, docCatMevzuat.Id),
+
+            // Category 2
+            ("28.02.2008 - 5746 Sayılı Ar-Ge Faaliyetlerinin Desteklenmesi Hakkında Kanun", new DateTime(2008, 2, 28), "https://www.mevzuat.gov.tr/mevzuatmetin/1.5.5746.pdf", 1, docCatArge.Id),
+            ("10.08.2016 - 5746 Sayılı Araştırma, Geliştirme ve Tasarım Faaliyetlerinin Desteklenmesi Hakkında Kanun Uygulamasına ve Denetimine İlişkin Usul ve Esaslar", new DateTime(2016, 8, 10), "https://www.resmigazete.gov.tr/eskiler/2016/08/20160810-7.htm", 2, docCatArge.Id)
+        };
+
+        foreach (var doc in documentsToSeed)
+        {
+            var existingDoc = db.Documents.FirstOrDefault(d => d.Title == doc.Title);
+            if (existingDoc == null)
             {
-                if (file.Name == "4691_sayili_kanun.pdf") file.Size = 2516582;
-                else if (file.Name == "uygulama_yonetmeligi.pdf") file.Size = 1887436;
-                else if (file.Name == "5746_sayili_kanun.pdf") file.Size = 1048576;
+                db.Documents.Add(new Document
+                {
+                    Uuid = Guid.NewGuid(),
+                    CategoryId = doc.CategoryId,
+                    Title = doc.Title,
+                    PublishedDate = doc.PublishedDate,
+                    ExternalUrl = doc.ExternalUrl,
+                    OrderNo = doc.OrderNo,
+                    Status = ContentStatus.Published,
+                    CreatedAt = DateTime.UtcNow
+                });
             }
-            db.SaveChanges();
+            else
+            {
+                if (existingDoc.ExternalUrl != doc.ExternalUrl || existingDoc.CategoryId != doc.CategoryId || existingDoc.OrderNo != doc.OrderNo)
+                {
+                    existingDoc.ExternalUrl = doc.ExternalUrl;
+                    existingDoc.CategoryId = doc.CategoryId;
+                    existingDoc.OrderNo = doc.OrderNo;
+                    existingDoc.PublishedDate = doc.PublishedDate;
+                }
+            }
         }
+        db.SaveChanges();
     }
 }

@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806121048_AddTitleAndExternalUrlToDocument")]
+    partial class AddTitleAndExternalUrlToDocument
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -645,9 +648,24 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("employee_count");
 
+                    b.Property<string>("FacebookUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("facebook_url");
+
                     b.Property<int?>("FoundedYear")
                         .HasColumnType("int")
                         .HasColumnName("founded_year");
+
+                    b.Property<string>("InstagramUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("instagram_url");
+
+                    b.Property<string>("LinkedInUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("linked_in_url");
 
                     b.Property<uint?>("LogoFileId")
                         .HasColumnType("int unsigned")
@@ -668,6 +686,11 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)")
                         .HasColumnName("phone");
+
+                    b.Property<string>("ShortName")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("short_name");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -690,6 +713,16 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)")
                         .HasColumnName("website");
+
+                    b.Property<string>("XUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("x_url");
+
+                    b.Property<string>("YoutubeUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("youtube_url");
 
                     b.HasKey("Id")
                         .HasName("pk_companies");
@@ -2641,6 +2674,10 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)")
                         .HasColumnName("title");
+
+                    b.Property<DateTime?>("UnpublishedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("unpublished_at");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")

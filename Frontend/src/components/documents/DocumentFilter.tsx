@@ -7,13 +7,24 @@ interface DocumentFilterProps {
   setSearch: (val: string) => void;
   selectedFileType: string;
   setSelectedFileType: (val: string) => void;
+  fileTypes: string[];
 }
+
+const formatFileTypeLabel = (ext: string) => {
+  const upper = ext.toUpperCase();
+  if (ext === "pdf") return "PDF Belgeleri (.pdf)";
+  if (ext === "doc" || ext === "docx") return `Word Belgeleri (.${ext})`;
+  if (ext === "xls" || ext === "xlsx") return `Excel Belgeleri (.${ext})`;
+  if (ext === "htm" || ext === "html") return `Web Sayfası (.${ext})`;
+  return `${upper} Dosyaları (.${ext})`;
+};
 
 export default function DocumentFilter({
   search,
   setSearch,
   selectedFileType,
   setSelectedFileType,
+  fileTypes,
 }: DocumentFilterProps) {
   const hasActiveFilters = search || selectedFileType;
 
@@ -47,9 +58,11 @@ export default function DocumentFilter({
             className={`${inputClass} pr-10 appearance-none bg-white cursor-pointer`}
           >
             <option value="">Tüm Dosya Türleri</option>
-            <option value="pdf">PDF Belgeleri (.pdf)</option>
-            <option value="doc">Word Belgeleri (.doc, .docx)</option>
-            <option value="xls">Excel Belgeleri (.xls, .xlsx)</option>
+            {fileTypes.map((ext) => (
+              <option key={ext} value={ext}>
+                {formatFileTypeLabel(ext)}
+              </option>
+            ))}
           </select>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400">
             <ChevronDown className="h-4 w-4" />

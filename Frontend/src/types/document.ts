@@ -22,12 +22,15 @@ export interface DocumentCategory {
 export interface DocumentItem {
   id: number;
   uuid?: string;
+  title: string;
+  category: string;
   categoryId: number;
   categoryName?: string;
   publishedDate: string;
+  externalUrl?: string;
   status: string;
   orderNo: number;
-  translations: DocumentTranslation[];
+  translations?: DocumentTranslation[];
 }
 
 export interface DocumentFilterState {
