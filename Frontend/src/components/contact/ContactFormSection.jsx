@@ -1,6 +1,7 @@
 import { useState } from "react";
 import FormField, { inputClass } from "../common/FormField";
 import { submitContactMessage } from "../../api/endpoints";
+import { Check, Send } from "lucide-react";
 
 const initialForm = {
   fullName: "",
@@ -60,35 +61,35 @@ export default function ContactFormSection() {
   };
 
   return (
-    <div className="mt-12 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm md:p-10">
-      <div className="mx-auto max-w-3xl text-center">
-        <span className="text-xs font-bold uppercase tracking-wider text-accent">Görüş & Öneri</span>
-        <h2 className="mt-1 text-2xl font-extrabold text-primary sm:text-3xl">Gazi Teknopark'a Yazın</h2>
-        <p className="mt-2 text-xs text-gray-500 sm:text-sm">
-          Soru, görüş, iş birliği ve bilgi taleplerinizi aşağıdaki formu doldurarak ilgili birimlerimize iletebilirsiniz.
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs sm:p-8">
+      <div>
+        <span className="text-xs font-bold uppercase tracking-wider text-primary/70">Görüş & Öneri</span>
+        <h2 className="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">Bize Ulaşın</h2>
+        <p className="mt-1 text-xs text-gray-500">
+          Soru, görüş ve bilgi taleplerinizi aşağıdaki formu doldurarak ilgili birimlerimize iletebilirsiniz.
         </p>
       </div>
 
-      <div className="mx-auto mt-8 max-w-2xl">
+      <div className="mt-6">
         {status === "success" ? (
-          <div className="rounded-2xl bg-hover-blue p-8 text-center border border-primary/20 animate-slide-down">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white text-xl font-bold">
-              ✓
+          <div className="rounded-xl bg-emerald-50 p-8 text-center border border-emerald-200">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white">
+              <Check className="h-6 w-6" />
             </div>
-            <h3 className="mt-3 text-lg font-bold text-primary">Mesajınız İletilmiştir</h3>
-            <p className="mt-1 text-xs text-gray-600">
+            <h3 className="mt-3 text-lg font-bold text-emerald-900">Mesajınız İletilmiştir</h3>
+            <p className="mt-1 text-xs text-emerald-700">
               Talebiniz kaydedilmiştir. İlgili birim yöneticimiz en kısa sürede tarafınıza dönüş yapacaktır.
             </p>
             <button
               onClick={() => setStatus("idle")}
-              className="mt-5 rounded-full bg-primary px-6 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+              className="mt-5 rounded-xl bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white transition-opacity hover:opacity-90 cursor-pointer"
             >
               Yeni Mesaj Gönder
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid gap-5 sm:grid-cols-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="Ad Soyad" required>
                 <input
                   required
@@ -111,7 +112,7 @@ export default function ContactFormSection() {
               </FormField>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="Telefon Numarası">
                 <input
                   placeholder="Örn: 05XX XXX XX XX"
@@ -159,7 +160,7 @@ export default function ContactFormSection() {
                 id="kvkkConsent"
                 checked={form.kvkkConsent}
                 onChange={update("kvkkConsent")}
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
               />
               <label htmlFor="kvkkConsent" className="text-xs text-gray-500 leading-normal">
                 Gazi Teknopark{" "}
@@ -168,15 +169,16 @@ export default function ContactFormSection() {
               </label>
             </div>
 
-            {error && <p className="text-xs font-semibold text-accent">{error}</p>}
+            {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
 
-            <div className="pt-2 text-center sm:text-right">
+            <div className="pt-2 text-right">
               <button
                 type="submit"
                 disabled={status === "submitting"}
-                className="w-full sm:w-auto rounded-full bg-primary px-8 py-3 text-xs font-bold text-white shadow-md transition-all hover:bg-primary-dark hover:shadow-lg disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3 text-xs font-bold text-white shadow-xs transition-all hover:bg-primary-dark disabled:opacity-60 cursor-pointer"
               >
-                {status === "submitting" ? "Gönderiliyor..." : "Mesajı İlet &rarr;"}
+                <Send className="h-3.5 w-3.5" />
+                <span>{status === "submitting" ? "Gönderiliyor..." : "Mesajı Gönder"}</span>
               </button>
             </div>
           </form>

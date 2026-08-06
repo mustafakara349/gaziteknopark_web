@@ -1,23 +1,19 @@
 import { useRef, useEffect, Suspense } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import gsap from "gsap";
 import * as THREE from "three";
 import EarthMesh from "./EarthMesh";
 import GlobeMarker from "./GlobeMarker";
+import { latLngToVector3 } from "./globeUtils";
+export { latLngToVector3 };
 
-// Exact Lat/Lng to 3D Cartesian coordinates on sphere
-export function latLngToVector3(lat, lng, radius) {
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lng + 180) * (Math.PI / 180);
-  const x = -(radius * Math.sin(phi) * Math.cos(theta));
-  const z = radius * Math.sin(phi) * Math.sin(theta);
-  const y = radius * Math.cos(phi);
-  return new THREE.Vector3(x, y, z);
-}
+// Initial default rotation offset to center Gazi Teknopark (Gölbaşı) directly facing the camera
+const ANKARA_INITIAL_ROTATION_Y = -((32.8085 + 90) * (Math.PI / 180));
+const ANKARA_INITIAL_ROTATION_X = 0.35; // Soft tilt for Northern Hemisphere
 
-// Red 3D Curved Connection Lines
-function RedConnectingArcs({ offices, radius = 2 }) {
+// Gazi Red Curved 3D Connection Lines (Ankara -> International Hubs)
+function GaziConnectingArcs({ offices, radius = 2 }) {
   if (!offices || offices.length < 2) return null;
 
   const ankara = offices.find((o) => o.id === "ankara") || offices[0];
@@ -28,7 +24,7 @@ function RedConnectingArcs({ offices, radius = 2 }) {
     .map((dest) => {
       const pDest = latLngToVector3(dest.latitude, dest.longitude, radius + 0.04);
       const midPoint = new THREE.Vector3().addVectors(pAnkara, pDest).multiplyScalar(0.5);
-      midPoint.normalize().multiplyScalar(radius + 0.42);
+      midPoint.normalize().multiplyScalar(radius + 0.45);
 
       const curve = new THREE.QuadraticBezierCurve3(pAnkara, midPoint, pDest);
       const points = curve.getPoints(40);
@@ -47,7 +43,7 @@ function RedConnectingArcs({ offices, radius = 2 }) {
           <line key={id} ref={lineRef} geometry={geometry}>
             <lineDashedMaterial
               color="#e30613"
-              dashSize={0.08}
+              dashSize={0.09}
               gapSize={0.04}
               linewidth={2}
               transparent
@@ -60,7 +56,7 @@ function RedConnectingArcs({ offices, radius = 2 }) {
   );
 }
 
-// Synchronized Earth Group with Northern Hemisphere Default Pitch
+// Synchronized Earth Group initially centered directly on Ankara/Türkiye
 function SynchronizedEarthGroup({ offices, selectedOffice, onSelectOffice, earthGroupRef }) {
   const radius = 2;
   const isAutoRotating = !selectedOffice;
@@ -68,18 +64,28 @@ function SynchronizedEarthGroup({ offices, selectedOffice, onSelectOffice, earth
   useEffect(() => {
     if (!earthGroupRef.current) return;
     if (!selectedOffice) {
+      // Focus directly back on Ankara/Türkiye initial orientation
       gsap.to(earthGroupRef.current.rotation, {
-        x: 0.3,
-        duration: 1.2,
-        ease: "power2.out",
+        x: ANKARA_INITIAL_ROTATION_X,
+        y: ANKARA_INITIAL_ROTATION_Y,
+        duration: 1.4,
+        ease: "power2.inOut",
       });
     }
   }, [selectedOffice, earthGroupRef]);
 
+  // Initial setup: set rotation to Ankara directly on mount
+  useEffect(() => {
+    if (earthGroupRef.current) {
+      earthGroupRef.current.rotation.x = ANKARA_INITIAL_ROTATION_X;
+      earthGroupRef.current.rotation.y = ANKARA_INITIAL_ROTATION_Y;
+    }
+  }, [earthGroupRef]);
+
   // Slow auto rotation around Y axis ONLY when no city is selected
   useFrame((_, delta) => {
     if (earthGroupRef.current && isAutoRotating) {
-      earthGroupRef.current.rotation.y += delta * 0.04;
+      earthGroupRef.current.rotation.y += delta * 0.03;
     }
   });
 
@@ -88,8 +94,8 @@ function SynchronizedEarthGroup({ offices, selectedOffice, onSelectOffice, earth
       {/* 3D Photorealistic Earth Mesh */}
       <EarthMesh radius={radius} />
 
-      {/* Red 3D Curved Connection Lines */}
-      <RedConnectingArcs offices={offices} radius={radius} />
+      {/* Gazi Red Curved Connection Arcs */}
+      <GaziConnectingArcs offices={offices} radius={radius} />
 
       {/* Dynamic City Markers */}
       {offices.map((office) => (
@@ -112,11 +118,11 @@ function CameraController({ selectedOffice, earthGroupRef }) {
 
   useEffect(() => {
     if (!selectedOffice) {
-      // Default view: Northern Hemisphere emphasis camera position [0, 1.2, 5.8]
+      // Default view camera position focused on Turkey
       gsap.to(camera.position, {
         x: 0,
-        y: 1.2,
-        z: 5.8,
+        y: 1.1,
+        z: 5.6,
         duration: 1.4,
         ease: "power2.inOut",
         onUpdate: () => camera.lookAt(0, 0, 0),
@@ -132,8 +138,8 @@ function CameraController({ selectedOffice, earthGroupRef }) {
       worldPinPos.applyEuler(earthGroupRef.current.rotation);
     }
 
-    // Sleek camera flight distance (3.8 for executive horizon view)
-    const zoomDistance = 3.8;
+    // Sleek camera flight distance
+    const zoomDistance = 3.7;
     const targetCamPos = worldPinPos.clone().normalize().multiplyScalar(zoomDistance);
 
     gsap.to(camera.position, {
@@ -155,18 +161,15 @@ export default function GlobeScene({ offices, selectedOffice, onSelectOffice }) 
   const earthGroupRef = useRef();
 
   return (
-    <div className="relative z-0 w-full h-[440px] rounded-2xl overflow-hidden bg-[#051d40] border border-gray-200/40 shadow-inner">
-      <Canvas camera={{ position: [0, 1.2, 5.8], fov: 45 }}>
+    <div className="relative z-0 w-full h-[440px] rounded-[1.5rem] overflow-hidden bg-gradient-to-b from-[#0b192c] via-[#1e293b] to-[#0f172a] border border-gray-200/50 shadow-inner">
+      <Canvas camera={{ position: [0, 1.1, 5.6], fov: 45 }}>
         <Suspense fallback={null}>
-          {/* Starfield Space Background */}
-          <Stars radius={100} depth={50} count={2500} factor={3.5} saturation={0} fade speed={1} />
+          {/* Soft Studio Lighting */}
+          <ambientLight intensity={1.8} />
+          <directionalLight position={[5, 4, 5]} intensity={2.5} color="#ffffff" />
+          <directionalLight position={[-5, -4, -5]} intensity={1.2} color="#0066cc" />
 
-          {/* Lights */}
-          <ambientLight intensity={1.3} />
-          <directionalLight position={[5, 4, 5]} intensity={2.2} color="#ffffff" />
-          <directionalLight position={[-5, -4, -5]} intensity={1} color="#082b5c" />
-
-          {/* Synchronized Earth, Pushpins & Red 3D Connecting Lines */}
+          {/* Synchronized Earth, Beacons & Gazi Red Connecting Arcs */}
           <SynchronizedEarthGroup
             offices={offices}
             selectedOffice={selectedOffice}

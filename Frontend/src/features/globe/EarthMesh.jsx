@@ -11,46 +11,50 @@ export default function EarthMesh({ radius = 2, earthRef }) {
 
   useFrame((_, delta) => {
     if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += delta * 0.02;
+      cloudsRef.current.rotation.y += delta * 0.015;
     }
   });
 
   return (
     <group ref={earthRef}>
-      {/* Soft Atmosphere Glow */}
-      <mesh scale={[1.04, 1.04, 1.04]}>
+      {/* Outer Atmosphere Soft Blue Glow (No Red Glow) */}
+      <mesh scale={[1.045, 1.045, 1.045]}>
         <sphereGeometry args={[radius, 64, 64]} />
         <meshPhongMaterial
-          color="#0066cc"
+          color="#38bdf8"
           transparent
-          opacity={0.16}
+          opacity={0.2}
           side={THREE.BackSide}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
 
-      {/* Main 3D Earth Sphere with Authentic High-Res Earth Texture */}
+      {/* Main 3D Earth Sphere */}
       <mesh>
         <sphereGeometry args={[radius, 64, 64]} />
-        <meshPhongMaterial
+        <meshStandardMaterial
           map={texture}
-          emissive="#051d40"
-          emissiveIntensity={0.15}
-          specular="#0066cc"
-          shininess={20}
+          roughness={0.55}
+          metalness={0.1}
+          color="#ffffff"
         />
       </mesh>
 
-      {/* Ultra Subtle Grid Overlay */}
-      <mesh scale={[1.001, 1.001, 1.001]}>
+      {/* Subtle Grid Overlay */}
+      <mesh scale={[1.002, 1.002, 1.002]}>
         <sphereGeometry args={[radius, 36, 18]} />
-        <meshBasicMaterial color="#3b82f6" wireframe transparent opacity={0.06} />
+        <meshBasicMaterial color="#0066cc" wireframe transparent opacity={0.06} />
       </mesh>
 
-      {/* Translucent Cloud Layer Mesh */}
-      <mesh ref={cloudsRef} scale={[1.015, 1.015, 1.015]}>
+      {/* Translucent Cloud Layer */}
+      <mesh ref={cloudsRef} scale={[1.018, 1.018, 1.018]}>
         <sphereGeometry args={[radius, 64, 64]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.14} blending={THREE.AdditiveBlending} />
+        <meshStandardMaterial
+          color="#ffffff"
+          transparent
+          opacity={0.2}
+          blending={THREE.AdditiveBlending}
+        />
       </mesh>
     </group>
   );
