@@ -1,39 +1,40 @@
 import { useEffect, useState, useRef } from "react";
 import adminAxios from "../../../utils/adminAxios";
-import { X, Save, Loader2, Upload, Trash2 } from "lucide-react";
-import RichTextEditor from "../common/RichTextEditor";
+import { X, Save, Loader2, Upload, Trash2, FileText, Link, Check } from "lucide-react";
+import RichTextEditor from "../../admin/common/RichTextEditor";
 import { formatContentLinks } from "../../../utils/htmlSanitizer";
 import { getImageUrl } from "../../../utils/imageUrl";
 
-export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId, categories }) {
+export default function AdminAnnouncementFormModal({ isOpen, onClose, onSuccess, editId, categories }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+  const [isAttachmentUploading, setIsAttachmentUploading] = useState(false);
   const fileInputRef = useRef(null);
-  const galleryInputRef = useRef(null);
+  const attachmentInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
     categoryId: "",
     isActive: true,
-    authorName: "",
+    isPinned: false,
     summary: "",
     content: "",
     publishedAt: "",
     unpublishedAt: "",
-    readTime: "",
+    actionUrl: "",
+    actionLabel: "",
     coverImageFileId: "",
-    additionalImageFileIds: []
+    attachmentFileIds: []
   });
   
   const [coverImageUrl, setCoverImageUrl] = useState(null);
-  const [additionalImageUrls, setAdditionalImageUrls] = useState([]);
+  const [attachments, setAttachments] = useState([]); // [{ id, fileName, fileUrl }]
 
   useEffect(() => {
     if (isOpen) {
       if (editId) {
-        fetchNewsDetails(editId);
+        fetchAnnouncementDetails(editId);
       } else {
         resetForm();
       }
@@ -57,29 +58,34 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
     }
   };
 
-  const fetchNewsDetails = async (id) => {
+  const fetchAnnouncementDetails = async (id) => {
     setIsLoading(true);
     try {
-      const response = await adminAxios.get(`/news/${id}?countView=false`);
+      const response = await adminAxios.get(`/announcements/${id}`);
       const data = response.data;
       setFormData({
         title: data.title || "",
         slug: data.slug || "",
         categoryId: data.categoryId || "",
         isActive: data.isActive !== undefined ? data.isActive : true,
-        authorName: data.authorName || "",
+        isPinned: data.isPinned || false,
         summary: data.summary || "",
         content: data.content || "",
         publishedAt: safeFormatDate(data.publishedAt),
         unpublishedAt: safeFormatDate(data.unpublishedAt),
-        readTime: data.readTime || "",
+        actionUrl: data.actionUrl || "",
+        actionLabel: data.actionLabel || "",
         coverImageFileId: data.coverImageFileId || "",
-        additionalImageFileIds: data.additionalImageFileIds || []
+        attachmentFileIds: data.attachments?.map(a => a.fileId) || []
       });
       setCoverImageUrl(data.coverImageUrl);
-      setAdditionalImageUrls(data.additionalImageUrls || []);
+      setAttachments(data.attachments?.map(a => ({
+        id: a.fileId,
+        fileName: a.fileName,
+        fileUrl: a.fileUrl
+      })) || []);
     } catch (error) {
-      console.error("Error fetching news details", error);
+      console.error("Error fetching announcement details", error);
     } finally {
       setIsLoading(false);
     }
@@ -91,25 +97,23 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
       slug: "",
       categoryId: "",
       isActive: true,
-      authorName: "",
+      isPinned: false,
       summary: "",
       content: "",
       publishedAt: "",
       unpublishedAt: "",
-      readTime: "",
+      actionUrl: "",
+      actionLabel: "",
       coverImageFileId: "",
-      additionalImageFileIds: []
+      attachmentFileIds: []
     });
     setCoverImageUrl(null);
-    setAdditionalImageUrls([]);
+    setAttachments([]);
   };
 
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
-    let parsedValue = value;
-    if (name === "isActive") {
-      parsedValue = value === "true";
-    }
+    const { name, value, type, checked } = e.target;
+    let parsedValue = type === "checkbox" ? checked : value;
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
 
@@ -117,7 +121,7 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
     setFormData(prev => ({ ...prev, content: value }));
   };
 
-  const handleFileUpload = async (e) => {
+  const handleCoverUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -135,24 +139,27 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
       setFormData(prev => ({ ...prev, coverImageFileId: fileId }));
       setCoverImageUrl(fileUrl);
     } catch (error) {
-      console.error("Error uploading file", error);
-      alert("Dosya yüklenirken bir hata oluştu.");
+      console.error("Error uploading cover image", error);
+      alert("Kapak görseli yüklenirken bir hata oluştu.");
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const handleGalleryUpload = async (e) => {
+  const handleRemoveCoverImage = () => {
+    setFormData(prev => ({ ...prev, coverImageFileId: "" }));
+    setCoverImageUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleAttachmentUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    setIsGalleryUploading(true);
+    setIsAttachmentUploading(true);
     try {
-      const newIds = [];
-      const newUrls = [];
+      const newAttachments = [];
       
       for (const file of files) {
         const formDataUpload = new FormData();
@@ -162,43 +169,41 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
           headers: { "Content-Type": "multipart/form-data" }
         });
         
-        newIds.push(response.data.id);
-        newUrls.push(response.data.url);
+        newAttachments.push({
+          id: response.data.id,
+          fileName: response.data.originalName || file.name,
+          fileUrl: response.data.url
+        });
       }
       
       setFormData(prev => ({
         ...prev,
-        additionalImageFileIds: [...(prev.additionalImageFileIds || []), ...newIds]
+        attachmentFileIds: [...(prev.attachmentFileIds || []), ...newAttachments.map(a => a.id)]
       }));
-      setAdditionalImageUrls(prev => [...prev, ...newUrls]);
+      setAttachments(prev => [...prev, ...newAttachments]);
     } catch (error) {
-      console.error("Error uploading gallery files", error);
-      alert("Galeri görselleri yüklenirken bir hata oluştu.");
+      console.error("Error uploading attachments", error);
+      alert("Dosyalar yüklenirken bir hata oluştu.");
     } finally {
-      setIsGalleryUploading(false);
-      if (galleryInputRef.current) {
-        galleryInputRef.current.value = "";
-      }
+      setIsAttachmentUploading(false);
+      if (attachmentInputRef.current) attachmentInputRef.current.value = "";
     }
   };
 
-  const handleRemoveGalleryImage = (index) => {
+  const handleRemoveAttachment = (index) => {
     setFormData(prev => ({
       ...prev,
-      additionalImageFileIds: (prev.additionalImageFileIds || []).filter((_, i) => i !== index)
+      attachmentFileIds: (prev.attachmentFileIds || []).filter((_, i) => i !== index)
     }));
-    setAdditionalImageUrls(prev => prev.filter((_, i) => i !== index));
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.isActive && formData.unpublishedAt) {
-      const unpublishDate = new Date(formData.unpublishedAt);
-      if (unpublishDate <= new Date()) {
-        alert("Haberi tekrar aktifleştirebilmek için lütfen yayından kaldırılma tarihini kontrol ediniz.");
-        return;
-      }
+    if (formData.isActive && formData.unpublishedAt && new Date(formData.unpublishedAt) <= new Date()) {
+      alert("Duyuruyu tekrar aktifleştirebilmek için lütfen yayından kaldırılma tarihini kontrol ediniz.");
+      return;
     }
 
     setIsLoading(true);
@@ -208,15 +213,17 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
         title: formData.title,
         slug: formData.slug || formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
+        status: "Published", // Geriye dönük uyumluluk için, artık pasif
         isActive: formData.isActive,
-        authorName: formData.authorName ? formData.authorName.trim() : "Gazi Teknopark",
+        isPinned: formData.isPinned,
         summary: formData.summary,
         content: formattedContent,
         publishedAt: formData.publishedAt ? new Date(formData.publishedAt).toISOString() : null,
         unpublishedAt: formData.unpublishedAt ? new Date(formData.unpublishedAt).toISOString() : null,
-        readTime: formData.readTime ? parseInt(formData.readTime) : null,
+        actionUrl: formData.actionUrl,
+        actionLabel: formData.actionLabel,
         coverImageFileId: formData.coverImageFileId ? parseInt(formData.coverImageFileId) : null,
-        additionalImageFileIds: formData.additionalImageFileIds || [],
+        attachmentFileIds: formData.attachmentFileIds || [],
         translations: [
           {
             languageId: 1, // Default TR
@@ -224,19 +231,20 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
             slug: formData.slug || formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
             summary: formData.summary,
             content: formattedContent,
+            actionLabel: formData.actionLabel
           }
         ]
       };
 
       if (editId) {
-        await adminAxios.put(`/news/${editId}`, payload);
+        await adminAxios.put(`/announcements/${editId}`, payload);
       } else {
-        await adminAxios.post("/news", payload);
+        await adminAxios.post("/announcements", payload);
       }
       
       onSuccess();
     } catch (error) {
-      console.error("Error saving news", error);
+      console.error("Error saving announcement", error);
       const serverMessage = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null);
       alert(serverMessage || "Bir hata oluştu. Lütfen tüm zorunlu alanları kontrol edin.");
     } finally {
@@ -252,7 +260,7 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-900">
-            {editId ? "Haberi Düzenle" : "Yeni Haber Ekle"}
+            {editId ? "Duyuruyu Düzenle" : "Yeni Duyuru Ekle"}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
@@ -261,9 +269,9 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
 
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          <form id="newsForm" onSubmit={handleSubmit} className="space-y-6">
+          <form id="announcementForm" onSubmit={handleSubmit} className="space-y-6">
             
-            {/* Top Row: Basic Info & Author */}
+            {/* Top Row: Basic Info & Category */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Başlık *</label>
@@ -274,20 +282,19 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
                   value={formData.title}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  placeholder="Haber başlığını giriniz"
+                  placeholder="Duyuru başlığını giriniz"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Kategori *</label>
+                <label className="block text-sm font-medium text-gray-700">Kategori</label>
                 <select
                   name="categoryId"
-                  required
                   value={formData.categoryId}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
-                  <option value="">Seçiniz</option>
+                  <option value="">Genel (Kategorisiz)</option>
                   {(categories || []).map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
@@ -295,48 +302,8 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
               </div>
             </div>
 
-            {/* Second Row: Author & Status (Aktiflik) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Yazar Adı</label>
-                <input
-                  type="text"
-                  name="authorName"
-                  value={formData.authorName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  placeholder="Gazi Teknopark"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Aktiflik Durumu</label>
-                <select
-                  name="isActive"
-                  value={formData.isActive.toString()}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                >
-                  <option value="true">Aktif</option>
-                  <option value="false">Pasif</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Third Row: Dates & Read Time */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Okuma Süresi (dk)</label>
-                <input
-                  type="number"
-                  name="readTime"
-                  value={formData.readTime}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  placeholder="Örn: 5"
-                />
-              </div>
-
+            {/* Second Row: Date & Active & Pin */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Yayınlanma Tarihi</label>
                 <input
@@ -349,7 +316,7 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Kaldırılma Tarihi</label>
+                <label className="block text-sm font-medium text-gray-700">Yayından Kaldırılma</label>
                 <input
                   type="datetime-local"
                   name="unpublishedAt"
@@ -357,6 +324,71 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
+              </div>
+
+              <div className="space-y-2 flex flex-col justify-center pt-6">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center w-5 h-5 border-2 border-gray-300 rounded-md group-hover:border-blue-500 transition-colors">
+                    <input
+                      type="checkbox"
+                      name="isActive"
+                      checked={formData.isActive}
+                      onChange={handleInputChange}
+                      className="absolute opacity-0 w-full h-full cursor-pointer"
+                    />
+                    {formData.isActive && <Check className="w-3.5 h-3.5 text-blue-500" strokeWidth={3} />}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Aktif
+                  </span>
+                </label>
+              </div>
+
+              <div className="space-y-2 flex flex-col justify-center pt-6">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center w-5 h-5 border-2 border-gray-300 rounded-md group-hover:border-blue-500 transition-colors">
+                    <input
+                      type="checkbox"
+                      name="isPinned"
+                      checked={formData.isPinned}
+                      onChange={handleInputChange}
+                      className="absolute opacity-0 w-full h-full cursor-pointer"
+                    />
+                    {formData.isPinned && <Check className="w-3.5 h-3.5 text-blue-500" strokeWidth={3} />}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Önemli / Üste Sabitle
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* CTA Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-blue-50/50 rounded-xl border border-blue-100/50">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Aksiyon Buton Metni</label>
+                <input
+                  type="text"
+                  name="actionLabel"
+                  value={formData.actionLabel}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  placeholder="Örn: Başvur, Hemen İncele"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Aksiyon URL (Link)</label>
+                <div className="relative">
+                  <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    name="actionUrl"
+                    value={formData.actionUrl}
+                    onChange={handleInputChange}
+                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
             </div>
 
@@ -369,7 +401,7 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
                 value={formData.summary}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                placeholder="Haberin kısa bir özetini giriniz"
+                placeholder="Duyurunun kısa bir özetini giriniz"
               ></textarea>
             </div>
 
@@ -378,13 +410,13 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
               <RichTextEditor
                 value={formData.content}
                 onChange={handleContentChange}
-                placeholder="Haber detayını buraya giriniz..."
+                placeholder="Duyuru detayını buraya giriniz..."
               />
             </div>
 
             {/* Cover Image Upload */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Kapak Görseli</label>
+              <label className="block text-sm font-medium text-gray-700">Kapak Görseli (Opsiyonel)</label>
               <div className="flex items-center gap-4">
                 {coverImageUrl && (
                   <div className="relative w-24 h-24 rounded-xl border border-gray-200 overflow-hidden shrink-0 group">
@@ -393,12 +425,12 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
                   </div>
                 )}
                 
-                <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-3">
                   <input
                     type="file"
                     accept="image/*"
                     ref={fileInputRef}
-                    onChange={handleFileUpload}
+                    onChange={handleCoverUpload}
                     className="hidden"
                     id="coverImageUpload"
                   />
@@ -409,53 +441,72 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
                     {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     {isUploading ? "Yükleniyor..." : "Görsel Seç / Değiştir"}
                   </label>
-                  <p className="mt-2 text-xs text-gray-500">
-                    Önerilen boyut: 1200x800px. JPG, PNG veya WEBP.
-                  </p>
+
+                  {coverImageUrl && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoverImage}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-sm font-medium transition-colors shadow-sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Görseli Kaldır
+                    </button>
+                  )}
                 </div>
               </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Önerilen boyut: 1200x800px. JPG, PNG veya WEBP.
+              </p>
             </div>
 
-            {/* Gallery Upload */}
+            {/* Attachments Upload */}
             <div className="space-y-4 pt-4 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Haber İçi Ekstra Görseller (Galeri)</label>
+                  <label className="block text-sm font-medium text-gray-700">Ek Dosyalar / Belgeler</label>
                   <p className="mt-1 text-xs text-gray-500">
-                    Haber detayında gösterilecek ekstra fotoğrafları seçin. Birden fazla seçebilirsiniz.
+                    Kullanıcıların indirebileceği PDF, Word vb. belgeleri buraya yükleyebilirsiniz.
                   </p>
                 </div>
                 <div>
                   <input
                     type="file"
-                    accept="image/*"
                     multiple
-                    ref={galleryInputRef}
-                    onChange={handleGalleryUpload}
+                    ref={attachmentInputRef}
+                    onChange={handleAttachmentUpload}
                     className="hidden"
-                    id="galleryImageUpload"
+                    id="attachmentUpload"
                   />
                   <label
-                    htmlFor="galleryImageUpload"
+                    htmlFor="attachmentUpload"
                     className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
                   >
-                    {isGalleryUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                    {isGalleryUploading ? "Yükleniyor..." : "Görsel Seç"}
+                    {isAttachmentUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {isAttachmentUploading ? "Yükleniyor..." : "Dosya Ekle"}
                   </label>
                 </div>
               </div>
 
-              {additionalImageUrls.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                  {additionalImageUrls.map((url, index) => (
-                    <div key={index} className="relative w-full aspect-square rounded-xl border border-gray-200 overflow-hidden group">
-                      <img src={getImageUrl(url)} alt="" className="absolute inset-0 w-full h-full object-cover blur-md brightness-75 scale-110" />
-                      <img src={getImageUrl(url)} alt="Galeri" className="relative w-full h-full object-contain" />
+              {attachments.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {attachments.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="truncate">
+                          <p className="text-sm font-medium text-gray-900 truncate" title={file.fileName}>{file.fileName}</p>
+                          <a href={getImageUrl(file.fileUrl)} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">
+                            Görüntüle
+                          </a>
+                        </div>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => handleRemoveGalleryImage(index)}
-                        className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm"
-                        title="Görseli Sil"
+                        onClick={() => handleRemoveAttachment(index)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                        title="Dosyayı Sil"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -479,8 +530,8 @@ export default function AdminNewsFormModal({ isOpen, onClose, onSuccess, editId,
           </button>
           <button
             type="submit"
-            form="newsForm"
-            disabled={isLoading || isUploading}
+            form="announcementForm"
+            disabled={isLoading || isUploading || isAttachmentUploading}
             className="px-6 py-2.5 bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

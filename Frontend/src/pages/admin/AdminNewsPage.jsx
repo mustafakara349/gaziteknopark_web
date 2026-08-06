@@ -142,6 +142,48 @@ export default function AdminNewsPage() {
     return pages;
   };
 
+  const getActiveBadge = (item) => {
+    if (!item.isActive) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200 text-xs font-medium">
+          <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+          Pasif
+        </span>
+      );
+    }
+
+    if (item.publishedAt && new Date(item.publishedAt) > new Date()) {
+      const formattedDate = new Date(item.publishedAt).toLocaleDateString("tr-TR", {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium" title={`${formattedDate} tarihinde yayınlanacak`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+          {formattedDate}'de Yayınlanacak
+        </span>
+      );
+    }
+
+    if (item.unpublishedAt && new Date(item.unpublishedAt) > new Date()) {
+      const formattedDate = new Date(item.unpublishedAt).toLocaleDateString("tr-TR", {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100 text-xs font-medium" title={`${formattedDate} tarihinde yayından kaldırılacak`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+          Aktif <span className="opacity-75 font-normal">({formattedDate} Bitiş)</span>
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100 text-xs font-medium">
+        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+        Aktif
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
       {/* Header Card */}
@@ -261,7 +303,7 @@ export default function AdminNewsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900 truncate max-w-xs sm:max-w-md">
+                    <td className="px-6 py-4 font-medium text-gray-900 truncate max-w-[150px] sm:max-w-[200px] xl:max-w-[300px]">
                       <div>{item.title}</div>
                       <div className="text-xs text-gray-400 font-normal mt-0.5">Yazar: {item.authorName || "Gazi Teknopark"}</div>
                     </td>
@@ -269,17 +311,7 @@ export default function AdminNewsPage() {
                       {item.categoryName || "-"}
                     </td>
                     <td className="px-6 py-4">
-                      {item.isActive !== false ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100 text-xs font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                          Aktif
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-100 text-xs font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                          Pasif
-                        </span>
-                      )}
+                      {getActiveBadge(item)}
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString("tr-TR", {

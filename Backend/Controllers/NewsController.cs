@@ -153,7 +153,10 @@ public class NewsController : ControllerBase
 
         if (!IsPrivileged)
         {
-            query = query.Where(n => n.IsActive);
+            var now = DateTime.UtcNow;
+            query = query.Where(n => n.IsActive && 
+                                     (n.PublishedAt == null || n.PublishedAt <= now) &&
+                                     (n.UnpublishedAt == null || n.UnpublishedAt > now));
         }
         if (categoryId.HasValue && categoryId.Value > 0)
         {
@@ -250,10 +253,10 @@ public class NewsController : ControllerBase
                 CategoryName = n.Category?.Name ?? "Genel",
                 CoverImageFileId = n.CoverImageFileId,
                 CoverImageUrl = coverImageUrl,
-                PublishedAt = n.PublishedAt,
-                UnpublishedAt = n.UnpublishedAt,
+                PublishedAt = n.PublishedAt.HasValue ? DateTime.SpecifyKind(n.PublishedAt.Value, DateTimeKind.Utc) : null,
+                UnpublishedAt = n.UnpublishedAt.HasValue ? DateTime.SpecifyKind(n.UnpublishedAt.Value, DateTimeKind.Utc) : null,
                 Views = n.Views,
-                CreatedAt = n.CreatedAt,
+                CreatedAt = n.CreatedAt.HasValue ? DateTime.SpecifyKind(n.CreatedAt.Value, DateTimeKind.Utc) : null,
                 IsFeatured = n.IsFeatured,
                 IsActive = n.IsActive,
                 AuthorName = string.IsNullOrWhiteSpace(n.AuthorName) ? "Gazi Teknopark" : n.AuthorName,
@@ -311,7 +314,16 @@ public class NewsController : ControllerBase
         }
 
         if (news is null) return NotFound();
-        if (!IsPrivileged && !news.IsActive) return NotFound();
+        if (!IsPrivileged)
+        {
+            var now = DateTime.UtcNow;
+            if (!news.IsActive || 
+                (news.PublishedAt.HasValue && news.PublishedAt.Value > now) || 
+                (news.UnpublishedAt.HasValue && news.UnpublishedAt.Value <= now))
+            {
+                return NotFound();
+            }
+        }
 
         if (!IsPrivileged && countView)
         {
@@ -495,10 +507,10 @@ public class NewsController : ControllerBase
             CategoryName = categoryName,
             CoverImageFileId = n.CoverImageFileId,
             CoverImageUrl = coverImageUrl,
-            PublishedAt = n.PublishedAt,
-            UnpublishedAt = n.UnpublishedAt,
+            PublishedAt = n.PublishedAt.HasValue ? DateTime.SpecifyKind(n.PublishedAt.Value, DateTimeKind.Utc) : null,
+            UnpublishedAt = n.UnpublishedAt.HasValue ? DateTime.SpecifyKind(n.UnpublishedAt.Value, DateTimeKind.Utc) : null,
             Views = n.Views,
-            CreatedAt = n.CreatedAt,
+            CreatedAt = n.CreatedAt.HasValue ? DateTime.SpecifyKind(n.CreatedAt.Value, DateTimeKind.Utc) : null,
             IsFeatured = n.IsFeatured,
             IsActive = n.IsActive,
             AuthorName = string.IsNullOrWhiteSpace(n.AuthorName) ? "Gazi Teknopark" : n.AuthorName,

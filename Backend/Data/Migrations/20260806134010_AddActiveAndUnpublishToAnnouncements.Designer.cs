@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806134010_AddActiveAndUnpublishToAnnouncements")]
+    partial class AddActiveAndUnpublishToAnnouncements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1070,11 +1073,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("deleted_by");
 
-                    b.Property<string>("ExternalUrl")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)")
-                        .HasColumnName("external_url");
-
                     b.Property<uint>("OrderNo")
                         .HasColumnType("int unsigned")
                         .HasColumnName("order_no");
@@ -1091,12 +1089,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("status");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")

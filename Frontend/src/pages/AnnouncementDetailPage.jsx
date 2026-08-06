@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Share2, Mail, Paperclip, Download, Tag, ChevronLeft, ChevronRight, Pin } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { getAnnouncementBySlug, getAnnouncements } from '../api/endpoints';
+import { getImageUrl } from '../utils/imageUrl';
 
 export default function AnnouncementDetailPage() {
   const { slug } = useParams();
@@ -185,11 +186,16 @@ export default function AnnouncementDetailPage() {
 
           {/* Hero Image — only if exists */}
           {hasImage && (
-            <div className="w-full h-[350px] md:h-[450px] rounded-[2rem] overflow-hidden mb-10 shadow-sm relative bg-gray-100">
+            <div className="w-full aspect-[3/2] rounded-[2rem] overflow-hidden mb-10 shadow-sm relative bg-gray-50">
               <img
-                src={announcement.coverImageUrl}
+                src={getImageUrl(announcement.coverImageUrl)}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover blur-xl brightness-75 scale-110"
+              />
+              <img
+                src={getImageUrl(announcement.coverImageUrl)}
                 alt={announcement.title}
-                className="w-full h-full object-cover"
+                className="relative w-full h-full object-contain"
                 onError={(e) => { e.target.parentElement.style.display = 'none'; }}
               />
             </div>
@@ -242,7 +248,7 @@ export default function AnnouncementDetailPage() {
                 {announcement.attachments.map((att) => (
                   <a
                     key={att.id}
-                    href={att.fileUrl}
+                    href={getImageUrl(att.fileUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     download
