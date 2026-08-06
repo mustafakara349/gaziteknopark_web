@@ -118,6 +118,20 @@ public class NewsController : ControllerBase
 
     private bool IsPrivileged => User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Editor") || User.IsInRole("SuperAdmin") || User.FindFirst("user_type")?.Value == "Admin" || User.FindFirst("user_type")?.Value == "SuperAdmin");
 
+    private async Task DeactivateExpiredNewsAsync()
+    {
+        try
+        {
+            await _db.News
+                .Where(n => n.IsActive && n.UnpublishedAt.HasValue && n.UnpublishedAt.Value <= DateTime.UtcNow)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.IsActive, false));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DeactivateExpiredNews Error]: {ex.Message}");
+        }
+    }
+
     [HttpGet]
     public async Task<ActionResult<List<NewsDto>>> GetAll(
         [FromQuery] uint? categoryId,
@@ -129,6 +143,8 @@ public class NewsController : ControllerBase
         [FromQuery] int? page,
         [FromQuery] int? pageSize)
     {
+        await DeactivateExpiredNewsAsync();
+
         var query = _db.News
             .AsNoTracking()
             .Include(n => n.Category)
@@ -137,7 +153,7 @@ public class NewsController : ControllerBase
 
         if (!IsPrivileged)
         {
-            query = query.Where(n => n.Status == ContentStatus.Published && (n.UnpublishedAt == null || n.UnpublishedAt > DateTime.UtcNow));
+            query = query.Where(n => n.IsActive);
         }
         if (categoryId.HasValue && categoryId.Value > 0)
         {
@@ -234,13 +250,13 @@ public class NewsController : ControllerBase
                 CategoryName = n.Category?.Name ?? "Genel",
                 CoverImageFileId = n.CoverImageFileId,
                 CoverImageUrl = coverImageUrl,
-                Status = n.Status.ToString(),
                 PublishedAt = n.PublishedAt,
                 UnpublishedAt = n.UnpublishedAt,
                 Views = n.Views,
                 CreatedAt = n.CreatedAt,
                 IsFeatured = n.IsFeatured,
-                AuthorName = n.AuthorName,
+                IsActive = n.IsActive,
+                AuthorName = string.IsNullOrWhiteSpace(n.AuthorName) ? "Gazi Teknopark" : n.AuthorName,
                 ReadTime = n.ReadTime,
                 VideoUrl = n.VideoUrl,
                 Title = n.Title,
@@ -273,8 +289,10 @@ public class NewsController : ControllerBase
     }
 
     [HttpGet("{idOrSlug}")]
-    public async Task<ActionResult<NewsDto>> GetByIdOrSlug(string idOrSlug)
+    public async Task<ActionResult<NewsDto>> GetByIdOrSlug(string idOrSlug, [FromQuery] bool countView = true)
     {
+        await DeactivateExpiredNewsAsync();
+
         News? news = null;
         if (uint.TryParse(idOrSlug, out var id))
         {
@@ -293,10 +311,15 @@ public class NewsController : ControllerBase
         }
 
         if (news is null) return NotFound();
-        if (!IsPrivileged && news.Status != ContentStatus.Published) return NotFound();
+        if (!IsPrivileged && !news.IsActive) return NotFound();
 
-        news.Views++;
-        await _db.SaveChangesAsync();
+        if (!IsPrivileged && countView)
+        {
+            await _db.News
+                .Where(n => n.Id == news.Id)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.Views, x => x.Views + 1));
+            news.Views++;
+        }
 
         var dto = await MapAsync(news, _db);
         return Ok(dto);
@@ -306,9 +329,9 @@ public class NewsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<NewsDto>> Create(NewsUpsertDto dto)
     {
-        if (!EnumParsing.TryParse<ContentStatus>(dto.Status, out var status))
+        if (dto.IsActive && dto.UnpublishedAt.HasValue && dto.UnpublishedAt.Value <= DateTime.UtcNow)
         {
-            return BadRequest("Geçersiz durum değeri.");
+            return BadRequest("Haberi tekrar aktifleştirebilmek için lütfen yayından kaldırılma tarihini kontrol ediniz.");
         }
 
         var news = new News
@@ -316,11 +339,11 @@ public class NewsController : ControllerBase
             Uuid = Guid.NewGuid(),
             CategoryId = dto.CategoryId,
             CoverImageFileId = dto.CoverImageFileId,
-            Status = status,
             PublishedAt = dto.PublishedAt,
             UnpublishedAt = dto.UnpublishedAt,
             IsFeatured = dto.IsFeatured,
-            AuthorName = dto.AuthorName,
+            IsActive = dto.IsActive,
+            AuthorName = string.IsNullOrWhiteSpace(dto.AuthorName) ? "Gazi Teknopark" : dto.AuthorName.Trim(),
             ReadTime = dto.ReadTime,
             VideoUrl = dto.VideoUrl,
             Title = dto.Title,
@@ -374,9 +397,9 @@ public class NewsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<NewsDto>> Update(uint id, NewsUpsertDto dto)
     {
-        if (!EnumParsing.TryParse<ContentStatus>(dto.Status, out var status))
+        if (dto.IsActive && dto.UnpublishedAt.HasValue && dto.UnpublishedAt.Value <= DateTime.UtcNow)
         {
-            return BadRequest("Geçersiz durum değeri.");
+            return BadRequest("Haberi tekrar aktifleştirebilmek için lütfen yayından kaldırılma tarihini kontrol ediniz.");
         }
 
         var news = await _db.News.Include(n => n.Translations)
@@ -385,11 +408,11 @@ public class NewsController : ControllerBase
 
         news.CategoryId = dto.CategoryId;
         news.CoverImageFileId = dto.CoverImageFileId;
-        news.Status = status;
         news.PublishedAt = dto.PublishedAt;
         news.UnpublishedAt = dto.UnpublishedAt;
         news.IsFeatured = dto.IsFeatured;
-        news.AuthorName = dto.AuthorName;
+        news.IsActive = dto.IsActive;
+        news.AuthorName = string.IsNullOrWhiteSpace(dto.AuthorName) ? "Gazi Teknopark" : dto.AuthorName.Trim();
         news.ReadTime = dto.ReadTime;
         news.VideoUrl = dto.VideoUrl;
         news.Title = dto.Title;
@@ -472,13 +495,13 @@ public class NewsController : ControllerBase
             CategoryName = categoryName,
             CoverImageFileId = n.CoverImageFileId,
             CoverImageUrl = coverImageUrl,
-            Status = n.Status.ToString(),
             PublishedAt = n.PublishedAt,
             UnpublishedAt = n.UnpublishedAt,
             Views = n.Views,
             CreatedAt = n.CreatedAt,
             IsFeatured = n.IsFeatured,
-            AuthorName = n.AuthorName,
+            IsActive = n.IsActive,
+            AuthorName = string.IsNullOrWhiteSpace(n.AuthorName) ? "Gazi Teknopark" : n.AuthorName,
             ReadTime = n.ReadTime,
             VideoUrl = n.VideoUrl,
             Title = n.Title,

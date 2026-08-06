@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import AdminNewsCategoryModal from "../../components/admin/news/AdminNewsCategoryModal";
 import AdminNewsFormModal from "../../components/admin/news/AdminNewsFormModal";
+import { getImageUrl } from "../../utils/imageUrl";
 
 export default function AdminNewsPage() {
   const [news, setNews] = useState([]);
@@ -66,7 +67,11 @@ export default function AdminNewsPage() {
       const response = await adminAxios.get("/news", { params });
       
       let fetchedNews = response.data;
-      if (status) {
+      if (status === "active") {
+        fetchedNews = fetchedNews.filter(n => n.isActive === true);
+      } else if (status === "passive") {
+        fetchedNews = fetchedNews.filter(n => n.isActive === false);
+      } else if (status) {
         fetchedNews = fetchedNews.filter(n => n.status === status);
       }
 
@@ -201,9 +206,8 @@ export default function AdminNewsPage() {
               className="appearance-none pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
             >
               <option value="">Tüm Durumlar</option>
-              <option value="published">Yayında</option>
-              <option value="draft">Taslak</option>
-              <option value="archived">Arşiv</option>
+              <option value="active">Aktif</option>
+              <option value="passive">Pasif</option>
             </select>
           </div>
 
@@ -251,33 +255,29 @@ export default function AdminNewsPage() {
                     <td className="px-6 py-4">
                       <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
                         {item.coverImageUrl ? (
-                          <img src={item.coverImageUrl} alt={item.title} className="w-full h-full object-cover" />
+                          <img src={getImageUrl(item.coverImageUrl)} alt={item.title} className="w-full h-full object-cover" />
                         ) : (
                           <Eye className="w-4 h-4 text-gray-400" />
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900 truncate max-w-xs sm:max-w-md">
-                      {item.title}
+                      <div>{item.title}</div>
+                      <div className="text-xs text-gray-400 font-normal mt-0.5">Yazar: {item.authorName || "Gazi Teknopark"}</div>
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {item.categoryName || "-"}
                     </td>
                     <td className="px-6 py-4">
-                      {item.status === 'published' ? (
+                      {item.isActive !== false ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100 text-xs font-medium">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                          Yayında
-                        </span>
-                      ) : item.status === 'draft' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-600 border border-yellow-100 text-xs font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-                          Taslak
+                          Aktif
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 text-gray-600 border border-gray-200 text-xs font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
-                          Arşiv
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-100 text-xs font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                          Pasif
                         </span>
                       )}
                     </td>
@@ -351,6 +351,7 @@ export default function AdminNewsPage() {
       <AdminNewsCategoryModal 
         isOpen={isCategoryModalOpen} 
         onClose={() => setIsCategoryModalOpen(false)} 
+        onSuccess={fetchCategories}
       />
       
       <AdminNewsFormModal

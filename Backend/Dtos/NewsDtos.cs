@@ -83,13 +83,13 @@ public class NewsDto
     public uint? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public uint? CoverImageFileId { get; set; }
-    public string Status { get; set; } = string.Empty;
     public DateTime? PublishedAt { get; set; }
     public DateTime? UnpublishedAt { get; set; }
     public uint Views { get; set; }
     public DateTime? CreatedAt { get; set; }
     
     public bool IsFeatured { get; set; }
+    public bool IsActive { get; set; } = true;
     public string? AuthorName { get; set; }
     public int? ReadTime { get; set; }
     public string? VideoUrl { get; set; }
@@ -112,12 +112,11 @@ public class NewsUpsertDto
 {
     public uint? CategoryId { get; set; }
     public uint? CoverImageFileId { get; set; }
-    [Required]
-    public string Status { get; set; } = "draft";
     public DateTime? PublishedAt { get; set; }
     public DateTime? UnpublishedAt { get; set; }
     
     public bool IsFeatured { get; set; }
+    public bool IsActive { get; set; } = true;
     [MaxLength(100)]
     public string? AuthorName { get; set; }
     public int? ReadTime { get; set; }

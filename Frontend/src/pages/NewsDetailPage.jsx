@@ -2,16 +2,41 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Clock, Calendar, User, Share2, X, Tag, ChevronRight, ChevronLeft } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import { sanitizeAndFormatHtml } from '../utils/htmlSanitizer';
+import { getImageUrl } from '../utils/imageUrl';
 import { getNewsById, getNews } from '../api/endpoints';
 export default function NewsDetailPage() {
   const { id } = useParams();
   const [newsItem, setNewsItem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [lightboxImg, setLightboxImg] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
   const [related, setRelated] = useState([]);
   const [prevNews, setPrevNews] = useState(null);
   const [nextNews, setNextNews] = useState(null);
   const galleryRef = useRef(null);
+
+  const handlePrevLightbox = (e) => {
+    e?.stopPropagation();
+    if (!newsItem?.additionalImageUrls?.length) return;
+    setLightboxIndex((prev) => (prev === 0 ? newsItem.additionalImageUrls.length - 1 : prev - 1));
+  };
+
+  const handleNextLightbox = (e) => {
+    e?.stopPropagation();
+    if (!newsItem?.additionalImageUrls?.length) return;
+    setLightboxIndex((prev) => (prev === newsItem.additionalImageUrls.length - 1 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft") handlePrevLightbox();
+      if (e.key === "ArrowRight") handleNextLightbox();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxIndex, newsItem]);
 
   const scrollGallery = (direction) => {
     if (galleryRef.current) {
@@ -150,11 +175,9 @@ export default function NewsDetailPage() {
                 <Clock size={15} className="mr-1.5 opacity-70" /> {newsItem.readTime} dk okuma
               </span>
             )}
-            {newsItem.authorName && (
-              <span className="flex items-center">
-                <User size={15} className="mr-1.5 opacity-70" /> {newsItem.authorName}
-              </span>
-            )}
+            <span className="flex items-center">
+              <User size={15} className="mr-1.5 opacity-70" /> {newsItem.authorName || "Gazi Teknopark"}
+            </span>
           </div>
 
           <h1 className="text-[2.2rem] md:text-[2.8rem] leading-[1.15] font-extrabold text-[#0B2558] mb-8 tracking-tight">
@@ -162,12 +185,17 @@ export default function NewsDetailPage() {
           </h1>
 
           {newsItem.coverImageUrl && (
-            <div className="w-full h-[400px] md:h-[480px] rounded-[2rem] overflow-hidden shadow-sm relative bg-gray-100">
+            <div className="w-full aspect-[3/2] rounded-[2rem] overflow-hidden shadow-sm relative bg-gray-50">
               <img
-                src={newsItem.coverImageUrl}
+                src={getImageUrl(newsItem.coverImageUrl)}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover blur-xl brightness-75 scale-110"
+              />
+              <img
+                src={getImageUrl(newsItem.coverImageUrl)}
                 alt={title}
                 onError={(e) => { e.target.parentElement.style.display = 'none'; }}
-                className="w-full h-full object-cover"
+                className="relative w-full h-full object-contain"
               />
             </div>
           )}
@@ -178,7 +206,7 @@ export default function NewsDetailPage() {
           <div>
             <div
               className="prose prose-lg max-w-none text-gray-600 prose-headings:text-[#0B2558] prose-a:text-[#0066cc] prose-p:last:mb-0"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeAndFormatHtml(content) }}
             />
           </div>
 
@@ -208,10 +236,10 @@ export default function NewsDetailPage() {
                     <div
                       key={index}
                       className="h-56 min-w-[280px] w-[280px] sm:min-w-[320px] sm:w-[320px] shrink-0 snap-center rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100 group cursor-pointer relative"
-                      onClick={() => setLightboxImg(imgUrl)}
+                      onClick={() => setLightboxIndex(index)}
                     >
                       <img
-                        src={imgUrl}
+                        src={getImageUrl(imgUrl)}
                         alt={`Galeri ${index + 1}`}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
@@ -344,27 +372,60 @@ export default function NewsDetailPage() {
       )}
 
       {/* Lightbox Modal */}
-      {lightboxImg && (
+      {lightboxIndex !== null && newsItem?.additionalImageUrls?.[lightboxIndex] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setLightboxImg(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 select-none"
+          onClick={() => setLightboxIndex(null)}
         >
+          {/* Kapat Butonu */}
           <button
-            className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors p-2"
-            onClick={(e) => { e.stopPropagation(); setLightboxImg(null); }}
+            className="absolute top-6 right-6 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 p-2.5 rounded-full transition-all z-20"
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+            title="Kapat (Esc)"
           >
-            <X size={32} />
+            <X size={26} />
           </button>
+
+          {/* Önceki Görsel Butonu */}
+          {newsItem.additionalImageUrls.length > 1 && (
+            <button
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 p-3 rounded-full transition-all z-20 hover:scale-110"
+              onClick={handlePrevLightbox}
+              title="Önceki Görsel (Sol Ok)"
+            >
+              <ChevronLeft size={32} />
+            </button>
+          )}
+
+          {/* Görsel Çerçevesi */}
           <div
-            className="relative max-w-5xl max-h-[90vh] w-full"
+            className="relative max-w-6xl max-h-[85vh] flex flex-col items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={lightboxImg}
-              alt="Büyük görünüm"
-              className="w-full max-h-[90vh] object-contain rounded-lg"
+              src={getImageUrl(newsItem.additionalImageUrls[lightboxIndex])}
+              alt={`Görsel ${lightboxIndex + 1}`}
+              className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl transition-all duration-300"
             />
+            
+            {/* Sayfa Sayacı */}
+            {newsItem.additionalImageUrls.length > 1 && (
+              <div className="mt-4 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium border border-white/10">
+                {lightboxIndex + 1} / {newsItem.additionalImageUrls.length}
+              </div>
+            )}
           </div>
+
+          {/* Sonraki Görsel Butonu */}
+          {newsItem.additionalImageUrls.length > 1 && (
+            <button
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 p-3 rounded-full transition-all z-20 hover:scale-110"
+              onClick={handleNextLightbox}
+              title="Sonraki Görsel (Sağ Ok)"
+            >
+              <ChevronRight size={32} />
+            </button>
+          )}
         </div>
       )}
     </div>
