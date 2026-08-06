@@ -24,9 +24,10 @@ public class JwtTokenService : IJwtTokenService
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Name, user.Name),
             new("user_type", user.UserType.ToString()),
+            new(ClaimTypes.Role, user.UserType.ToString()),
         };
 
-        if (user.Role is not null)
+        if (user.Role is not null && user.Role.Name != user.UserType.ToString())
         {
             claims.Add(new Claim(ClaimTypes.Role, user.Role.Name));
         }

@@ -84,6 +84,7 @@ public class News
     public DateTime? CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public DateTime? UnpublishedAt { get; set; }
 
     [ForeignKey(nameof(CategoryId))]
     public NewsCategory? Category { get; set; }

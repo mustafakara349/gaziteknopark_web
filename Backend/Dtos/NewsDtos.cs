@@ -85,6 +85,7 @@ public class NewsDto
     public uint? CoverImageFileId { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime? PublishedAt { get; set; }
+    public DateTime? UnpublishedAt { get; set; }
     public uint Views { get; set; }
     public DateTime? CreatedAt { get; set; }
     
@@ -114,6 +115,7 @@ public class NewsUpsertDto
     [Required]
     public string Status { get; set; } = "draft";
     public DateTime? PublishedAt { get; set; }
+    public DateTime? UnpublishedAt { get; set; }
     
     public bool IsFeatured { get; set; }
     [MaxLength(100)]
