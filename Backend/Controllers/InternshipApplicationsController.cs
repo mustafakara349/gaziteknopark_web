@@ -170,6 +170,19 @@ public class InternshipApplicationsController : ControllerBase
 
         application.Status = newStatus;
         application.UpdatedAt = DateTime.UtcNow;
+
+        var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("id")?.Value
+            ?? User.FindFirst("sub")?.Value;
+        if (uint.TryParse(userIdStr, out var currentUserId))
+        {
+            application.UpdatedBy = currentUserId;
+            if (newStatus == ApplicationStatus.Kabul)
+            {
+                application.ApprovedBy = currentUserId;
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         return Ok(Map(application));
@@ -259,11 +272,17 @@ public class InternshipApplicationsController : ControllerBase
         UniversityStartDate = a.UniversityStartDate,
         InternshipTime = a.InternshipTime?.ToString(),
         InternshipType = a.InternshipType?.ToString(),
+        CoverLetter = a.CoverLetter,
         KvkkConsentAt = a.KvkkConsentAt,
         ExplicitConsentAt = a.ExplicitConsentAt,
         Status = a.Status.ToString(),
         AppliedAt = a.AppliedAt,
+        ApprovedBy = a.ApprovedBy,
+        UpdatedBy = a.UpdatedBy,
+        UpdatedAt = a.UpdatedAt,
+        CvFileId = a.CvFileId,
         CvFileUrl = a.CvFile?.Path,
+        PhotoFileId = a.PhotoFileId,
         PhotoFileUrl = a.PhotoFile?.Path
     };
 }

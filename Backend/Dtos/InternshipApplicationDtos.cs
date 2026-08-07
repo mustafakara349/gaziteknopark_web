@@ -65,11 +65,17 @@ public class InternshipApplicationDto
     public DateTime? UniversityStartDate { get; set; }
     public string? InternshipTime { get; set; }
     public string? InternshipType { get; set; }
+    public string? CoverLetter { get; set; }
     public DateTime? KvkkConsentAt { get; set; }
     public DateTime? ExplicitConsentAt { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime? AppliedAt { get; set; }
+    public uint? ApprovedBy { get; set; }
+    public uint? UpdatedBy { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public uint? CvFileId { get; set; }
     public string? CvFileUrl { get; set; }
+    public uint? PhotoFileId { get; set; }
     public string? PhotoFileUrl { get; set; }
 }
 
