@@ -33,6 +33,7 @@ import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminHomePage from "./pages/admin/AdminHomePage";
 import AdminCorporatePage from "./pages/admin/AdminCorporatePage";
+import AdminInternshipPage from "./pages/admin/AdminInternshipPage";
 import AdminNewsPage from "./pages/admin/AdminNewsPage";
 import AdminAnnouncementsPage from "./pages/admin/AdminAnnouncementsPage";
 import AdminMediaPage from "./pages/admin/AdminMediaPage";
@@ -93,6 +94,7 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="anasayfa" element={<AdminHomePage />} />
           <Route path="kurumsal" element={<AdminCorporatePage />} />
+          <Route path="staj-basvurulari" element={<AdminInternshipPage />} />
           <Route path="haberler" element={<AdminNewsPage />} />
           <Route path="duyurular" element={<AdminAnnouncementsPage />} />
           <Route path="medya" element={<AdminMediaPage />} />
