@@ -13,6 +13,7 @@ import {
   Settings,
   Menu,
   X,
+  HelpCircle,
 } from "lucide-react";
 
 const menuItems = [
@@ -24,6 +25,7 @@ const menuItems = [
   { label: "Medya Galeri", icon: Image, path: "/admin/medya" },
   { label: "Etkinlikler", icon: CalendarDays, path: "/admin/etkinlikler" },
   { label: "Firma Yönetimi", icon: Factory, path: "/admin/firmalar" },
+  { label: "Sıkça Sorulan Sorular", icon: HelpCircle, path: "/admin/faqs" },
   { label: "Admin Yönetimi", icon: Users, path: "/admin/kullanicilar" },
   { label: "Genel Ayarlar", icon: Settings, path: "/admin/ayarlar" },
 ];

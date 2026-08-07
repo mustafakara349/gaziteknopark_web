@@ -8,6 +8,15 @@ public class Tag
 {
     [Key]
     public uint Id { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(120)]
+    public string Slug { get; set; } = string.Empty;
+
     public uint? CreatedBy { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -17,6 +26,7 @@ public class Tag
 
     public ICollection<TagTranslation> Translations { get; set; } = new List<TagTranslation>();
     public ICollection<Taggable> Taggables { get; set; } = new List<Taggable>();
+    public ICollection<Faq> Faqs { get; set; } = new List<Faq>();
 }
 
 [Table("tag_translations")]

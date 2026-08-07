@@ -46,21 +46,22 @@ public class LinkedInPostsController : ControllerBase
 
         var posts = await query
             .OrderByDescending(p => p.PublishedAt)
-            .Select(p => new LinkedInPostDto
-            {
-                Id = p.Id,
-                CompanyId = p.CompanyId,
-                CompanyName = p.Company != null ? p.Company.Name : string.Empty,
-                CompanyLogoUrl = p.Company != null && p.Company.LogoFile != null ? p.Company.LogoFile.Path : null,
-                LinkedInPostUrn = p.LinkedInPostUrn,
-                PostText = p.PostText,
-                MediaType = p.MediaType,
-                MediaUrl = p.MediaUrl,
-                PostUrl = p.PostUrl,
-                PublishedAt = p.PublishedAt
-            })
             .ToListAsync();
 
-        return Ok(posts);
+        var dtos = posts.Select(p => new LinkedInPostDto
+        {
+            Id = p.Id,
+            CompanyId = p.CompanyId,
+            CompanyName = p.Company != null ? p.Company.Name : string.Empty,
+            CompanyLogoUrl = p.Company != null && p.Company.LogoFile != null ? GaziTeknoparkApi.Helpers.FileUrlHelper.ToAbsoluteUrl(Request, p.Company.LogoFile) : null,
+            LinkedInPostUrn = p.LinkedInPostUrn,
+            PostText = p.PostText,
+            MediaType = p.MediaType,
+            MediaUrl = p.MediaUrl,
+            PostUrl = p.PostUrl,
+            PublishedAt = p.PublishedAt
+        }).ToList();
+
+        return Ok(dtos);
     }
 }

@@ -40,6 +40,8 @@ import AdminEventsPage from "./pages/admin/AdminEventsPage";
 import AdminCompaniesPage from "./pages/admin/AdminCompaniesPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminFaqsPage from "./pages/admin/AdminFaqsPage";
+import AdminFaqCategoriesPage from "./pages/admin/AdminFaqCategoriesPage";
 
 function App() {
   useEffect(() => {
@@ -99,6 +101,8 @@ function App() {
           <Route path="etkinlikler" element={<AdminEventsPage />} />
           <Route path="firmalar" element={<AdminCompaniesPage />} />
           <Route path="kullanicilar" element={<AdminUsersPage />} />
+          <Route path="faqs" element={<AdminFaqsPage />} />
+          <Route path="faq-categories" element={<AdminFaqCategoriesPage />} />
           <Route path="ayarlar" element={<AdminSettingsPage />} />
         </Route>
 

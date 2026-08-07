@@ -121,7 +121,7 @@ export default function InteractiveHubSpoke() {
           animation: pulseGlow 4s ease-in-out infinite;
         }
         .svg-guide-line {
-          stroke-opacity: 0.25;
+          stroke-opacity: 0.6; /* Daha belirgin hale getirildi (eski: 0.25) */
         }
         .svg-pulse-active {
           stroke-dasharray: 60, 220;
@@ -130,6 +130,10 @@ export default function InteractiveHubSpoke() {
         .svg-pulse-idle {
           stroke-dasharray: 8, 48;
           animation: flowLaser 8s linear infinite;
+        }
+        .bg-radial-grid {
+          background-image: 
+            radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.02) 40%, transparent 70%);
         }
       `}</style>
 
@@ -152,28 +156,36 @@ export default function InteractiveHubSpoke() {
               </feMerge>
             </filter>
 
-            {/* Faint Blue Gradyanı */}
+            {/* Faint Blue Gradyanı (Daha belirgin ve renkli) */}
             <linearGradient id="line-gradient-idle" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.75" />
-              <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.65" />
+              <stop offset="0%" stopColor="#082b5c" stopOpacity="0.95" />
+              <stop offset="50%" stopColor="#0066cc" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
             </linearGradient>
 
-            {/* Neon Çizgi Gradyanı */}
+            {/* Neon Çizgi Gradyanı (Aktif durum için daha parlak) */}
             <linearGradient id="line-gradient-active" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#2563eb" stopOpacity="1.0" />
-              <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.8" />
+              <stop offset="0%" stopColor="#0066cc" stopOpacity="1.0" />
+              <stop offset="50%" stopColor="#3b82f6" stopOpacity="1.0" />
+              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.95" />
             </linearGradient>
 
             {/* Laser Işık Topu Degradesi */}
             <linearGradient id="laser-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity="0" />
-              <stop offset="35%" stopColor="#60a5fa" stopOpacity="0.45" />
+              <stop offset="35%" stopColor="#60a5fa" stopOpacity="0.6" />
               <stop offset="50%" stopColor="#ffffff" stopOpacity="1" />
-              <stop offset="65%" stopColor="#60a5fa" stopOpacity="0.45" />
+              <stop offset="65%" stopColor="#60a5fa" stopOpacity="0.6" />
               <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
             </linearGradient>
+
+            {/* Merkez Çekirdek Arkası Glow Degradesi (Clipping olmaması için) */}
+            <radialGradient id="center-glow-gradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#0066cc" stopOpacity="0.25" />
+              <stop offset="50%" stopColor="#082b5c" stopOpacity="0.12" />
+              <stop offset="80%" stopColor="#e30613" stopOpacity="0.05" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
           </defs>
 
           {/* Çizgiler ve Eklem Noktaları */}
@@ -183,42 +195,54 @@ export default function InteractiveHubSpoke() {
 
             return (
               <g key={svc.index}>
-                {/* 1. Kavisli Sabit Neon Çizgi (S-Curve) */}
+                {/* 1. Kavisli Sabit Neon Çizgi (S-Curve) - strokeOpacity ile daha belirgin */}
                 <path
                   d={`M 600 300 C ${svc.curveC}`}
                   fill="none"
                   stroke={isHovered ? "url(#line-gradient-active)" : "url(#line-gradient-idle)"}
-                  strokeWidth={isHovered ? "4" : "3"}
+                  strokeWidth={isHovered ? "4.5" : "3"}
                   className="svg-guide-line transition-all duration-300"
+                  strokeOpacity={isHovered ? 1.0 : 0.65}
                   opacity={isAnyHovered && !isHovered ? 0.15 : 1.0}
                 />
 
-                {/* 2. Aktif Sabit Hızlı Enerji Akışı */}
+                {/* 2. Aktif Sabit Hızlı Enerji Akışı - Daha yüksek görünürlük */}
                 <path
                   d={`M 600 300 C ${svc.curveC}`}
                   fill="none"
                   stroke="url(#laser-gradient)"
-                  strokeWidth={isHovered ? "6" : "2.5"}
+                  strokeWidth={isHovered ? "6.5" : "3"}
                   className={`transition-all duration-300 ${isHovered ? "svg-pulse-active" : "svg-pulse-idle"
                     }`}
                   filter={isHovered ? "url(#neon-glow-spoke)" : ""}
-                  opacity={isHovered ? 1 : isAnyHovered ? 0.02 : 0.25}
+                  strokeOpacity={isHovered ? 1.0 : 0.6}
+                  opacity={isHovered ? 1 : isAnyHovered ? 0.02 : 0.45}
                 />
 
-                {/* 3. Eklem / Snap Bağlantı Noktaları */}
+                {/* 3. Eklem / Snap Bağlantı Noktaları - Mavi tonlarında daha renkli */}
                 <circle
                   cx={svc.lineX}
                   cy={svc.lineY}
-                  r={isHovered ? "5" : "3.5"}
-                  fill={isHovered ? "#3b82f6" : "#cbd5e1"}
+                  r={isHovered ? "5.5" : "4"}
+                  fill={isHovered ? "#3b82f6" : "#60a5fa"}
                   className="transition-all duration-300"
-                  opacity={isAnyHovered && !isHovered ? 0.2 : 0.8}
+                  opacity={isAnyHovered && !isHovered ? 0.2 : 0.95}
                 />
               </g>
             );
           })}
 
-          {/* 1. Merkez Çekirdek (Hover ve Temaya Uygun Lacivert Gölgelendirmeli) */}
+          {/* Merkez Çekirdek Arkası Glow (Native SVG Circle ile clipping/kenar sorunu olmadan) */}
+          <circle
+            cx="600"
+            cy="300"
+            r={isCenterHovered ? "145" : "115"}
+            fill="url(#center-glow-gradient)"
+            className="transition-all duration-500 ease-out pointer-events-none"
+            opacity={isCenterHovered ? "1.0" : "0.75"}
+          />
+
+          {/* 1. Merkez Çekirdek (Hover ve Temaya Uygun Renkli/Glowlu Gölgelendirmeli) */}
           <foreignObject
             x="490"
             y="190"
@@ -226,32 +250,25 @@ export default function InteractiveHubSpoke() {
             height="220"
             className="overflow-visible"
           >
-            {/* Geniş Alana Yayılmış Lacivert Neon Işıldama (Çekirdeğin Arkasında ve Yalnızca Hover Durumunda) */}
-            <div
-              className={`absolute inset-4 rounded-full bg-gradient-to-r from-[#082b5c] to-[#0f3d7a] opacity-0 transition-all duration-500 ease-out blur-[24px] pointer-events-none ${
-                isCenterHovered ? "opacity-45 scale-[1.2] blur-[32px]" : ""
-              }`}
-            />
-
             <div
               onMouseEnter={() => setIsCenterHovered(true)}
               onMouseLeave={() => setIsCenterHovered(false)}
               className={`relative flex h-full w-full items-center justify-center rounded-full bg-white border border-blue-100/50 shadow-sm transition-all duration-500 ease-out cursor-pointer ${isCenterHovered
                 ? "scale-105 border-blue-400/50 shadow-md"
-                : "scale-100 shadow-[0_0_30px_rgba(15,23,42,0.12)]"
+                : "scale-100 shadow-[0_0_30px_rgba(8,43,92,0.08)]"
                 }`}
             >
-              {/* Dış Halka 1 (Çekirdeğe Gelindiğinde Dönen Halka Hızlanır) */}
+              {/* Dış Halka 1 (Dönen Halka - Daha Belirgin ve Renkli) */}
               <div
                 className={`absolute inset-[-14px] rounded-full border border-dashed pointer-events-none transition-all duration-700 ${isCenterHovered
-                  ? "border-blue-400/40 animate-[spin_10s_linear_infinite] scale-105"
-                  : "border-blue-400/15 animate-[spin_60s_linear_infinite] scale-100"
+                  ? "border-blue-400/50 animate-[spin_10s_linear_infinite] scale-105"
+                  : "border-blue-400/30 animate-[spin_60s_linear_infinite] scale-100"
                   }`}
               />
 
-              {/* Dış Halka 2 (Neon Pulsing Halka) */}
+              {/* Dış Halka 2 (Neon Pulsing Halka - Daha Belirgin ve Hafif Mavi Dolgulu) */}
               <div
-                className={`absolute inset-[-7px] rounded-full border border-blue-400/30 animate-pulse-glow transition-all duration-300 ${isCenterHovered || hoveredIndex !== null ? "scale-105 opacity-100" : "scale-100 opacity-60"
+                className={`absolute inset-[-7px] rounded-full border border-blue-400/40 bg-blue-500/5 animate-pulse-glow transition-all duration-300 ${isCenterHovered || hoveredIndex !== null ? "scale-105 opacity-100" : "scale-100 opacity-80"
                   }`}
               />
 
@@ -287,13 +304,13 @@ export default function InteractiveHubSpoke() {
                     ? "scale-[1.03] border-blue-400/80 bg-white/95 shadow-[0_12px_24px_rgba(59,130,246,0.15),0_0_12px_rgba(59,130,246,0.08)]"
                     : isAnyHovered
                       ? "opacity-40 scale-95 border-gray-100/20 bg-white/30"
-                      : "border-gray-100 bg-white/70 shadow-sm"
+                      : "border-blue-100/80 bg-white/90 shadow-[0_4px_12px_rgba(8,43,92,0.04)]"
                     } border rounded-2xl p-3.5 flex items-center gap-3 backdrop-blur-md`}
                 >
                   <div
                     className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${isHovered
                       ? "bg-primary text-white scale-110 rotate-3"
-                      : "bg-primary/5 text-primary"
+                      : "bg-blue-50/80 text-primary border border-blue-100/30"
                       }`}
                   >
                     <Icon className="h-4.5 w-4.5" strokeWidth={2} />
@@ -316,8 +333,10 @@ export default function InteractiveHubSpoke() {
       {/* ========================================================================= */}
       <div className="lg:hidden block px-4 max-w-md mx-auto space-y-6 relative">
         <div className="flex flex-col items-center justify-center relative">
-          <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-white border border-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.08)]">
-            <div className="absolute inset-[-2px] rounded-full border border-blue-400/20 animate-pulse-glow" />
+          {/* Geniş Alana Yayılmış Neon Işıldama (Mobil için daha yumuşak ve kenarları belirsiz) */}
+          <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-[#0066cc]/10 to-[#e30613]/5 blur-[25px] pointer-events-none" />
+          <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-white border border-blue-100/50 shadow-[0_0_20px_rgba(8,43,92,0.08)]">
+            <div className="absolute inset-[-2px] rounded-full border border-blue-400/30 animate-pulse-glow" />
             <img
               src="/gazi_logo.png"
               alt="Gazi Teknopark Logo"
@@ -327,7 +346,7 @@ export default function InteractiveHubSpoke() {
         </div>
 
         <div className="relative pl-6 space-y-4">
-          <div className="absolute left-3.5 top-0 bottom-6 w-[2px] bg-gradient-to-b from-blue-400 via-indigo-200 to-gray-200" />
+          <div className="absolute left-3.5 top-0 bottom-6 w-[2.5px] bg-gradient-to-b from-blue-500 via-blue-300 to-indigo-100" />
 
           {services.map((svc) => {
             const Icon = LucideIcons[svc.icon] || LucideIcons.HelpCircle;
@@ -344,15 +363,17 @@ export default function InteractiveHubSpoke() {
                   ? "border-blue-300 bg-white translate-x-1 shadow-md"
                   : isAnyHovered
                     ? "opacity-50 border-gray-100 bg-white/40"
-                    : "border-gray-100 bg-white shadow-sm"
+                    : "border-blue-100/80 bg-white/90 shadow-sm"
                   }`}
               >
                 <div
-                  className={`absolute -left-2.5 h-[2px] w-2.5 transition-colors duration-300 ${isHovered ? "bg-blue-400" : "bg-gray-200"
+                  className={`absolute -left-2.5 h-[2px] w-2.5 transition-colors duration-300 ${isHovered ? "bg-blue-500" : "bg-blue-300/60"
                     }`}
                 />
                 <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${isHovered ? "bg-primary text-white scale-105" : "bg-primary/5 text-primary"
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${isHovered 
+                    ? "bg-primary text-white scale-105" 
+                    : "bg-blue-50/80 text-primary border border-blue-100/30"
                     }`}
                 >
                   <Icon className="h-4.5 w-4.5" />

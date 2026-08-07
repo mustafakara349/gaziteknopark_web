@@ -69,6 +69,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<SuccessStory> SuccessStories => Set<SuccessStory>();
     public DbSet<SuccessStoryTranslation> SuccessStoryTranslations => Set<SuccessStoryTranslation>();
 
+    public DbSet<FaqCategory> FaqCategories => Set<FaqCategory>();
     public DbSet<Faq> Faqs => Set<Faq>();
     public DbSet<FaqTranslation> FaqTranslations => Set<FaqTranslation>();
 
@@ -177,5 +178,20 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<AnnouncementTranslation>().HasIndex(t => new { t.Slug, t.LanguageId }).IsUnique();
         modelBuilder.Entity<Announcement>().HasIndex(a => a.Slug).IsUnique();
         modelBuilder.Entity<AnnouncementAttachment>().HasIndex(a => new { a.AnnouncementId, a.FileId }).IsUnique();
+
+        modelBuilder.Entity<FaqCategory>().HasIndex(fc => fc.Slug).IsUnique();
+        modelBuilder.Entity<Tag>().HasIndex(t => t.Slug).IsUnique();
+
+        modelBuilder.Entity<Faq>()
+            .HasMany(f => f.Tags)
+            .WithMany(t => t.Faqs)
+            .UsingEntity<Dictionary<string, object>>(
+                "faq_tag",
+                r => r.HasOne<Tag>().WithMany().HasForeignKey("tag_id"),
+                l => l.HasOne<Faq>().WithMany().HasForeignKey("faq_id"),
+                je =>
+                {
+                    je.HasKey("faq_id", "tag_id");
+                });
     }
 }
