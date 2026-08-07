@@ -33,6 +33,12 @@ import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminHomePage from "./pages/admin/AdminHomePage";
 import AdminCorporatePage from "./pages/admin/AdminCorporatePage";
+import AdminCorporateAboutPage from "./pages/admin/corporate/AdminCorporateAboutPage";
+import AdminCorporateServicesPage from "./pages/admin/corporate/AdminCorporateServicesPage";
+import AdminCorporateTeamPage from "./pages/admin/corporate/AdminCorporateTeamPage";
+import AdminCorporateDocumentsPage from "./pages/admin/corporate/AdminCorporateDocumentsPage";
+import AdminCorporateInitiativePage from "./pages/admin/corporate/AdminCorporateInitiativePage";
+import AdminCorporateFaqPage from "./pages/admin/corporate/AdminCorporateFaqPage";
 import AdminInternshipPage from "./pages/admin/AdminInternshipPage";
 import AdminNewsPage from "./pages/admin/AdminNewsPage";
 import AdminAnnouncementsPage from "./pages/admin/AdminAnnouncementsPage";
@@ -94,6 +100,12 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="anasayfa" element={<AdminHomePage />} />
           <Route path="kurumsal" element={<AdminCorporatePage />} />
+          <Route path="kurumsal/hakkimizda" element={<AdminCorporateAboutPage />} />
+          <Route path="kurumsal/hizmetlerimiz" element={<AdminCorporateServicesPage />} />
+          <Route path="kurumsal/yonetim-ve-ekip" element={<AdminCorporateTeamPage />} />
+          <Route path="kurumsal/mevzuat-ve-belgeler" element={<AdminCorporateDocumentsPage />} />
+          <Route path="kurumsal/girisim-ofisi" element={<AdminCorporateInitiativePage />} />
+          <Route path="kurumsal/sss" element={<AdminCorporateFaqPage />} />
           <Route path="staj-basvurulari" element={<AdminInternshipPage />} />
           <Route path="haberler" element={<AdminNewsPage />} />
           <Route path="duyurular" element={<AdminAnnouncementsPage />} />
