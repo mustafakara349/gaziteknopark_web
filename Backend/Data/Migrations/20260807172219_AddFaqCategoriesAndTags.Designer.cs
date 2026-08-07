@@ -4,6 +4,7 @@ using GaziTeknoparkApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GaziTeknoparkApi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807172219_AddFaqCategoriesAndTags")]
+    partial class AddFaqCategoriesAndTags
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3784,11 +3787,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("order_no");
 
-                    b.Property<string>("SecondaryButtonUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("secondary_button_url");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
@@ -3815,11 +3813,6 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
 
-                    b.Property<string>("Badge")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("badge");
-
                     b.Property<string>("ButtonText")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
@@ -3833,11 +3826,6 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Property<uint>("LanguageId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("language_id");
-
-                    b.Property<string>("SecondaryButtonText")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("secondary_button_text");
 
                     b.Property<uint>("SliderId")
                         .HasColumnType("int unsigned")

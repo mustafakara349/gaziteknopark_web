@@ -8,6 +8,25 @@ public class Faq
 {
     [Key]
     public uint Id { get; set; }
+
+    public uint? FaqCategoryId { get; set; }
+
+    [ForeignKey(nameof(FaqCategoryId))]
+    public FaqCategory? FaqCategory { get; set; }
+
+    [Required]
+    [MaxLength(255)]
+    public string Question { get; set; } = string.Empty;
+
+    [Required]
+    public string Answer { get; set; } = string.Empty;
+
+    [MaxLength(255)]
+    public string? ButtonLink { get; set; }
+
+    [MaxLength(100)]
+    public string? ButtonText { get; set; }
+
     public uint OrderNo { get; set; }
     public bool IsActive { get; set; } = true;
     public uint? CreatedBy { get; set; }
@@ -18,6 +37,7 @@ public class Faq
     public DateTime? DeletedAt { get; set; }
 
     public ICollection<FaqTranslation> Translations { get; set; } = new List<FaqTranslation>();
+    public ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }
 
 [Table("faq_translations")]

@@ -3,6 +3,7 @@ import { navConfig } from "../config/navConfig";
 const EXTRA_PAGES = {
   "/iletisim": "İletişim",
   "/giris": "Giriş",
+  "/sss": "Sıkça Sorulan Sorular",
 };
 
 export function getPageMeta(pathname) {

@@ -14,10 +14,6 @@ export default function ServicesCallToAction({ cta }) {
       <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-accent-blue/10 blur-2xl pointer-events-none" />
 
       <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center space-y-6">
-        {/* İkon */}
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur-sm">
-          <LucideIcons.Sparkles className="h-6 w-6 text-white" />
-        </div>
 
         {/* Başlık */}
         <h3 className="text-2xl font-extrabold sm:text-3xl md:text-4xl text-white">
