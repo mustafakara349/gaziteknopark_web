@@ -116,6 +116,10 @@ public class InitiativeOfficeController : ControllerBase
 
         _db.InitiativeOffices.Add(item);
         await _db.SaveChangesAsync();
+        if (item.ImageFileId.HasValue)
+        {
+            await _db.Entry(item).Reference(x => x.ImageFile).LoadAsync();
+        }
         return CreatedAtAction(nameof(GetById), new { id = item.Id }, Map(item));
     }
 
@@ -129,6 +133,7 @@ public class InitiativeOfficeController : ControllerBase
         }
 
         var item = await _db.InitiativeOffices
+            .Include(i => i.ImageFile)
             .Include(i => i.Translations)
             .Include(i => i.Incubators).ThenInclude(x => x.Translations)
             .FirstOrDefaultAsync(i => i.Id == id && i.DeletedAt == null);
@@ -254,6 +259,10 @@ public class InitiativeOfficeController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
+        if (item.ImageFileId.HasValue)
+        {
+            await _db.Entry(item).Reference(x => x.ImageFile).LoadAsync();
+        }
         return Ok(Map(item));
     }
 
@@ -268,12 +277,12 @@ public class InitiativeOfficeController : ControllerBase
         return NoContent();
     }
 
-    private static InitiativeOfficeDto Map(InitiativeOffice i) => new()
+    private InitiativeOfficeDto Map(InitiativeOffice i) => new()
     {
         Id = i.Id,
         Uuid = i.Uuid,
         ImageFileId = i.ImageFileId,
-        ImageUrl = i.ImageFile?.Path,
+        ImageUrl = FileUrlHelper.ToAbsoluteUrl(Request, i.ImageFile),
         Status = i.Status.ToString(),
         Title = i.Title,
         Content = i.Content,

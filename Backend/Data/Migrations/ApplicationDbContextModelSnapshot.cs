@@ -3784,6 +3784,11 @@ namespace GaziTeknoparkApi.Data.Migrations
                         .HasColumnType("int unsigned")
                         .HasColumnName("order_no");
 
+                    b.Property<string>("SecondaryButtonUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("secondary_button_url");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
@@ -3810,6 +3815,11 @@ namespace GaziTeknoparkApi.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<uint>("Id"));
 
+                    b.Property<string>("Badge")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("badge");
+
                     b.Property<string>("ButtonText")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
@@ -3823,6 +3833,11 @@ namespace GaziTeknoparkApi.Data.Migrations
                     b.Property<uint>("LanguageId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("language_id");
+
+                    b.Property<string>("SecondaryButtonText")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("secondary_button_text");
 
                     b.Property<uint>("SliderId")
                         .HasColumnType("int unsigned")

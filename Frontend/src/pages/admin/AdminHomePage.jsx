@@ -53,16 +53,19 @@ export default function AdminHomePage() {
   const toPayload = (slider) => ({
     imageFileId: slider.imageFileId,
     linkUrl: slider.linkUrl,
+    secondaryButtonUrl: slider.secondaryButtonUrl,
     orderNo: slider.orderNo,
     isActive: slider.isActive,
     translations: slider.translations?.length
       ? slider.translations.map((t) => ({
           languageId: t.languageId,
+          badge: t.badge,
           title: t.title,
           description: t.description,
           buttonText: t.buttonText,
+          secondaryButtonText: t.secondaryButtonText,
         }))
-      : [{ languageId: 1, title: null, description: null, buttonText: null }],
+      : [{ languageId: 1, badge: null, title: null, description: null, buttonText: null, secondaryButtonText: null }],
   });
 
   const handleMove = async (index, direction) => {

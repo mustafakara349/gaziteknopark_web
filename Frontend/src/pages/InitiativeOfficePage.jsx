@@ -34,16 +34,16 @@ export default function InitiativeOfficePage() {
       <PageSection className="pt-4 md:pt-8">
         {/* Sol Resim, Sağ İçerik Metni */}
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
-          {/* Sol Resim */}
+          {/* Sol Resim - Sabit Oranlı Çerçeve */}
           <div className="lg:col-span-5">
             <div
-              className="cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all duration-300"
+              className="cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all duration-300 aspect-[4/3] w-full"
               onClick={() => setLightboxImg(imgSrc)}
             >
               <img
                 src={imgSrc}
                 alt="Gazi Teknopark Girişim Ofisi"
-                className="h-auto w-full object-cover transition-transform duration-500 hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
               />
             </div>
           </div>
@@ -52,8 +52,8 @@ export default function InitiativeOfficePage() {
           <div className="lg:col-span-7">
             <div className="space-y-4 text-sm leading-relaxed text-slate-700 md:text-base">
               {(office?.content || t.content) && (
-                <div 
-                  className="whitespace-pre-line leading-relaxed text-slate-700" 
+                <div
+                  className="whitespace-pre-line leading-relaxed text-slate-700"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(office?.content || t.content) }}
                 />
               )}
