@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { getSliders } from "../../api/endpoints";
 import { pickTranslation } from "../../utils/i18n";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL.replace("/api", "")
+  : "http://localhost:5080";
+
 const defaultSlides = [
 
   {
@@ -96,28 +100,47 @@ export default function HeroSlider() {
           style={{ transform: `translateX(-${active * 100}%)` }}
         >
           {sliders.map((slide, index) => {
+            // Gerçek (DB'den gelen) slaytların sayısal id'si olur; placeholder'ların
+            // "default-N" gibi string id'si vardır. Gerçek slaytlar için başlık/açıklama/
+            // buton dışında hiçbir alan (badge, ikinci buton, tip vb.) index'e göre
+            // rastgele bir varsayılana denk gelip içerikle uyuşmayan metin göstermesin
+            // diye "fallback" sadece placeholder'lar için kullanılır.
+            const isRealSlide = typeof slide.id === "number";
             const fallback = defaultSlides[index % 3];
-            const slideType = slide.type || fallback.type;
             const translation = pickTranslation(slide);
 
-            const title = translation.title || slide.title || fallback.title;
+            const title = translation.title || slide.title || (!isRealSlide && fallback.title);
             const description =
-              translation.description || slide.description || fallback.description;
+              translation.description || slide.description || (!isRealSlide && fallback.description);
             const bgImage = slide.imageFileId
-              ? `/api/files/${slide.imageFileId}`
+              ? `${apiBaseUrl}/api/files/${slide.imageFileId}`
               : slide.imageUrl || fallback.imageUrl;
-            const badge = slide.badge || fallback.badge;
+            const badge = isRealSlide
+              ? translation.badge || slide.badge
+              : slide.badge || fallback.badge;
 
             const primaryText =
-              translation.buttonText || slide.primaryButtonText || fallback.primaryButtonText;
+              translation.buttonText ||
+              slide.primaryButtonText ||
+              (!isRealSlide && fallback.primaryButtonText);
             const primaryUrl =
-              slide.linkUrl || slide.primaryButtonUrl || fallback.primaryButtonUrl;
-            const secondaryText =
-              slide.secondaryButtonText || fallback.secondaryButtonText;
-            const secondaryUrl =
-              slide.secondaryButtonUrl || fallback.secondaryButtonUrl;
-            const linkText = slide.linkText || fallback.linkText;
-            const linkUrl = slide.linkUrl || fallback.linkUrl;
+              slide.linkUrl || slide.primaryButtonUrl || (!isRealSlide && fallback.primaryButtonUrl);
+            const secondaryText = isRealSlide
+              ? translation.secondaryButtonText || slide.secondaryButtonText
+              : slide.secondaryButtonText || fallback.secondaryButtonText;
+            const secondaryUrl = isRealSlide
+              ? slide.secondaryButtonUrl
+              : slide.secondaryButtonUrl || fallback.secondaryButtonUrl;
+            const linkText = !isRealSlide && (slide.linkText || fallback.linkText);
+            const linkUrl = slide.linkUrl || (!isRealSlide && fallback.linkUrl);
+
+            // Gerçek slaytlar, DB'de "tip" kavramı olmadığı için kendi içeriğine göre
+            // (rozet/başlık/açıklama/buton var mı) tek bir düzenle gösterilir —
+            // placeholder'lar ise orijinal 3 görsel tipini kullanmaya devam eder.
+            const hasCmsContent = badge || title || description || (primaryText && primaryUrl);
+            const slideType = isRealSlide
+              ? (hasCmsContent ? "cms" : "cms_image_only")
+              : slide.type || fallback.type;
 
             return (
               <div
@@ -234,6 +257,60 @@ export default function HeroSlider() {
                         <h2 className="mt-1 text-xl font-bold text-white md:text-3xl">
                           {title}
                         </h2>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* CMS SLIDE: admin panelinden eklenen slaytlar — rozet/başlık/açıklama/butonlar
+                    yalnızca gerçekten girilmişse gösterilir, konuma göre rastgele metin eklenmez. */}
+                {slideType === "cms" && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-transparent" />
+                    <div className="relative z-10 flex h-full w-full flex-col justify-center px-8 pt-[120px] pb-12 md:px-16 lg:px-24">
+                      <div
+                        className={`max-w-2xl transition-all duration-500 delay-100 transform ${index === active
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
+                          }`}
+                      >
+                        {badge && (
+                          <span className="text-xs font-bold tracking-widest text-blue-300 uppercase">
+                            {badge}
+                          </span>
+                        )}
+                        {title && (
+                          <h1 className="mt-3 text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
+                            {title}
+                          </h1>
+                        )}
+                        {description && (
+                          <p className="mt-4 text-sm leading-relaxed text-slate-200 md:text-base md:leading-normal">
+                            {description}
+                          </p>
+                        )}
+                        {(primaryText || secondaryText) && (
+                          <div className="mt-8 flex flex-wrap items-center gap-4">
+                            {primaryText && primaryUrl && (
+                              <a
+                                href={primaryUrl}
+                                target={primaryUrl?.startsWith("http") ? "_blank" : undefined}
+                                rel={primaryUrl?.startsWith("http") ? "noreferrer" : undefined}
+                                className="inline-flex items-center justify-center rounded-xl bg-[#0066cc] px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#0052a3] active:scale-95"
+                              >
+                                {primaryText}
+                              </a>
+                            )}
+                            {secondaryText && secondaryUrl && (
+                              <a
+                                href={secondaryUrl}
+                                className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white/60 hover:bg-white/20 active:scale-95"
+                              >
+                                {secondaryText}
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </>

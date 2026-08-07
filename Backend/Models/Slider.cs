@@ -11,6 +11,8 @@ public class Slider
     public uint? ImageFileId { get; set; }
     [MaxLength(255)]
     public string? LinkUrl { get; set; }
+    [MaxLength(255)]
+    public string? SecondaryButtonUrl { get; set; }
     public uint OrderNo { get; set; }
     public bool IsActive { get; set; } = true;
     public uint? CreatedBy { get; set; }
@@ -33,12 +35,16 @@ public class SliderTranslation
     public uint Id { get; set; }
     public uint SliderId { get; set; }
     public uint LanguageId { get; set; }
+    [MaxLength(100)]
+    public string? Badge { get; set; }
     [MaxLength(255)]
     public string? Title { get; set; }
     [MaxLength(500)]
     public string? Description { get; set; }
     [MaxLength(100)]
     public string? ButtonText { get; set; }
+    [MaxLength(100)]
+    public string? SecondaryButtonText { get; set; }
 
     [ForeignKey(nameof(SliderId))]
     public Slider Slider { get; set; } = null!;
