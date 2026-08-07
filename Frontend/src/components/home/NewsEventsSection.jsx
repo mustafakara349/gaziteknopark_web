@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { getEvents, getNews } from "../../api/endpoints";
 import { pickTranslation } from "../../utils/i18n";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL.replace("/api", "")
+  : "http://localhost:5080";
+
 const defaultAnnouncements = [
   {
     id: 1,
@@ -189,7 +193,7 @@ export default function NewsEventsSection() {
                 const t = pickTranslation(item);
                 const title = t.title || item.title;
                 const img = item.imageFileId
-                  ? `/api/files/${item.imageFileId}`
+                  ? `${apiBaseUrl}/api/files/${item.imageFileId}`
                   : item.imageUrl || defaultEvents[0].imageUrl;
                 const dateStr = item.dateStr || formatFullDate(item.startDate);
                 const location = item.location || t.location || "Gazi Teknopark Salonu";

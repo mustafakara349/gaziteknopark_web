@@ -40,6 +40,7 @@ public class SlidersController : ControllerBase
         {
             ImageFileId = dto.ImageFileId,
             LinkUrl = dto.LinkUrl,
+            SecondaryButtonUrl = dto.SecondaryButtonUrl,
             OrderNo = dto.OrderNo,
             IsActive = dto.IsActive,
             CreatedAt = DateTime.UtcNow
@@ -49,9 +50,11 @@ public class SlidersController : ControllerBase
             slider.Translations.Add(new SliderTranslation
             {
                 LanguageId = t.LanguageId,
+                Badge = t.Badge,
                 Title = t.Title,
                 Description = t.Description,
-                ButtonText = t.ButtonText
+                ButtonText = t.ButtonText,
+                SecondaryButtonText = t.SecondaryButtonText
             });
         }
 
@@ -69,6 +72,7 @@ public class SlidersController : ControllerBase
 
         slider.ImageFileId = dto.ImageFileId;
         slider.LinkUrl = dto.LinkUrl;
+        slider.SecondaryButtonUrl = dto.SecondaryButtonUrl;
         slider.OrderNo = dto.OrderNo;
         slider.IsActive = dto.IsActive;
         slider.UpdatedAt = DateTime.UtcNow;
@@ -80,9 +84,11 @@ public class SlidersController : ControllerBase
             slider.Translations.Add(new SliderTranslation
             {
                 LanguageId = t.LanguageId,
+                Badge = t.Badge,
                 Title = t.Title,
                 Description = t.Description,
-                ButtonText = t.ButtonText
+                ButtonText = t.ButtonText,
+                SecondaryButtonText = t.SecondaryButtonText
             });
         }
 
@@ -106,15 +112,18 @@ public class SlidersController : ControllerBase
         Id = s.Id,
         ImageFileId = s.ImageFileId,
         LinkUrl = s.LinkUrl,
+        SecondaryButtonUrl = s.SecondaryButtonUrl,
         OrderNo = s.OrderNo,
         IsActive = s.IsActive,
         Translations = s.Translations.Select(t => new SliderTranslationDto
         {
             LanguageId = t.LanguageId,
             LanguageCode = t.Language?.Code,
+            Badge = t.Badge,
             Title = t.Title,
             Description = t.Description,
-            ButtonText = t.ButtonText
+            ButtonText = t.ButtonText,
+            SecondaryButtonText = t.SecondaryButtonText
         }).ToList()
     };
 }

@@ -19,6 +19,35 @@ public class FilesController : ControllerBase
         _env = env;
     }
 
+    // Herkese açık: sitedeki (anasayfa slider'ı dahil) <img src="/api/files/{id}">
+    // referansları bu uç noktadan gerçek dosyayı çeker.
+    [AllowAnonymous]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(uint id)
+    {
+        var file = await _db.Files.FindAsync(id);
+        if (file is null || string.IsNullOrWhiteSpace(file.Path))
+        {
+            return NotFound();
+        }
+
+        if (file.Path.StartsWith("http://") || file.Path.StartsWith("https://"))
+        {
+            return Redirect(file.Path);
+        }
+
+        var webRoot = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
+        var relativePath = file.Path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.Combine(webRoot, relativePath);
+
+        if (!System.IO.File.Exists(fullPath))
+        {
+            return NotFound();
+        }
+
+        return PhysicalFile(fullPath, file.Mime ?? "application/octet-stream");
+    }
+
     [HttpPost("upload")]
     public async Task<ActionResult<object>> Upload(IFormFile file)
     {

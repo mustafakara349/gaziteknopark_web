@@ -3,10 +3,13 @@ import adminAxios from "../../../utils/adminAxios";
 import { X, Save, Loader2, Upload } from "lucide-react";
 
 const emptyForm = {
+  badge: "",
   title: "",
   description: "",
   buttonText: "",
   linkUrl: "",
+  secondaryButtonText: "",
+  secondaryButtonUrl: "",
   orderNo: 0,
   isActive: true,
   imageFileId: "",
@@ -30,10 +33,13 @@ export default function AdminSliderFormModal({ isOpen, onClose, editSlider, next
       if (editSlider) {
         const tr = editSlider.translations?.find((t) => t.languageId === 1) || editSlider.translations?.[0] || {};
         setForm({
+          badge: tr.badge || "",
           title: tr.title || "",
           description: tr.description || "",
           buttonText: tr.buttonText || "",
           linkUrl: editSlider.linkUrl || "",
+          secondaryButtonText: tr.secondaryButtonText || "",
+          secondaryButtonUrl: editSlider.secondaryButtonUrl || "",
           orderNo: editSlider.orderNo ?? 0,
           isActive: editSlider.isActive,
           imageFileId: editSlider.imageFileId || "",
@@ -88,14 +94,17 @@ export default function AdminSliderFormModal({ isOpen, onClose, editSlider, next
       const payload = {
         imageFileId: Number(form.imageFileId),
         linkUrl: form.linkUrl || null,
+        secondaryButtonUrl: form.secondaryButtonUrl || null,
         orderNo: Number(form.orderNo) || 0,
         isActive: form.isActive,
         translations: [
           {
             languageId: 1,
+            badge: form.badge || null,
             title: form.title || null,
             description: form.description || null,
             buttonText: form.buttonText || null,
+            secondaryButtonText: form.secondaryButtonText || null,
           },
         ],
       };
@@ -160,6 +169,17 @@ export default function AdminSliderFormModal({ isOpen, onClose, editSlider, next
           </div>
 
           <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Rozet (küçük üst etiket)</label>
+            <input
+              type="text"
+              value={form.badge}
+              onChange={handleChange("badge")}
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              placeholder="Örn: GİRİŞİMCİLİK VE AR-GE"
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Başlık</label>
             <input
               type="text"
@@ -199,6 +219,29 @@ export default function AdminSliderFormModal({ isOpen, onClose, editSlider, next
                 onChange={handleChange("linkUrl")}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 placeholder="/duyurular veya https://..."
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">İkinci Buton Metni</label>
+              <input
+                type="text"
+                value={form.secondaryButtonText}
+                onChange={handleChange("secondaryButtonText")}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                placeholder="Örn: Hizmetlerimizi İnceleyin"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">İkinci Buton Bağlantısı</label>
+              <input
+                type="text"
+                value={form.secondaryButtonUrl}
+                onChange={handleChange("secondaryButtonUrl")}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                placeholder="/kurumsal/hizmetlerimiz"
               />
             </div>
           </div>
