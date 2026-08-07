@@ -1,13 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { getStatistics } from "../../api/endpoints";
-import { pickTranslation } from "../../utils/i18n";
-
-const defaultStats = [
-  { id: 1, value: "150+", label: "Ar-Ge Firması" },
-  { id: 2, value: "1200+", label: "Nitelikli İstihdam" },
-  { id: 3, value: "350+", label: "Tamamlanan Proje" },
-  { id: 4, value: "$50M+", label: "İhracat Hacmi" },
-];
+import { getArgePortalIstatistikler } from "../../api/endpoints";
 
 function parseStatValue(str) {
   if (typeof str === "number") return { prefix: "", target: str, suffix: "" };
@@ -32,15 +24,13 @@ function AnimatedNumber({ rawValue, isVisible }) {
     }
 
     let startTimestamp = null;
-    const duration = 2000; // 2 seconds
+    const duration = 2000;
 
     const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      // Ease out cubic formula for smooth deceleration
       const easedProgress = 1 - Math.pow(1 - progress, 3);
       setCurrent(Math.floor(easedProgress * target));
-
       if (progress < 1) {
         requestAnimationFrame(step);
       } else {
@@ -55,41 +45,56 @@ function AnimatedNumber({ rawValue, isVisible }) {
   return (
     <span>
       {prefix}
-      {current.toLocaleString()}
+      {current.toLocaleString("tr-TR")}
       {suffix}
     </span>
   );
 }
 
 export default function StatsCounter() {
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState(() => {
+    try {
+      const cached = localStorage.getItem("argePortalStats");
+      if (cached) return JSON.parse(cached);
+    } catch (e) {
+      // ignore
+    }
+    return [];
+  });
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
 
   useEffect(() => {
-    getStatistics()
-      .then((data) => setStats(data?.length ? data : defaultStats))
-      .catch(() => setStats(defaultStats));
+    getArgePortalIstatistikler()
+      .then((data) => {
+        if (!data) return;
+        const firma = data.toplamFirma ?? data.ToplamFirma;
+        const calisan = data.toplamPersonel ?? data.ToplamPersonel;
+        const proje = data.toplamProje ?? data.ToplamProje;
+
+        if (firma != null && calisan != null && proje != null) {
+          const newStats = [
+            { id: "firma", value: firma, suffix: "+", label: "Ar-Ge Firması" },
+            { id: "calisan", value: calisan, suffix: "+", label: "Çalışan Personel" },
+            { id: "proje", value: proje, suffix: "+", label: "Geliştirilen Proje" },
+          ];
+          setStats(newStats);
+          localStorage.setItem("argePortalStats", JSON.stringify(newStats));
+        }
+      })
+      .catch(() => {/* fallback veya cache kullanılıyor */ });
   }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
       { threshold: 0.2 }
     );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
+    if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
 
-  const displayList = stats.length ? stats : defaultStats;
+  if (!stats || stats.length === 0) return null;
 
   return (
     <section ref={sectionRef} className="mt-24 bg-[#082b5c] py-20 text-white">
@@ -98,27 +103,25 @@ export default function StatsCounter() {
           GAZİ TEKNOPARK SAYILARLA
         </h2>
 
-        <div className="mt-10 grid grid-cols-2 gap-8 text-center md:grid-cols-4 lg:gap-12">
-          {displayList.map((stat, idx) => {
-            const t = pickTranslation(stat);
-            const value = stat.value || "100+";
-            const label = t.label || stat.label || "İstatistik";
+        <div className="mt-10 grid grid-cols-1 gap-8 text-center sm:grid-cols-3 lg:gap-12">
+          {stats.map((stat, idx) => {
+            const rawValue =
+              typeof stat.value === "number"
+                ? `${stat.value}${stat.suffix ?? "+"}`
+                : stat.value;
 
             return (
               <div
-                key={stat.id || label || idx}
-                className={`flex flex-col items-center transition-all duration-700 ${
-                  isVisible
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-6"
-                }`}
+                key={stat.id}
+                className={`flex flex-col items-center transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+                  }`}
                 style={{ transitionDelay: `${idx * 150}ms` }}
               >
                 <span className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
-                  <AnimatedNumber rawValue={value} isVisible={isVisible} />
+                  <AnimatedNumber rawValue={rawValue} isVisible={isVisible} />
                 </span>
                 <span className="mt-2 text-xs font-medium text-white/80 md:text-sm">
-                  {label}
+                  {stat.label}
                 </span>
               </div>
             );
@@ -128,4 +131,3 @@ export default function StatsCounter() {
     </section>
   );
 }
-

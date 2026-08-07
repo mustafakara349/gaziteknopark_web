@@ -48,6 +48,9 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 // reCAPTCHA doğrulama servisi
 builder.Services.AddHttpClient<IRecaptchaService, RecaptchaService>();
 
+// ArGe Portal proxy servisi — XML'i 30 dk önbellekler, CORS problemini çözer
+builder.Services.AddHttpClient<IArgePortalService, ArgePortalService>();
+
 // Rate Limiting — Staj başvurusu için: 1 saatte aynı IP'den en fazla 5 istek
 builder.Services.AddRateLimiter(options =>
 {
