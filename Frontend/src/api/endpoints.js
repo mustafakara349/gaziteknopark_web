@@ -53,3 +53,6 @@ export const submitContactMessage = (payload) => apiClient.post("/contact/messag
 export const submitInternshipApplication = (payload) => apiClient.post("/internship-applications", payload).then((res) => res.data);
 export const login = (payload) => apiClient.post("/auth/login", payload).then((res) => res.data);
 export const register = (payload) => apiClient.post("/auth/register", payload).then((res) => res.data);
+
+// ArGe Portal Proxy Endpoints
+export const getArgePortalIstatistikler = () => get("/argeportal/istatistikler");
