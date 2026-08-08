@@ -27,6 +27,7 @@ import FaqPage from "./pages/FaqPage";
 
 // Admin Components & Pages
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
@@ -49,6 +50,7 @@ import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import AdminFaqsPage from "./pages/admin/AdminFaqsPage";
 import AdminFaqCategoriesPage from "./pages/admin/AdminFaqCategoriesPage";
+import AdminLinkedInPostsPage from "./pages/admin/AdminLinkedInPostsPage";
 
 function App() {
   useEffect(() => {
@@ -58,9 +60,10 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <ScrollToTop />
-      <Routes>
+    <ToastProvider>
+      <AuthProvider>
+        <ScrollToTop />
+        <Routes>
         {/* ─── Public Routes ──────────────────────────── */}
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
@@ -117,11 +120,13 @@ function App() {
           <Route path="kullanicilar" element={<AdminUsersPage />} />
           <Route path="faqs" element={<AdminFaqsPage />} />
           <Route path="faq-categories" element={<AdminFaqCategoriesPage />} />
+          <Route path="linkedin-posts" element={<AdminLinkedInPostsPage />} />
           <Route path="ayarlar" element={<AdminSettingsPage />} />
         </Route>
 
       </Routes>
-    </AuthProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

@@ -193,5 +193,12 @@ public class ApplicationDbContext : DbContext
                 {
                     je.HasKey("faq_id", "tag_id");
                 });
+
+        modelBuilder.Entity<LinkedInPost>().HasIndex(p => p.LinkedInPostUrn).IsUnique();
+        modelBuilder.Entity<LinkedInPost>()
+            .HasOne(p => p.ApprovedByUser)
+            .WithMany()
+            .HasForeignKey(p => p.ApprovedBy)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -23,7 +23,14 @@ export const getStatistics = () => get("/statistics");
 export const getInitiativeOffice = () => get("/initiative-office");
 export const getSettings = () => get("/settings");
 export const getSuccessStories = () => get("/success-stories");
-export const getLinkedInPosts = (params) => get("/linkedin-posts", params);
+export const getLinkedInPosts = (params) =>
+  apiClient.get("/linkedin-posts", { params }).then((res) => {
+    const totalCount = parseInt(res.headers["x-total-count"] || res.headers["X-Total-Count"] || "0", 10);
+    const pageSize = params?.pageSize || 12;
+    const totalPages = Math.ceil(totalCount / pageSize) || 0;
+    return { data: res.data, totalCount, totalPages };
+  });
+
 export const getCompanies = (params) => get("/companies", params);
 export const getCompanyById = (id) => get(`/companies/${id}`);
 export const getCompanyCategories = () => get("/company-categories");

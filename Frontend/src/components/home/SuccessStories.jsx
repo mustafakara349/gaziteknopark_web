@@ -146,7 +146,7 @@ export default function SuccessStories({ limit = 10, layout = "single-title", hi
   const sliderAnimFrameRef = useRef(null);
 
   useEffect(() => {
-    getLinkedInPosts()
+    getLinkedInPosts({ showOnHomepage: true })
       .then((res) => {
         if (res && res.length > 0) {
           const formatted = res.map((post) => {

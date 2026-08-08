@@ -10,8 +10,6 @@ import {
   Building2,
   Plus,
   Minus,
-  Headphones,
-  ArrowRight,
   ExternalLink,
   ChevronRight,
   X,
@@ -30,6 +28,7 @@ const ICON_MAP = {
   Award,
   Building2,
 };
+
 
 /* ─── Utility: highlight matching text ──────────────────────────────────── */
 function Highlight({ text, query }) {
@@ -88,7 +87,7 @@ function AccordionItem({ item, query, onTagClick }) {
         <div className="faq-card__body-inner">
           <div className="faq-card__answer text-gray-600 prose prose-sm max-w-none">
             {/* HTML Cevap İçeriği (Backend tarafında XSS filtrelemesinden geçmiştir) */}
-            <div 
+            <div
               dangerouslySetInnerHTML={{ __html: item.answer }}
               className="leading-relaxed text-sm text-gray-600"
             />
@@ -96,7 +95,7 @@ function AccordionItem({ item, query, onTagClick }) {
             {/* Buton ve Etiketler Ortak Satır Alanı */}
             {((item.tags && item.tags.length > 0) || (item.buttonLink && item.buttonText)) && (
               <div className="faq-card__footer-row">
-                
+
                 {/* Sol Taraf: Soruya Bağlı Etiketler */}
                 <div className="faq-card__tags">
                   {item.tags && item.tags.map((tag) => (
@@ -186,6 +185,16 @@ export default function FaqPage() {
   useEffect(() => {
     fetchFaqs();
   }, []);
+
+  // Kategori veya arama sorgusu değiştiğinde sayfayı yukarı yumuşakça kaydırır
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeCategoryId, query]);
 
   const fetchFaqs = async () => {
     setIsLoading(true);
@@ -825,23 +834,17 @@ export default function FaqPage() {
         )}
 
         {/* Support CTA */}
-        <div className="faq-cta" role="complementary" aria-label="Destek iletişim">
+        <div className="faq-cta" role="complementary" aria-label="İletişim">
           <div className="faq-cta__left">
-            <div className="faq-cta__icon-wrap">
-              <Headphones size={30} color="#ffffffff" />
-            </div>
             <div className="faq-cta__text">
-              <h3>Aradığınız soruya yanıt bulamadınız mı?</h3>
+              <h3>Aradığınız sorunun cevabını bulamadınız mı?</h3>
               <p>
-                Uzman ekibimiz size yardımcı olmaktan memnuniyet duyar.
-                İletişim formumuz aracılığıyla sorunuzu iletin, en kısa sürede
-                dönüş yapıyoruz.
+                Bizimle iletişime geçerek sorularınızı doğrudan iletebilirsiniz.
               </p>
             </div>
           </div>
           <Link to="/iletisim" className="faq-cta__btn">
-            Destek Talebi Oluştur
-            <ArrowRight size={17} />
+            İletişime Geç
           </Link>
         </div>
 
