@@ -17,6 +17,7 @@ import {
   HelpCircle,
   ChevronDown,
   ChevronRight,
+  Share2,
 
 } from "lucide-react";
 
@@ -42,6 +43,7 @@ const menuItems = [
   { label: "Medya Galeri", icon: Image, path: "/admin/medya" },
   { label: "Etkinlikler", icon: CalendarDays, path: "/admin/etkinlikler" },
   { label: "Firma Yönetimi", icon: Factory, path: "/admin/firmalar" },
+  { label: "LinkedIn Gönderileri", icon: Share2, path: "/admin/linkedin-posts" },
   { label: "Sıkça Sorulan Sorular", icon: HelpCircle, path: "/admin/faqs" },
   { label: "Admin Yönetimi", icon: Users, path: "/admin/kullanicilar" },
   { label: "Genel Ayarlar", icon: Settings, path: "/admin/ayarlar" },
@@ -95,16 +97,14 @@ export default function AdminSidebar({
       >
         {/* Header Bar */}
         <div
-          className={`flex items-center h-16 px-4 border-b border-white/10 shrink-0 ${
-            isDesktopCollapsed ? "lg:justify-center justify-between" : "justify-between"
-          }`}
+          className={`flex items-center h-16 px-4 border-b border-white/10 shrink-0 ${isDesktopCollapsed ? "lg:justify-center justify-between" : "justify-between"
+            }`}
         >
           <Link
             to="/admin/dashboard"
             onClick={onCloseMobile}
-            className={`items-center gap-2 overflow-hidden ${
-              isDesktopCollapsed ? "hidden lg:hidden" : "flex"
-            }`}
+            className={`items-center gap-2 overflow-hidden ${isDesktopCollapsed ? "hidden lg:hidden" : "flex"
+              }`}
           >
             {!logoError ? (
               <img
@@ -158,10 +158,9 @@ export default function AdminSidebar({
                     className={`
                       flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium
                       transition-all duration-200 group cursor-pointer
-                      ${
-                        isParentActive
-                          ? "bg-white/15 text-white shadow-sm font-semibold"
-                          : "text-blue-100/80 hover:bg-white/8 hover:text-white"
+                      ${isParentActive
+                        ? "bg-white/15 text-white shadow-sm font-semibold"
+                        : "text-blue-100/80 hover:bg-white/8 hover:text-white"
                       }
                       ${isDesktopCollapsed ? "lg:justify-center lg:px-2" : ""}
                     `}
@@ -180,9 +179,8 @@ export default function AdminSidebar({
                       title={isDesktopCollapsed ? item.label : undefined}
                     >
                       <Icon
-                        className={`w-[18px] h-[18px] shrink-0 ${
-                          isParentActive ? "text-white" : "text-blue-200/70 group-hover:text-white"
-                        }`}
+                        className={`w-[18px] h-[18px] shrink-0 ${isParentActive ? "text-white" : "text-blue-200/70 group-hover:text-white"
+                          }`}
                       />
                       <span className={isDesktopCollapsed ? "lg:hidden" : "block"}>
                         {item.label}
@@ -215,10 +213,9 @@ export default function AdminSidebar({
                             onClick={onCloseMobile}
                             className={`
                               block px-3 py-2 rounded-lg text-xs font-medium transition-all
-                              ${
-                                isChildActive
-                                  ? "bg-white/20 text-white font-bold"
-                                  : "text-blue-100/70 hover:bg-white/10 hover:text-white"
+                              ${isChildActive
+                                ? "bg-white/20 text-white font-bold"
+                                : "text-blue-100/70 hover:bg-white/10 hover:text-white"
                               }
                             `}
                           >
@@ -240,19 +237,17 @@ export default function AdminSidebar({
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
                   transition-all duration-200 group
-                  ${
-                    isExactActive || (item.path !== "/admin/dashboard" && location.pathname.startsWith(item.path))
-                      ? "bg-white/15 text-white shadow-sm font-semibold"
-                      : "text-blue-100/80 hover:bg-white/8 hover:text-white"
+                  ${isExactActive || (item.path !== "/admin/dashboard" && location.pathname.startsWith(item.path))
+                    ? "bg-white/15 text-white shadow-sm font-semibold"
+                    : "text-blue-100/80 hover:bg-white/8 hover:text-white"
                   }
                   ${isDesktopCollapsed ? "lg:justify-center lg:px-2" : ""}
                 `}
                 title={isDesktopCollapsed ? item.label : undefined}
               >
                 <Icon
-                  className={`w-[18px] h-[18px] shrink-0 ${
-                    isExactActive ? "text-white" : "text-blue-200/70 group-hover:text-white"
-                  }`}
+                  className={`w-[18px] h-[18px] shrink-0 ${isExactActive ? "text-white" : "text-blue-200/70 group-hover:text-white"
+                    }`}
                 />
                 <span className={isDesktopCollapsed ? "lg:hidden" : "block"}>
                   {item.label}

@@ -29,24 +29,26 @@ export default function FeaturedStoriesCarousel({ posts = [] }) {
   const [active, setActive] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Get first 3 posts that have an image
-  const slides = posts
-    .filter((post) => post.mediaUrl)
-    .slice(0, 3)
-    .map((post) => {
-      const { title, body } = parsePostText(post.postText);
-      return {
-        id: post.id,
-        companyId: post.companyId,
-        companyName: post.companyName || "Gazi Teknopark",
-        companyLogoUrl: getFullImageUrl(post.companyLogoUrl),
-        title,
-        body,
-        mediaUrl: post.mediaUrl,
-        postUrl: post.postUrl || "#",
-        publishedAt: post.publishedAt
-      };
-    });
+  // Get featured posts that have an image, fallback to first 3 posts with an image if none are featured
+  const featuredPosts = posts.filter((post) => post.isFeatured && post.mediaUrl);
+  const postsToUse = featuredPosts.length > 0 
+    ? featuredPosts 
+    : posts.filter((post) => post.mediaUrl).slice(0, 3);
+
+  const slides = postsToUse.map((post) => {
+    const { title, body } = parsePostText(post.postText);
+    return {
+      id: post.id,
+      companyId: post.companyId,
+      companyName: post.companyName || "Gazi Teknopark",
+      companyLogoUrl: getFullImageUrl(post.companyLogoUrl),
+      title,
+      body,
+      mediaUrl: post.mediaUrl,
+      postUrl: post.postUrl || "#",
+      publishedAt: post.publishedAt
+    };
+  });
 
   useEffect(() => {
     if (slides.length < 2 || isPaused) return;

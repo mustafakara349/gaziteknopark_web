@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using GaziTeknoparkApi.Models.Enums;
 
 namespace GaziTeknoparkApi.Models;
 
@@ -28,6 +29,24 @@ public class LinkedInPost
     public DateTime PublishedAt { get; set; }
 
     public bool IsVisible { get; set; } = true;
+
+    public LinkedInPostStatus Status { get; set; } = LinkedInPostStatus.Pending;
+
+    public bool ShowOnHomepage { get; set; } = true;
+
+    public bool ShowOnStories { get; set; } = true;
+
+    public bool IsFeatured { get; set; } = false;
+
+    [Column("approved_by")]
+    public uint? ApprovedBy { get; set; }
+
+    [ForeignKey(nameof(ApprovedBy))]
+    public User? ApprovedByUser { get; set; }
+
+    public DateTime? ApprovedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
